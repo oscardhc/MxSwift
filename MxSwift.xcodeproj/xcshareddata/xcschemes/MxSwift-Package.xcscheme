@@ -14,6 +14,20 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
+               BlueprintIdentifier = "MxSwift::Antlr4"
+               BuildableName = "Antlr4.framework"
+               BlueprintName = "Antlr4"
+               ReferencedContainer = "container:MxSwift.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
                BlueprintIdentifier = "MxSwift::MxSwift"
                BuildableName = "MxSwift"
                BlueprintName = "MxSwift"
@@ -31,20 +45,6 @@
                BlueprintIdentifier = "MxSwift::Parser"
                BuildableName = "Parser.framework"
                BlueprintName = "Parser"
-               ReferencedContainer = "container:MxSwift.xcodeproj">
-            </BuildableReference>
-         </BuildActionEntry>
-         <BuildActionEntry
-            buildForTesting = "YES"
-            buildForRunning = "YES"
-            buildForProfiling = "YES"
-            buildForArchiving = "YES"
-            buildForAnalyzing = "YES">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "MxSwift::Antlr4"
-               BuildableName = "Antlr4.framework"
-               BlueprintName = "Antlr4"
                ReferencedContainer = "container:MxSwift.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
