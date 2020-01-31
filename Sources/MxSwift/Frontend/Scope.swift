@@ -9,24 +9,26 @@ import Foundation
 
 class Scope {
     
-    var sons = [Scope]()
+    var scopeName = ""
     var table = [String: Symbol]()
+    
+    init(_name: String) {
+        scopeName = _name
+    }
     
     func append(name: String, value: Symbol, error: CompilationError) {
         if (table[name] == nil) {
             table[name] = value;
         } else {
-            error.message += "[Error] Redefinition of variable \(name)\n"
+            error.message += "[Error] Redefinition of variable \"\(name)\" in scope \"\(scopeName)\"\n"
         }
     }
     
-    func find(name: String) -> Symbol? {
-        return nil;
-    }
+    func find(name: String) -> Symbol? {return nil;}
+    func printScope() {}
     
-    func newChild() -> LocalScope {
-        let newScope = LocalScope(_father: self)
-        sons.append(newScope)
+    func newSubscope(withName _id: String) -> LocalScope {
+        let newScope = LocalScope(_name: _id, _father: self)
         return newScope
     }
     

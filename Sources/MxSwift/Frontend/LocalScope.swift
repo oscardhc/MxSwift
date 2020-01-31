@@ -11,7 +11,8 @@ class LocalScope: Scope {
     
     var father: Scope!
     
-    init(_father: Scope) {
+    init(_name: String, _father: Scope) {
+        super.init(_name: _name)
         father = _father;
     }
     
@@ -22,6 +23,11 @@ class LocalScope: Scope {
         } else {
             return father.find(name: name);
         }
+    }
+    
+    override func printScope() {
+        print(scopeName, " => ", terminator: "")
+        father.printScope()
     }
     
 }

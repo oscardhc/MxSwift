@@ -41,19 +41,6 @@ open class MxsBaseListener: MxsListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	open func enterParameterList(_ ctx: MxsParser.ParameterListContext) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	open func exitParameterList(_ ctx: MxsParser.ParameterListContext) { }
-
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
 	open func enterVariableDeclaration(_ ctx: MxsParser.VariableDeclarationContext) { }
 	/**
 	 * {@inheritDoc}

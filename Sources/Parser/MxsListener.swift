@@ -31,18 +31,6 @@ public protocol MxsListener: ParseTreeListener {
 	 */
 	func exitFunctionDeclaration(_ ctx: MxsParser.FunctionDeclarationContext)
 	/**
-	 * Enter a parse tree produced by {@link MxsParser#parameterList}.
-	 - Parameters:
-	   - ctx: the parse tree
-	 */
-	func enterParameterList(_ ctx: MxsParser.ParameterListContext)
-	/**
-	 * Exit a parse tree produced by {@link MxsParser#parameterList}.
-	 - Parameters:
-	   - ctx: the parse tree
-	 */
-	func exitParameterList(_ ctx: MxsParser.ParameterListContext)
-	/**
 	 * Enter a parse tree produced by {@link MxsParser#variableDeclaration}.
 	 - Parameters:
 	   - ctx: the parse tree

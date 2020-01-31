@@ -4,8 +4,7 @@ grammar Mxs;
 // top rule - declarations
 declarations: ((functionDeclaration | (variableDeclaration ';') | classDeclaration ';'))*;
 
-functionDeclaration: type Identifier '(' parameterList? ')' codeBlock;
-parameterList: (type Identifier ',')* type Identifier;
+functionDeclaration: type Identifier '(' ((type Identifier ',')* type Identifier)? ')' codeBlock;
 
 variableDeclaration: type (Identifier ('=' expression)? ',')* Identifier ('=' expression)?;
 

@@ -13,4 +13,8 @@ class GlobalScope: Scope {
         return table[name]
     }
     
+    override func printScope() {
+        print(scopeName)
+    }
+    
 }

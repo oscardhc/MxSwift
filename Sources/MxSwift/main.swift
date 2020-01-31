@@ -28,7 +28,8 @@ func compile() throws -> Void {
         throw error
     }
     
-    print("Compilition exited normally.")
+    print(listener.current.scopeName, ":", listener.current.table)
+    print("Compilation exited normally.")
     
 }
 

@@ -48,7 +48,7 @@ open class MxsLexer: Lexer {
 	]
 
 	private static let _LITERAL_NAMES: [String?] = [
-		nil, "';'", "'('", "')'", "','", "'='", "'{'", "'}'", "'['", "']'", "'.'", 
+		nil, "';'", "'('", "','", "')'", "'='", "'{'", "'}'", "'['", "']'", "'.'", 
 		"'bool'", "'int'", "'string'", "'void'", "'if'", "'else'", "'for'", "'while'", 
 		"'break'", "'continue'", "'return'", "'new'", "'class'", "'this'", nil, 
 		nil, nil, "'null'", "'*'", "'/'", "'+'", "'-'", "'%'", "'!'", "'~'", "'++'", 
