@@ -21,14 +21,29 @@ func compile() throws -> Void {
     let parser = try MxsParser(tokens)
     let tree = try parser.declarations()
 
-    let walker = ParseTreeWalker()
-    let listener = SymbolTableBuilder(_error: error)
-    try walker.walk(listener, tree)
+//    let walker = ParseTreeWalker()
+    
+//    let builder = SymbolTableBuilder(_error: error)
+//    try walker.walk(builder, tree)
+    
+    let builder = ASTBuilder()
+    let prog = builder.visit(tree) as! Program
+    print(prog)
+    print(prog.declarations)
+    
+    ASTPrinter().visit(node: prog)
+    
     if !error.message.isEmpty {
         throw error
     }
     
-    print(listener.current.scopeName, ":", listener.current.table)
+//    let checker = StaticTypeChecker(_error: error, _scopeMap: builder.scopeMap)
+//    try walker.walk(checker, tree)
+    if !error.message.isEmpty {
+        throw error
+    }
+    
+//    print(builder.current.scopeName, ":", builder.current.table)
     print("Compilation exited normally.")
     
 }

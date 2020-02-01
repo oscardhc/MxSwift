@@ -11,8 +11,8 @@ class LocalScope: Scope {
     
     var father: Scope!
     
-    init(_name: String, _father: Scope) {
-        super.init(_name: _name)
+    init(_name: String, _type: ScopeType, _father: Scope) {
+        super.init(_name: _name, _type: _type)
         father = _father;
     }
     
@@ -28,6 +28,14 @@ class LocalScope: Scope {
     override func printScope() {
         print(scopeName, " => ", terminator: "")
         father.printScope()
+    }
+    
+    override func currentClass() -> String? {
+        if scopeType == .CLASS {
+            return scopeName
+        } else {
+            return father.currentClass()
+        }
     }
     
 }

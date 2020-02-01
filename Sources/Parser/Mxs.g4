@@ -2,51 +2,46 @@
 grammar Mxs;
 
 // top rule - declarations
-declarations: ((functionDeclaration | (variableDeclaration ';') | classDeclaration ';'))*;
+declarations: ((functionDeclaration | variableDeclaration | classDeclaration ';'))*;
 
-functionDeclaration: type Identifier '(' ((type Identifier ',')* type Identifier)? ')' codeBlock;
+functionDeclaration: type Identifier '(' ((type Identifier ',')* type Identifier)? ')' '{' sentence* '}';
 
-variableDeclaration: type (Identifier ('=' expression)? ',')* Identifier ('=' expression)?;
+variableDeclaration: type (Identifier ('=' expression)? ',')* Identifier ('=' expression)? ';';
 
 classDeclaration
-    : Class Identifier '{' ((variableDeclaration ';') | functionDeclaration)* '}'
+    : Class Identifier '{' (variableDeclaration | functionDeclaration)* '}'
     ;
 
-declarationSentence: variableDeclaration ';';
-ifSentence: If '(' expression ')' codeBlock (Else If '(' expression ')' codeBlock)? (Else codeBlock)?;
-whileSentence: While '(' expression ')' codeBlock;
-forSentence: For '(' expression? ';' expression? ';' expression? ')' codeBlock;
+declSentence: variableDeclaration;
+ifSentence: If '(' expression ')' sentence Else sentence;
+whileSentence: While '(' expression ')' sentence;
+forSentence: For '(' ini=expression? ';' cod=expression? ';' inc=expression? ')' sentence;
 returnSentence: Return expression? ';';
 breakSentence: Break ';';
 continueSentence: Continue ';';
 expressionSentence: expression ';';
 
-sentence: (declarationSentence | ifSentence | whileSentence | forSentence | returnSentence | breakSentence | continueSentence | expressionSentence);
+sentence: (declSentence | ifSentence | whileSentence | forSentence | returnSentence | breakSentence | continueSentence | expressionSentence | codeBlock | ';');
 
 codeBlock
     : '{' sentence* '}'
-    | sentence
     ;
 
 type: (Bool | Int | String | Void | Identifier)('[' expression? ']')*;
 
-argumentList
-    : expression
-    | argumentList ',' expression
-    ;
-
-functionExpression: Identifier '(' argumentList? ')';
+functionExpression: Identifier '(' ((expression ',')* expression)? ')';
 
 expression
-    : Identifier                                                                    #singleExpr
-    | (This | BoolLiteral | IntLiteral | StringLiteral | NullLiteral)               #singleExpr
-    | op='(' expression ')'                                                         #singleExpr
-    | expression op='.' (Identifier | functionExpression)                           #singleExpr
-    | expression op='[' expression ']'                                              #arrayExpr
+    : Identifier                                                                    #idExpr
+    | (This | BoolLiteral | IntLiteral | StringLiteral | NullLiteral)               #literalExpr
+    | op='(' expression ')'                                                         #paraExpr
+    | expression op='.' (Identifier | functionExpression)                           #memberExpr
+    | array=expression op='[' idx=expression ']'                                    #arrayExpr
     | functionExpression                                                            #funcExpr
     | expression op=(SelfAdd | SelfSub)                                             #sufExpr
     | op=(SelfAdd | SelfSub | Add | Sub | Negation | Bitwise) expression            #unaryExpr
-    | New (Bool | Int | String | Void | Identifier) (op='[' expression? ']')+       #newExpr
+    | New ty=(Bool | Int | String | Void | Identifier) '[' expression ']' (EmptySet*)       #newExpr
+    | New ty=(Bool | Int | String | Void | Identifier) ('[' expression ']')*        #newExpr
     | expression op=(Mul | Div | Mod) expression                                    #binaryExpr
     | expression op=(Add | Sub) expression                                          #binaryExpr
     | expression op=(RightShift | LeftShift) expression                             #binaryExpr
@@ -57,7 +52,7 @@ expression
     | expression op=BitOr expression                                                #binaryExpr
     | expression op=LogicAnd expression                                             #binaryExpr
     | expression op=LogicOr expression                                              #binaryExpr
-    | <assoc=right> expression op='=' expression                                    #assignExpr
+    | <assoc=right> expression op=Assign expression                                    #assignExpr
     ;
 
 Bool            : 'bool';
@@ -78,7 +73,9 @@ BoolLiteral     : 'true' | 'false';
 IntLiteral      : [1-9][0-9]* | '0';
 StringLiteral   : '"' (~["\\\n\r] | '\\' ["n\\])* '"';
 NullLiteral     : 'null';
+EmptySet        : '[]';
 
+Assign      : '=';
 Mul         : '*';
 Div         : '/';
 Add         : '+';

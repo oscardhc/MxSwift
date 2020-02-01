@@ -9,7 +9,7 @@ import Foundation
 
 struct Symbol {
     
-    var type: String
+    var type: String!
     var subScope: Scope?
     
     init(_type: String, _subScope: Scope? = nil) {

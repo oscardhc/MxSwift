@@ -67,13 +67,13 @@ open class MxsBaseListener: MxsListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	open func enterDeclarationSentence(_ ctx: MxsParser.DeclarationSentenceContext) { }
+	open func enterDeclSentence(_ ctx: MxsParser.DeclSentenceContext) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	open func exitDeclarationSentence(_ ctx: MxsParser.DeclarationSentenceContext) { }
+	open func exitDeclSentence(_ ctx: MxsParser.DeclSentenceContext) { }
 
 	/**
 	 * {@inheritDoc}
@@ -210,19 +210,6 @@ open class MxsBaseListener: MxsListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	open func enterArgumentList(_ ctx: MxsParser.ArgumentListContext) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	open func exitArgumentList(_ ctx: MxsParser.ArgumentListContext) { }
-
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
 	open func enterFunctionExpression(_ ctx: MxsParser.FunctionExpressionContext) { }
 	/**
 	 * {@inheritDoc}
@@ -243,19 +230,6 @@ open class MxsBaseListener: MxsListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	open func exitNewExpr(_ ctx: MxsParser.NewExprContext) { }
-
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	open func enterSingleExpr(_ ctx: MxsParser.SingleExprContext) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	open func exitSingleExpr(_ ctx: MxsParser.SingleExprContext) { }
 
 	/**
 	 * {@inheritDoc}
@@ -301,6 +275,45 @@ open class MxsBaseListener: MxsListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	open func enterParaExpr(_ ctx: MxsParser.ParaExprContext) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	open func exitParaExpr(_ ctx: MxsParser.ParaExprContext) { }
+
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	open func enterLiteralExpr(_ ctx: MxsParser.LiteralExprContext) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	open func exitLiteralExpr(_ ctx: MxsParser.LiteralExprContext) { }
+
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	open func enterMemberExpr(_ ctx: MxsParser.MemberExprContext) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	open func exitMemberExpr(_ ctx: MxsParser.MemberExprContext) { }
+
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	open func enterBinaryExpr(_ ctx: MxsParser.BinaryExprContext) { }
 	/**
 	 * {@inheritDoc}
@@ -334,6 +347,19 @@ open class MxsBaseListener: MxsListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	open func exitAssignExpr(_ ctx: MxsParser.AssignExprContext) { }
+
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	open func enterIdExpr(_ ctx: MxsParser.IdExprContext) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	open func exitIdExpr(_ ctx: MxsParser.IdExprContext) { }
 
 	/**
 	 * {@inheritDoc}

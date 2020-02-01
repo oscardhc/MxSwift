@@ -10,6 +10,7 @@ import Antlr4
 import Parser
 
 extension ParserRuleContext: Hashable {
+    
     public static func == (lhs: ParserRuleContext, rhs: ParserRuleContext) -> Bool {
         return (
             lhs === rhs
@@ -24,7 +25,8 @@ extension ParserRuleContext: Hashable {
 
 class SymbolTableBuilder: MxsBaseListener {
     
-    var inScope = [ParserRuleContext: Scope]()
+    var scopeMap = [ParserRuleContext: Scope]()
+    var node = [ParserRuleContext: ASTNode]()
     
     var error: CompilationError!
     var scopeStack: [Scope]!
@@ -33,32 +35,48 @@ class SymbolTableBuilder: MxsBaseListener {
     }
     
     init(_error: CompilationError) {
-        scopeStack = [GlobalScope(_name: "Global")]
+        scopeStack = [GlobalScope(_name: "Global", _type: .BLOCK)]
         error = _error
     }
     
     override func enterFunctionDeclaration(_ ctx: MxsParser.FunctionDeclarationContext) {
-        let newScope = current.newSubscope(withName: "Function_" + ctx.Identifier()[0].getText())
-        current.append(name: ctx.Identifier()[0].getText(),
-                       value: Symbol(_type: ctx.type()[0].getText(), _subScope: newScope),
-                       error: error)
+        let newScope = current.newSubscope(withName: ctx.Identifier(0)!.getText(), withType: .FUNCTION)
         for i in 1..<ctx.type().count {
-            newScope.append(name: ctx.Identifier()[i].getText(),
-                            value: Symbol(_type: ctx.type()[i].getText()),
-                            error: error)
+            newScope.newSymbol(name: ctx.Identifier(i)!.getText(),
+                            value: Symbol(_type: ctx.type(i)!.getText()))
         }
+        current.newSymbol(name: ctx.Identifier(0)!.getText(),
+                       value: Symbol(_type: ctx.type(0)!.getText(), _subScope: newScope))
         scopeStack.append(newScope)
     }
     override func exitFunctionDeclaration(_ ctx: MxsParser.FunctionDeclarationContext) {
+        var parameters = [VariableDeclaration]()
+        var statements = [Statement]()
+        for i in 1..<ctx.type().count {
+            parameters.append(VariableDeclaration(id: [ctx.Identifier(i)!.getText()],
+                                                  scope: current, type: ctx.type(i)!.getText(), expressions: [nil]))
+        }
+        for stmt in ctx.sentence() {
+            statements.append(node[stmt]! as! Statement)
+        }
+        node[ctx] = FunctionDeclaration(id: ctx.Identifier(0)!.getText(),
+                                        scope: current, type: ctx.type(0)!.getText(),
+                                        parameters: parameters, statements: statements)
         _ = scopeStack.popLast()
     }
     
+    override func enterCodeBlock(_ ctx: MxsParser.CodeBlockContext) {
+        let newScope = current.newSubscope(withName: "code block", withType: .BLOCK)
+        scopeStack.append(newScope)
+    }
+    override func exitCodeBlock(_ ctx: MxsParser.CodeBlockContext) {
+        _ = scopeStack.popLast()
+    }
     
     override func enterClassDeclaration(_ ctx: MxsParser.ClassDeclarationContext) {
-        let newScope = current.newSubscope(withName: "Class_" + ctx.Identifier()!.getText())
-        current.append(name: ctx.Identifier()!.getText(),
-                       value: Symbol(_type: "class", _subScope: newScope),
-                       error: error)
+        let newScope = current.newSubscope(withName: ctx.Identifier()!.getText(), withType: .CLASS)
+        current.newSymbol(name: ctx.Identifier()!.getText(),
+                       value: Symbol(_type: "class", _subScope: newScope))
         scopeStack.append(newScope)
     }
     override func exitClassDeclaration(_ ctx: MxsParser.ClassDeclarationContext) {
@@ -66,7 +84,7 @@ class SymbolTableBuilder: MxsBaseListener {
     }
     
     override func enterForSentence(_ ctx: MxsParser.ForSentenceContext) {
-        let newScope = current.newSubscope(withName: "For_sentence")
+        let newScope = current.newSubscope(withName: "For_sentence", withType: .BLOCK)
         scopeStack.append(newScope)
     }
     override func exitForSentence(_ ctx: MxsParser.ForSentenceContext) {
@@ -74,7 +92,7 @@ class SymbolTableBuilder: MxsBaseListener {
     }
     
     override func enterWhileSentence(_ ctx: MxsParser.WhileSentenceContext) {
-        let newScope = current.newSubscope(withName: "While_sentence")
+        let newScope = current.newSubscope(withName: "While_sentence", withType: .BLOCK)
         scopeStack.append(newScope)
     }
     override func exitWhileSentence(_ ctx: MxsParser.WhileSentenceContext) {
@@ -82,7 +100,7 @@ class SymbolTableBuilder: MxsBaseListener {
     }
     
     override func enterIfSentence(_ ctx: MxsParser.IfSentenceContext) {
-        let newScope = current.newSubscope(withName: "If_sentence")
+        let newScope = current.newSubscope(withName: "If_sentence", withType: .BLOCK)
         scopeStack.append(newScope)
     }
     override func exitIfSentence(_ ctx: MxsParser.IfSentenceContext) {
@@ -93,10 +111,17 @@ class SymbolTableBuilder: MxsBaseListener {
     override func enterVariableDeclaration(_ ctx: MxsParser.VariableDeclarationContext) {
         for i in 0..<ctx.Identifier().count {
             let sym = Symbol(_type: ctx.type()!.getText())
-            current.append(name: ctx.Identifier(i)!.getText(), value: sym, error: error)
+            current.newSymbol(name: ctx.Identifier(i)!.getText(), value: sym)
         }
     }
     override func exitVariableDeclaration(_ ctx: MxsParser.VariableDeclarationContext) {
+        if ctx.expression().count == 0 {
+            
+        } else {
+            for id in ctx.Identifier() {
+                
+            }
+        }
     }
     
     override func enterReturnSentence(_ ctx: MxsParser.ReturnSentenceContext) {
@@ -104,11 +129,10 @@ class SymbolTableBuilder: MxsBaseListener {
         current.printScope()
     }
     override func exitReturnSentence(_ ctx: MxsParser.ReturnSentenceContext) {
-        
     }
     
     override func enterDeclarations(_ ctx: MxsParser.DeclarationsContext) {
+        
     }
-    
     
 }

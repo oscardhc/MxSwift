@@ -7,6 +7,14 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		55EEB69123E4043100E9FE2C /* StaticTypeChecker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55EEB69023E4043100E9FE2C /* StaticTypeChecker.swift */; };
+		55EEB69423E41ABC00E9FE2C /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55EEB69323E41ABC00E9FE2C /* Utils.swift */; };
+		55EEB69723E4225D00E9FE2C /* MxsBaseVisitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55EEB69523E4225D00E9FE2C /* MxsBaseVisitor.swift */; };
+		55EEB69823E4225D00E9FE2C /* MxsVisitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55EEB69623E4225D00E9FE2C /* MxsVisitor.swift */; };
+		55EEB69A23E4311B00E9FE2C /* ASTNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55EEB69923E4311B00E9FE2C /* ASTNode.swift */; };
+		55EEB69C23E4919D00E9FE2C /* ASTBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55EEB69B23E4919D00E9FE2C /* ASTBuilder.swift */; };
+		55EEB69E23E55D5500E9FE2C /* ASTPrinter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55EEB69D23E55D5500E9FE2C /* ASTPrinter.swift */; };
+		55EEB6A023E562A700E9FE2C /* ASTVisitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55EEB69F23E562A700E9FE2C /* ASTVisitor.swift */; };
 		OBJ_201 /* ANTLRErrorListener.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_9 /* ANTLRErrorListener.swift */; };
 		OBJ_202 /* ANTLRErrorStrategy.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_10 /* ANTLRErrorStrategy.swift */; };
 		OBJ_203 /* ANTLRFileStream.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_11 /* ANTLRFileStream.swift */; };
@@ -204,8 +212,16 @@
 
 /* Begin PBXFileReference section */
 		55ACD0CE23E309EC0087376F /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
+		55EEB69023E4043100E9FE2C /* StaticTypeChecker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StaticTypeChecker.swift; sourceTree = "<group>"; };
+		55EEB69323E41ABC00E9FE2C /* Utils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utils.swift; sourceTree = "<group>"; };
+		55EEB69523E4225D00E9FE2C /* MxsBaseVisitor.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MxsBaseVisitor.swift; sourceTree = "<group>"; };
+		55EEB69623E4225D00E9FE2C /* MxsVisitor.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MxsVisitor.swift; sourceTree = "<group>"; };
+		55EEB69923E4311B00E9FE2C /* ASTNode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ASTNode.swift; sourceTree = "<group>"; };
+		55EEB69B23E4919D00E9FE2C /* ASTBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ASTBuilder.swift; sourceTree = "<group>"; };
+		55EEB69D23E55D5500E9FE2C /* ASTPrinter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ASTPrinter.swift; sourceTree = "<group>"; };
+		55EEB69F23E562A700E9FE2C /* ASTVisitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ASTVisitor.swift; sourceTree = "<group>"; };
 		"MxSwift::Antlr4::Product" /* Antlr4.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Antlr4.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		"MxSwift::MxSwift::Product" /* MxSwift */ = {isa = PBXFileReference; lastKnownFileType = text; path = MxSwift; sourceTree = BUILT_PRODUCTS_DIR; };
+		"MxSwift::MxSwift::Product" /* MxSwift */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; path = MxSwift; sourceTree = BUILT_PRODUCTS_DIR; };
 		"MxSwift::Parser::Product" /* Parser.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Parser.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		OBJ_10 /* ANTLRErrorStrategy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ANTLRErrorStrategy.swift; sourceTree = "<group>"; };
 		OBJ_100 /* PredicateEvalInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PredicateEvalInfo.swift; sourceTree = "<group>"; };
@@ -409,6 +425,15 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		55EEB69223E41A9F00E9FE2C /* Utils */ = {
+			isa = PBXGroup;
+			children = (
+				OBJ_171 /* CompilationError.swift */,
+				55EEB69323E41ABC00E9FE2C /* Utils.swift */,
+			);
+			path = Utils;
+			sourceTree = "<group>";
+		};
 		OBJ_119 /* dfa */ = {
 			isa = PBXGroup;
 			children = (
@@ -508,6 +533,7 @@
 		OBJ_169 /* MxSwift */ = {
 			isa = PBXGroup;
 			children = (
+				55EEB69223E41A9F00E9FE2C /* Utils */,
 				OBJ_170 /* Frontend */,
 				OBJ_177 /* main.swift */,
 			);
@@ -518,12 +544,16 @@
 		OBJ_170 /* Frontend */ = {
 			isa = PBXGroup;
 			children = (
-				OBJ_171 /* CompilationError.swift */,
+				OBJ_174 /* Scope.swift */,
 				OBJ_172 /* GlobalScope.swift */,
 				OBJ_173 /* LocalScope.swift */,
-				OBJ_174 /* Scope.swift */,
 				OBJ_175 /* Symbol.swift */,
+				55EEB69B23E4919D00E9FE2C /* ASTBuilder.swift */,
+				55EEB69D23E55D5500E9FE2C /* ASTPrinter.swift */,
+				55EEB69F23E562A700E9FE2C /* ASTVisitor.swift */,
 				OBJ_176 /* SymbolTableBuilder.swift */,
+				55EEB69023E4043100E9FE2C /* StaticTypeChecker.swift */,
+				55EEB69923E4311B00E9FE2C /* ASTNode.swift */,
 			);
 			path = Frontend;
 			sourceTree = "<group>";
@@ -542,6 +572,8 @@
 				OBJ_187 /* MxsListener.swift */,
 				OBJ_188 /* MxsParser.swift */,
 				OBJ_189 /* MxsParserATN.swift */,
+				55EEB69523E4225D00E9FE2C /* MxsBaseVisitor.swift */,
+				55EEB69623E4225D00E9FE2C /* MxsVisitor.swift */,
 			);
 			name = Parser;
 			path = Sources/Parser;
@@ -640,7 +672,7 @@
 			path = atn;
 			sourceTree = "<group>";
 		};
-		OBJ_5 /*  */ = {
+		OBJ_5 = {
 			isa = PBXGroup;
 			children = (
 				55ACD0CE23E309EC0087376F /* README.md */,
@@ -650,7 +682,6 @@
 				OBJ_191 /* Products */,
 				OBJ_195 /* boot.py */,
 			);
-			name = "";
 			sourceTree = "<group>";
 		};
 		OBJ_7 /* Sources */ = {
@@ -791,6 +822,11 @@
 			attributes = {
 				LastSwiftMigration = 9999;
 				LastUpgradeCheck = 9999;
+				TargetAttributes = {
+					"MxSwift::MxSwift" = {
+						DevelopmentTeam = AEF5CS25ZL;
+					};
+				};
 			};
 			buildConfigurationList = OBJ_2 /* Build configuration list for PBXProject "MxSwift" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -799,7 +835,7 @@
 			knownRegions = (
 				en,
 			);
-			mainGroup = OBJ_5 /*  */;
+			mainGroup = OBJ_5;
 			productRefGroup = OBJ_191 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -977,10 +1013,16 @@
 			buildActionMask = 0;
 			files = (
 				OBJ_359 /* CompilationError.swift in Sources */,
+				55EEB69123E4043100E9FE2C /* StaticTypeChecker.swift in Sources */,
+				55EEB69423E41ABC00E9FE2C /* Utils.swift in Sources */,
 				OBJ_360 /* GlobalScope.swift in Sources */,
+				55EEB69A23E4311B00E9FE2C /* ASTNode.swift in Sources */,
 				OBJ_361 /* LocalScope.swift in Sources */,
 				OBJ_362 /* Scope.swift in Sources */,
+				55EEB69E23E55D5500E9FE2C /* ASTPrinter.swift in Sources */,
 				OBJ_363 /* Symbol.swift in Sources */,
+				55EEB6A023E562A700E9FE2C /* ASTVisitor.swift in Sources */,
+				55EEB69C23E4919D00E9FE2C /* ASTBuilder.swift in Sources */,
 				OBJ_364 /* SymbolTableBuilder.swift in Sources */,
 				OBJ_365 /* main.swift in Sources */,
 			);
@@ -998,8 +1040,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 0;
 			files = (
+				55EEB69723E4225D00E9FE2C /* MxsBaseVisitor.swift in Sources */,
 				OBJ_382 /* MxsBaseListener.swift in Sources */,
 				OBJ_383 /* MxsLexer.swift in Sources */,
+				55EEB69823E4225D00E9FE2C /* MxsVisitor.swift in Sources */,
 				OBJ_384 /* MxsLexerATN.swift in Sources */,
 				OBJ_385 /* MxsListener.swift in Sources */,
 				OBJ_386 /* MxsParser.swift in Sources */,
@@ -1106,6 +1150,7 @@
 		OBJ_356 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				DEVELOPMENT_TEAM = AEF5CS25ZL;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PLATFORM_DIR)/Developer/Library/Frameworks",
@@ -1127,6 +1172,7 @@
 		OBJ_357 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				DEVELOPMENT_TEAM = AEF5CS25ZL;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PLATFORM_DIR)/Developer/Library/Frameworks",

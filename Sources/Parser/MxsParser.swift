@@ -17,47 +17,48 @@ open class MxsParser: Parser {
 	public
 	enum Tokens: Int {
 		case EOF = -1, T__0 = 1, T__1 = 2, T__2 = 3, T__3 = 4, T__4 = 5, T__5 = 6, 
-                 T__6 = 7, T__7 = 8, T__8 = 9, T__9 = 10, Bool = 11, Int = 12, 
-                 String = 13, Void = 14, If = 15, Else = 16, For = 17, While = 18, 
-                 Break = 19, Continue = 20, Return = 21, New = 22, Class = 23, 
-                 This = 24, BoolLiteral = 25, IntLiteral = 26, StringLiteral = 27, 
-                 NullLiteral = 28, Mul = 29, Div = 30, Add = 31, Sub = 32, 
-                 Mod = 33, Negation = 34, Bitwise = 35, SelfAdd = 36, SelfSub = 37, 
-                 RightShift = 38, LeftShift = 39, GreaterEq = 40, LessEq = 41, 
-                 Greater = 42, Less = 43, Equal = 44, Inequal = 45, BitAnd = 46, 
-                 BitOr = 47, BitXor = 48, LogicAnd = 49, LogicOr = 50, Identifier = 51, 
-                 Whitespace = 52, Newline = 53, BlockComment = 54, LineComment = 55
+                 T__6 = 7, T__7 = 8, T__8 = 9, Bool = 10, Int = 11, String = 12, 
+                 Void = 13, If = 14, Else = 15, For = 16, While = 17, Break = 18, 
+                 Continue = 19, Return = 20, New = 21, Class = 22, This = 23, 
+                 BoolLiteral = 24, IntLiteral = 25, StringLiteral = 26, 
+                 NullLiteral = 27, EmptySet = 28, Assign = 29, Mul = 30, 
+                 Div = 31, Add = 32, Sub = 33, Mod = 34, Negation = 35, 
+                 Bitwise = 36, SelfAdd = 37, SelfSub = 38, RightShift = 39, 
+                 LeftShift = 40, GreaterEq = 41, LessEq = 42, Greater = 43, 
+                 Less = 44, Equal = 45, Inequal = 46, BitAnd = 47, BitOr = 48, 
+                 BitXor = 49, LogicAnd = 50, LogicOr = 51, Identifier = 52, 
+                 Whitespace = 53, Newline = 54, BlockComment = 55, LineComment = 56
 	}
 
 	public
 	static let RULE_declarations = 0, RULE_functionDeclaration = 1, RULE_variableDeclaration = 2, 
-            RULE_classDeclaration = 3, RULE_declarationSentence = 4, RULE_ifSentence = 5, 
+            RULE_classDeclaration = 3, RULE_declSentence = 4, RULE_ifSentence = 5, 
             RULE_whileSentence = 6, RULE_forSentence = 7, RULE_returnSentence = 8, 
             RULE_breakSentence = 9, RULE_continueSentence = 10, RULE_expressionSentence = 11, 
-            RULE_sentence = 12, RULE_codeBlock = 13, RULE_type = 14, RULE_argumentList = 15, 
-            RULE_functionExpression = 16, RULE_expression = 17
+            RULE_sentence = 12, RULE_codeBlock = 13, RULE_type = 14, RULE_functionExpression = 15, 
+            RULE_expression = 16
 
 	public
 	static let ruleNames: [String] = [
 		"declarations", "functionDeclaration", "variableDeclaration", "classDeclaration", 
-		"declarationSentence", "ifSentence", "whileSentence", "forSentence", "returnSentence", 
+		"declSentence", "ifSentence", "whileSentence", "forSentence", "returnSentence", 
 		"breakSentence", "continueSentence", "expressionSentence", "sentence", 
-		"codeBlock", "type", "argumentList", "functionExpression", "expression"
+		"codeBlock", "type", "functionExpression", "expression"
 	]
 
 	private static let _LITERAL_NAMES: [String?] = [
-		nil, "';'", "'('", "','", "')'", "'='", "'{'", "'}'", "'['", "']'", "'.'", 
-		"'bool'", "'int'", "'string'", "'void'", "'if'", "'else'", "'for'", "'while'", 
-		"'break'", "'continue'", "'return'", "'new'", "'class'", "'this'", nil, 
-		nil, nil, "'null'", "'*'", "'/'", "'+'", "'-'", "'%'", "'!'", "'~'", "'++'", 
-		"'--'", "'>>'", "'<<'", "'>='", "'<='", "'>'", "'<'", "'=='", "'!='", 
-		"'&'", "'|'", "'^'", "'&&'", "'||'"
+		nil, "';'", "'('", "','", "')'", "'{'", "'}'", "'['", "']'", "'.'", "'bool'", 
+		"'int'", "'string'", "'void'", "'if'", "'else'", "'for'", "'while'", "'break'", 
+		"'continue'", "'return'", "'new'", "'class'", "'this'", nil, nil, nil, 
+		"'null'", "'[]'", "'='", "'*'", "'/'", "'+'", "'-'", "'%'", "'!'", "'~'", 
+		"'++'", "'--'", "'>>'", "'<<'", "'>='", "'<='", "'>'", "'<'", "'=='", 
+		"'!='", "'&'", "'|'", "'^'", "'&&'", "'||'"
 	]
 	private static let _SYMBOLIC_NAMES: [String?] = [
-		nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, "Bool", "Int", 
-		"String", "Void", "If", "Else", "For", "While", "Break", "Continue", "Return", 
-		"New", "Class", "This", "BoolLiteral", "IntLiteral", "StringLiteral", 
-		"NullLiteral", "Mul", "Div", "Add", "Sub", "Mod", "Negation", "Bitwise", 
+		nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, "Bool", "Int", "String", 
+		"Void", "If", "Else", "For", "While", "Break", "Continue", "Return", "New", 
+		"Class", "This", "BoolLiteral", "IntLiteral", "StringLiteral", "NullLiteral", 
+		"EmptySet", "Assign", "Mul", "Div", "Add", "Sub", "Mod", "Negation", "Bitwise", 
 		"SelfAdd", "SelfSub", "RightShift", "LeftShift", "GreaterEq", "LessEq", 
 		"Greater", "Less", "Equal", "Inequal", "BitAnd", "BitOr", "BitXor", "LogicAnd", 
 		"LogicOr", "Identifier", "Whitespace", "Newline", "BlockComment", "LineComment"
@@ -101,20 +102,20 @@ open class MxsParser: Parser {
 				return getRuleContext(FunctionDeclarationContext.self, i)
 			}
 			open
-			func classDeclaration() -> [ClassDeclarationContext] {
-				return getRuleContexts(ClassDeclarationContext.self)
-			}
-			open
-			func classDeclaration(_ i: Int) -> ClassDeclarationContext? {
-				return getRuleContext(ClassDeclarationContext.self, i)
-			}
-			open
 			func variableDeclaration() -> [VariableDeclarationContext] {
 				return getRuleContexts(VariableDeclarationContext.self)
 			}
 			open
 			func variableDeclaration(_ i: Int) -> VariableDeclarationContext? {
 				return getRuleContext(VariableDeclarationContext.self, i)
+			}
+			open
+			func classDeclaration() -> [ClassDeclarationContext] {
+				return getRuleContexts(ClassDeclarationContext.self)
+			}
+			open
+			func classDeclaration(_ i: Int) -> ClassDeclarationContext? {
+				return getRuleContext(ClassDeclarationContext.self, i)
 			}
 		override open
 		func getRuleIndex() -> Int {
@@ -132,6 +133,18 @@ open class MxsParser: Parser {
 				listener.exitDeclarations(self)
 			}
 		}
+		override open
+		func accept<T>(_ visitor: ParseTreeVisitor<T>) -> T? {
+			if let visitor = visitor as? MxsVisitor {
+			    return visitor.visitDeclarations(self)
+			}
+			else if let visitor = visitor as? MxsBaseVisitor {
+			    return visitor.visitDeclarations(self)
+			}
+			else {
+			     return visitor.visitChildren(self)
+			}
+		}
 	}
 	@discardableResult
 	 open func declarations() throws -> DeclarationsContext {
@@ -143,7 +156,7 @@ open class MxsParser: Parser {
 	    }
 		do {
 		 	try enterOuterAlt(_localctx, 1)
-		 	setState(47)
+		 	setState(43)
 		 	try _errHandler.sync(self)
 		 	_la = try _input.LA(1)
 		 	while (//closure
@@ -154,26 +167,23 @@ open class MxsParser: Parser {
 		 	}()
 		 	      return testSet
 		 	 }()) {
-		 		setState(43)
+		 		setState(39)
 		 		try _errHandler.sync(self)
 		 		switch(try getInterpreter().adaptivePredict(_input,0, _ctx)) {
 		 		case 1:
-		 			setState(36)
+		 			setState(34)
 		 			try functionDeclaration()
 
 		 			break
 		 		case 2:
-		 			setState(37)
+		 			setState(35)
 		 			try variableDeclaration()
-		 			setState(38)
-		 			try match(MxsParser.Tokens.T__0.rawValue)
-
 
 		 			break
 		 		case 3:
-		 			setState(40)
+		 			setState(36)
 		 			try classDeclaration()
-		 			setState(41)
+		 			setState(37)
 		 			try match(MxsParser.Tokens.T__0.rawValue)
 
 		 			break
@@ -181,7 +191,7 @@ open class MxsParser: Parser {
 		 		}
 
 
-		 		setState(49)
+		 		setState(45)
 		 		try _errHandler.sync(self)
 		 		_la = try _input.LA(1)
 		 	}
@@ -214,8 +224,12 @@ open class MxsParser: Parser {
 				return getToken(MxsParser.Tokens.Identifier.rawValue, i)
 			}
 			open
-			func codeBlock() -> CodeBlockContext? {
-				return getRuleContext(CodeBlockContext.self, 0)
+			func sentence() -> [SentenceContext] {
+				return getRuleContexts(SentenceContext.self)
+			}
+			open
+			func sentence(_ i: Int) -> SentenceContext? {
+				return getRuleContext(SentenceContext.self, i)
 			}
 		override open
 		func getRuleIndex() -> Int {
@@ -233,6 +247,18 @@ open class MxsParser: Parser {
 				listener.exitFunctionDeclaration(self)
 			}
 		}
+		override open
+		func accept<T>(_ visitor: ParseTreeVisitor<T>) -> T? {
+			if let visitor = visitor as? MxsVisitor {
+			    return visitor.visitFunctionDeclaration(self)
+			}
+			else if let visitor = visitor as? MxsBaseVisitor {
+			    return visitor.visitFunctionDeclaration(self)
+			}
+			else {
+			     return visitor.visitChildren(self)
+			}
+		}
 	}
 	@discardableResult
 	 open func functionDeclaration() throws -> FunctionDeclarationContext {
@@ -245,13 +271,13 @@ open class MxsParser: Parser {
 		do {
 			var _alt:Int
 		 	try enterOuterAlt(_localctx, 1)
-		 	setState(50)
+		 	setState(46)
 		 	try type()
-		 	setState(51)
+		 	setState(47)
 		 	try match(MxsParser.Tokens.Identifier.rawValue)
-		 	setState(52)
+		 	setState(48)
 		 	try match(MxsParser.Tokens.T__1.rawValue)
-		 	setState(65)
+		 	setState(61)
 		 	try _errHandler.sync(self)
 		 	_la = try _input.LA(1)
 		 	if (//closure
@@ -262,35 +288,56 @@ open class MxsParser: Parser {
 		 	}()
 		 	      return testSet
 		 	 }()) {
-		 		setState(59)
+		 		setState(55)
 		 		try _errHandler.sync(self)
 		 		_alt = try getInterpreter().adaptivePredict(_input,2,_ctx)
 		 		while (_alt != 2 && _alt != ATN.INVALID_ALT_NUMBER) {
 		 			if ( _alt==1 ) {
-		 				setState(53)
+		 				setState(49)
 		 				try type()
-		 				setState(54)
+		 				setState(50)
 		 				try match(MxsParser.Tokens.Identifier.rawValue)
-		 				setState(55)
+		 				setState(51)
 		 				try match(MxsParser.Tokens.T__2.rawValue)
 
 		 		 
 		 			}
-		 			setState(61)
+		 			setState(57)
 		 			try _errHandler.sync(self)
 		 			_alt = try getInterpreter().adaptivePredict(_input,2,_ctx)
 		 		}
-		 		setState(62)
+		 		setState(58)
 		 		try type()
-		 		setState(63)
+		 		setState(59)
 		 		try match(MxsParser.Tokens.Identifier.rawValue)
 
 		 	}
 
-		 	setState(67)
+		 	setState(63)
 		 	try match(MxsParser.Tokens.T__3.rawValue)
+		 	setState(64)
+		 	try match(MxsParser.Tokens.T__4.rawValue)
 		 	setState(68)
-		 	try codeBlock()
+		 	try _errHandler.sync(self)
+		 	_la = try _input.LA(1)
+		 	while (//closure
+		 	 { () -> Bool in
+		 	      let testSet: Bool = {  () -> Bool in
+		 	   let testArray: [Int] = [_la, MxsParser.Tokens.T__0.rawValue,MxsParser.Tokens.T__1.rawValue,MxsParser.Tokens.T__4.rawValue,MxsParser.Tokens.Bool.rawValue,MxsParser.Tokens.Int.rawValue,MxsParser.Tokens.String.rawValue,MxsParser.Tokens.Void.rawValue,MxsParser.Tokens.If.rawValue,MxsParser.Tokens.For.rawValue,MxsParser.Tokens.While.rawValue,MxsParser.Tokens.Break.rawValue,MxsParser.Tokens.Continue.rawValue,MxsParser.Tokens.Return.rawValue,MxsParser.Tokens.New.rawValue,MxsParser.Tokens.This.rawValue,MxsParser.Tokens.BoolLiteral.rawValue,MxsParser.Tokens.IntLiteral.rawValue,MxsParser.Tokens.StringLiteral.rawValue,MxsParser.Tokens.NullLiteral.rawValue,MxsParser.Tokens.Add.rawValue,MxsParser.Tokens.Sub.rawValue,MxsParser.Tokens.Negation.rawValue,MxsParser.Tokens.Bitwise.rawValue,MxsParser.Tokens.SelfAdd.rawValue,MxsParser.Tokens.SelfSub.rawValue,MxsParser.Tokens.Identifier.rawValue]
+		 	    return  Utils.testBitLeftShiftArray(testArray, 0)
+		 	}()
+		 	      return testSet
+		 	 }()) {
+		 		setState(65)
+		 		try sentence()
+
+
+		 		setState(70)
+		 		try _errHandler.sync(self)
+		 		_la = try _input.LA(1)
+		 	}
+		 	setState(71)
+		 	try match(MxsParser.Tokens.T__5.rawValue)
 
 		}
 		catch ANTLRException.recognition(let re) {
@@ -316,6 +363,14 @@ open class MxsParser: Parser {
 				return getToken(MxsParser.Tokens.Identifier.rawValue, i)
 			}
 			open
+			func Assign() -> [TerminalNode] {
+				return getTokens(MxsParser.Tokens.Assign.rawValue)
+			}
+			open
+			func Assign(_ i:Int) -> TerminalNode? {
+				return getToken(MxsParser.Tokens.Assign.rawValue, i)
+			}
+			open
 			func expression() -> [ExpressionContext] {
 				return getRuleContexts(ExpressionContext.self)
 			}
@@ -339,6 +394,18 @@ open class MxsParser: Parser {
 				listener.exitVariableDeclaration(self)
 			}
 		}
+		override open
+		func accept<T>(_ visitor: ParseTreeVisitor<T>) -> T? {
+			if let visitor = visitor as? MxsVisitor {
+			    return visitor.visitVariableDeclaration(self)
+			}
+			else if let visitor = visitor as? MxsBaseVisitor {
+			    return visitor.visitVariableDeclaration(self)
+			}
+			else {
+			     return visitor.visitChildren(self)
+			}
+		}
 	}
 	@discardableResult
 	 open func variableDeclaration() throws -> VariableDeclarationContext {
@@ -351,56 +418,58 @@ open class MxsParser: Parser {
 		do {
 			var _alt:Int
 		 	try enterOuterAlt(_localctx, 1)
-		 	setState(70)
+		 	setState(73)
 		 	try type()
-		 	setState(79)
+		 	setState(82)
 		 	try _errHandler.sync(self)
-		 	_alt = try getInterpreter().adaptivePredict(_input,5,_ctx)
+		 	_alt = try getInterpreter().adaptivePredict(_input,6,_ctx)
 		 	while (_alt != 2 && _alt != ATN.INVALID_ALT_NUMBER) {
 		 		if ( _alt==1 ) {
-		 			setState(71)
-		 			try match(MxsParser.Tokens.Identifier.rawValue)
 		 			setState(74)
+		 			try match(MxsParser.Tokens.Identifier.rawValue)
+		 			setState(77)
 		 			try _errHandler.sync(self)
 		 			_la = try _input.LA(1)
 		 			if (//closure
 		 			 { () -> Bool in
-		 			      let testSet: Bool = _la == MxsParser.Tokens.T__4.rawValue
+		 			      let testSet: Bool = _la == MxsParser.Tokens.Assign.rawValue
 		 			      return testSet
 		 			 }()) {
-		 				setState(72)
-		 				try match(MxsParser.Tokens.T__4.rawValue)
-		 				setState(73)
+		 				setState(75)
+		 				try match(MxsParser.Tokens.Assign.rawValue)
+		 				setState(76)
 		 				try expression(0)
 
 		 			}
 
-		 			setState(76)
+		 			setState(79)
 		 			try match(MxsParser.Tokens.T__2.rawValue)
 
 		 	 
 		 		}
-		 		setState(81)
+		 		setState(84)
 		 		try _errHandler.sync(self)
-		 		_alt = try getInterpreter().adaptivePredict(_input,5,_ctx)
+		 		_alt = try getInterpreter().adaptivePredict(_input,6,_ctx)
 		 	}
-		 	setState(82)
-		 	try match(MxsParser.Tokens.Identifier.rawValue)
 		 	setState(85)
+		 	try match(MxsParser.Tokens.Identifier.rawValue)
+		 	setState(88)
 		 	try _errHandler.sync(self)
 		 	_la = try _input.LA(1)
 		 	if (//closure
 		 	 { () -> Bool in
-		 	      let testSet: Bool = _la == MxsParser.Tokens.T__4.rawValue
+		 	      let testSet: Bool = _la == MxsParser.Tokens.Assign.rawValue
 		 	      return testSet
 		 	 }()) {
-		 		setState(83)
-		 		try match(MxsParser.Tokens.T__4.rawValue)
-		 		setState(84)
+		 		setState(86)
+		 		try match(MxsParser.Tokens.Assign.rawValue)
+		 		setState(87)
 		 		try expression(0)
 
 		 	}
 
+		 	setState(90)
+		 	try match(MxsParser.Tokens.T__0.rawValue)
 
 		}
 		catch ANTLRException.recognition(let re) {
@@ -422,20 +491,20 @@ open class MxsParser: Parser {
 				return getToken(MxsParser.Tokens.Identifier.rawValue, 0)
 			}
 			open
-			func functionDeclaration() -> [FunctionDeclarationContext] {
-				return getRuleContexts(FunctionDeclarationContext.self)
-			}
-			open
-			func functionDeclaration(_ i: Int) -> FunctionDeclarationContext? {
-				return getRuleContext(FunctionDeclarationContext.self, i)
-			}
-			open
 			func variableDeclaration() -> [VariableDeclarationContext] {
 				return getRuleContexts(VariableDeclarationContext.self)
 			}
 			open
 			func variableDeclaration(_ i: Int) -> VariableDeclarationContext? {
 				return getRuleContext(VariableDeclarationContext.self, i)
+			}
+			open
+			func functionDeclaration() -> [FunctionDeclarationContext] {
+				return getRuleContexts(FunctionDeclarationContext.self)
+			}
+			open
+			func functionDeclaration(_ i: Int) -> FunctionDeclarationContext? {
+				return getRuleContext(FunctionDeclarationContext.self, i)
 			}
 		override open
 		func getRuleIndex() -> Int {
@@ -453,6 +522,18 @@ open class MxsParser: Parser {
 				listener.exitClassDeclaration(self)
 			}
 		}
+		override open
+		func accept<T>(_ visitor: ParseTreeVisitor<T>) -> T? {
+			if let visitor = visitor as? MxsVisitor {
+			    return visitor.visitClassDeclaration(self)
+			}
+			else if let visitor = visitor as? MxsBaseVisitor {
+			    return visitor.visitClassDeclaration(self)
+			}
+			else {
+			     return visitor.visitChildren(self)
+			}
+		}
 	}
 	@discardableResult
 	 open func classDeclaration() throws -> ClassDeclarationContext {
@@ -464,13 +545,13 @@ open class MxsParser: Parser {
 	    }
 		do {
 		 	try enterOuterAlt(_localctx, 1)
-		 	setState(87)
+		 	setState(92)
 		 	try match(MxsParser.Tokens.Class.rawValue)
-		 	setState(88)
+		 	setState(93)
 		 	try match(MxsParser.Tokens.Identifier.rawValue)
-		 	setState(89)
-		 	try match(MxsParser.Tokens.T__5.rawValue)
-		 	setState(96)
+		 	setState(94)
+		 	try match(MxsParser.Tokens.T__4.rawValue)
+		 	setState(99)
 		 	try _errHandler.sync(self)
 		 	_la = try _input.LA(1)
 		 	while (//closure
@@ -481,31 +562,28 @@ open class MxsParser: Parser {
 		 	}()
 		 	      return testSet
 		 	 }()) {
-		 		setState(94)
+		 		setState(97)
 		 		try _errHandler.sync(self)
-		 		switch(try getInterpreter().adaptivePredict(_input,7, _ctx)) {
+		 		switch(try getInterpreter().adaptivePredict(_input,8, _ctx)) {
 		 		case 1:
-		 			setState(90)
+		 			setState(95)
 		 			try variableDeclaration()
-		 			setState(91)
-		 			try match(MxsParser.Tokens.T__0.rawValue)
-
 
 		 			break
 		 		case 2:
-		 			setState(93)
+		 			setState(96)
 		 			try functionDeclaration()
 
 		 			break
 		 		default: break
 		 		}
 
-		 		setState(98)
+		 		setState(101)
 		 		try _errHandler.sync(self)
 		 		_la = try _input.LA(1)
 		 	}
-		 	setState(99)
-		 	try match(MxsParser.Tokens.T__6.rawValue)
+		 	setState(102)
+		 	try match(MxsParser.Tokens.T__5.rawValue)
 
 		}
 		catch ANTLRException.recognition(let re) {
@@ -517,41 +595,51 @@ open class MxsParser: Parser {
 		return _localctx
 	}
 
-	public class DeclarationSentenceContext: ParserRuleContext {
+	public class DeclSentenceContext: ParserRuleContext {
 			open
 			func variableDeclaration() -> VariableDeclarationContext? {
 				return getRuleContext(VariableDeclarationContext.self, 0)
 			}
 		override open
 		func getRuleIndex() -> Int {
-			return MxsParser.RULE_declarationSentence
+			return MxsParser.RULE_declSentence
 		}
 		override open
 		func enterRule(_ listener: ParseTreeListener) {
 			if let listener = listener as? MxsListener {
-				listener.enterDeclarationSentence(self)
+				listener.enterDeclSentence(self)
 			}
 		}
 		override open
 		func exitRule(_ listener: ParseTreeListener) {
 			if let listener = listener as? MxsListener {
-				listener.exitDeclarationSentence(self)
+				listener.exitDeclSentence(self)
+			}
+		}
+		override open
+		func accept<T>(_ visitor: ParseTreeVisitor<T>) -> T? {
+			if let visitor = visitor as? MxsVisitor {
+			    return visitor.visitDeclSentence(self)
+			}
+			else if let visitor = visitor as? MxsBaseVisitor {
+			    return visitor.visitDeclSentence(self)
+			}
+			else {
+			     return visitor.visitChildren(self)
 			}
 		}
 	}
 	@discardableResult
-	 open func declarationSentence() throws -> DeclarationSentenceContext {
-		var _localctx: DeclarationSentenceContext = DeclarationSentenceContext(_ctx, getState())
-		try enterRule(_localctx, 8, MxsParser.RULE_declarationSentence)
+	 open func declSentence() throws -> DeclSentenceContext {
+		var _localctx: DeclSentenceContext = DeclSentenceContext(_ctx, getState())
+		try enterRule(_localctx, 8, MxsParser.RULE_declSentence)
 		defer {
 	    		try! exitRule()
 	    }
 		do {
 		 	try enterOuterAlt(_localctx, 1)
-		 	setState(101)
+		 	setState(104)
 		 	try variableDeclaration()
-		 	setState(102)
-		 	try match(MxsParser.Tokens.T__0.rawValue)
 
 		}
 		catch ANTLRException.recognition(let re) {
@@ -565,36 +653,24 @@ open class MxsParser: Parser {
 
 	public class IfSentenceContext: ParserRuleContext {
 			open
-			func If() -> [TerminalNode] {
-				return getTokens(MxsParser.Tokens.If.rawValue)
+			func If() -> TerminalNode? {
+				return getToken(MxsParser.Tokens.If.rawValue, 0)
 			}
 			open
-			func If(_ i:Int) -> TerminalNode? {
-				return getToken(MxsParser.Tokens.If.rawValue, i)
+			func expression() -> ExpressionContext? {
+				return getRuleContext(ExpressionContext.self, 0)
 			}
 			open
-			func expression() -> [ExpressionContext] {
-				return getRuleContexts(ExpressionContext.self)
+			func sentence() -> [SentenceContext] {
+				return getRuleContexts(SentenceContext.self)
 			}
 			open
-			func expression(_ i: Int) -> ExpressionContext? {
-				return getRuleContext(ExpressionContext.self, i)
+			func sentence(_ i: Int) -> SentenceContext? {
+				return getRuleContext(SentenceContext.self, i)
 			}
 			open
-			func codeBlock() -> [CodeBlockContext] {
-				return getRuleContexts(CodeBlockContext.self)
-			}
-			open
-			func codeBlock(_ i: Int) -> CodeBlockContext? {
-				return getRuleContext(CodeBlockContext.self, i)
-			}
-			open
-			func Else() -> [TerminalNode] {
-				return getTokens(MxsParser.Tokens.Else.rawValue)
-			}
-			open
-			func Else(_ i:Int) -> TerminalNode? {
-				return getToken(MxsParser.Tokens.Else.rawValue, i)
+			func Else() -> TerminalNode? {
+				return getToken(MxsParser.Tokens.Else.rawValue, 0)
 			}
 		override open
 		func getRuleIndex() -> Int {
@@ -612,6 +688,18 @@ open class MxsParser: Parser {
 				listener.exitIfSentence(self)
 			}
 		}
+		override open
+		func accept<T>(_ visitor: ParseTreeVisitor<T>) -> T? {
+			if let visitor = visitor as? MxsVisitor {
+			    return visitor.visitIfSentence(self)
+			}
+			else if let visitor = visitor as? MxsBaseVisitor {
+			    return visitor.visitIfSentence(self)
+			}
+			else {
+			     return visitor.visitChildren(self)
+			}
+		}
 	}
 	@discardableResult
 	 open func ifSentence() throws -> IfSentenceContext {
@@ -622,48 +710,20 @@ open class MxsParser: Parser {
 	    }
 		do {
 		 	try enterOuterAlt(_localctx, 1)
-		 	setState(104)
-		 	try match(MxsParser.Tokens.If.rawValue)
-		 	setState(105)
-		 	try match(MxsParser.Tokens.T__1.rawValue)
 		 	setState(106)
-		 	try expression(0)
+		 	try match(MxsParser.Tokens.If.rawValue)
 		 	setState(107)
-		 	try match(MxsParser.Tokens.T__3.rawValue)
+		 	try match(MxsParser.Tokens.T__1.rawValue)
 		 	setState(108)
-		 	try codeBlock()
-		 	setState(116)
-		 	try _errHandler.sync(self)
-		 	switch (try getInterpreter().adaptivePredict(_input,9,_ctx)) {
-		 	case 1:
-		 		setState(109)
-		 		try match(MxsParser.Tokens.Else.rawValue)
-		 		setState(110)
-		 		try match(MxsParser.Tokens.If.rawValue)
-		 		setState(111)
-		 		try match(MxsParser.Tokens.T__1.rawValue)
-		 		setState(112)
-		 		try expression(0)
-		 		setState(113)
-		 		try match(MxsParser.Tokens.T__3.rawValue)
-		 		setState(114)
-		 		try codeBlock()
-
-		 		break
-		 	default: break
-		 	}
-		 	setState(120)
-		 	try _errHandler.sync(self)
-		 	switch (try getInterpreter().adaptivePredict(_input,10,_ctx)) {
-		 	case 1:
-		 		setState(118)
-		 		try match(MxsParser.Tokens.Else.rawValue)
-		 		setState(119)
-		 		try codeBlock()
-
-		 		break
-		 	default: break
-		 	}
+		 	try expression(0)
+		 	setState(109)
+		 	try match(MxsParser.Tokens.T__3.rawValue)
+		 	setState(110)
+		 	try sentence()
+		 	setState(111)
+		 	try match(MxsParser.Tokens.Else.rawValue)
+		 	setState(112)
+		 	try sentence()
 
 		}
 		catch ANTLRException.recognition(let re) {
@@ -685,8 +745,8 @@ open class MxsParser: Parser {
 				return getRuleContext(ExpressionContext.self, 0)
 			}
 			open
-			func codeBlock() -> CodeBlockContext? {
-				return getRuleContext(CodeBlockContext.self, 0)
+			func sentence() -> SentenceContext? {
+				return getRuleContext(SentenceContext.self, 0)
 			}
 		override open
 		func getRuleIndex() -> Int {
@@ -704,6 +764,18 @@ open class MxsParser: Parser {
 				listener.exitWhileSentence(self)
 			}
 		}
+		override open
+		func accept<T>(_ visitor: ParseTreeVisitor<T>) -> T? {
+			if let visitor = visitor as? MxsVisitor {
+			    return visitor.visitWhileSentence(self)
+			}
+			else if let visitor = visitor as? MxsBaseVisitor {
+			    return visitor.visitWhileSentence(self)
+			}
+			else {
+			     return visitor.visitChildren(self)
+			}
+		}
 	}
 	@discardableResult
 	 open func whileSentence() throws -> WhileSentenceContext {
@@ -714,16 +786,16 @@ open class MxsParser: Parser {
 	    }
 		do {
 		 	try enterOuterAlt(_localctx, 1)
-		 	setState(122)
+		 	setState(114)
 		 	try match(MxsParser.Tokens.While.rawValue)
-		 	setState(123)
+		 	setState(115)
 		 	try match(MxsParser.Tokens.T__1.rawValue)
-		 	setState(124)
+		 	setState(116)
 		 	try expression(0)
-		 	setState(125)
+		 	setState(117)
 		 	try match(MxsParser.Tokens.T__3.rawValue)
-		 	setState(126)
-		 	try codeBlock()
+		 	setState(118)
+		 	try sentence()
 
 		}
 		catch ANTLRException.recognition(let re) {
@@ -736,13 +808,16 @@ open class MxsParser: Parser {
 	}
 
 	public class ForSentenceContext: ParserRuleContext {
+		open var ini: ExpressionContext!
+		open var cod: ExpressionContext!
+		open var inc: ExpressionContext!
 			open
 			func For() -> TerminalNode? {
 				return getToken(MxsParser.Tokens.For.rawValue, 0)
 			}
 			open
-			func codeBlock() -> CodeBlockContext? {
-				return getRuleContext(CodeBlockContext.self, 0)
+			func sentence() -> SentenceContext? {
+				return getRuleContext(SentenceContext.self, 0)
 			}
 			open
 			func expression() -> [ExpressionContext] {
@@ -768,6 +843,18 @@ open class MxsParser: Parser {
 				listener.exitForSentence(self)
 			}
 		}
+		override open
+		func accept<T>(_ visitor: ParseTreeVisitor<T>) -> T? {
+			if let visitor = visitor as? MxsVisitor {
+			    return visitor.visitForSentence(self)
+			}
+			else if let visitor = visitor as? MxsBaseVisitor {
+			    return visitor.visitForSentence(self)
+			}
+			else {
+			     return visitor.visitChildren(self)
+			}
+		}
 	}
 	@discardableResult
 	 open func forSentence() throws -> ForSentenceContext {
@@ -779,10 +866,54 @@ open class MxsParser: Parser {
 	    }
 		do {
 		 	try enterOuterAlt(_localctx, 1)
-		 	setState(128)
+		 	setState(120)
 		 	try match(MxsParser.Tokens.For.rawValue)
-		 	setState(129)
+		 	setState(121)
 		 	try match(MxsParser.Tokens.T__1.rawValue)
+		 	setState(123)
+		 	try _errHandler.sync(self)
+		 	_la = try _input.LA(1)
+		 	if (//closure
+		 	 { () -> Bool in
+		 	      let testSet: Bool = {  () -> Bool in
+		 	   let testArray: [Int] = [_la, MxsParser.Tokens.T__1.rawValue,MxsParser.Tokens.New.rawValue,MxsParser.Tokens.This.rawValue,MxsParser.Tokens.BoolLiteral.rawValue,MxsParser.Tokens.IntLiteral.rawValue,MxsParser.Tokens.StringLiteral.rawValue,MxsParser.Tokens.NullLiteral.rawValue,MxsParser.Tokens.Add.rawValue,MxsParser.Tokens.Sub.rawValue,MxsParser.Tokens.Negation.rawValue,MxsParser.Tokens.Bitwise.rawValue,MxsParser.Tokens.SelfAdd.rawValue,MxsParser.Tokens.SelfSub.rawValue,MxsParser.Tokens.Identifier.rawValue]
+		 	    return  Utils.testBitLeftShiftArray(testArray, 0)
+		 	}()
+		 	      return testSet
+		 	 }()) {
+		 		setState(122)
+		 		try {
+		 				let assignmentValue = try expression(0)
+		 				_localctx.castdown(ForSentenceContext.self).ini = assignmentValue
+		 		     }()
+
+
+		 	}
+
+		 	setState(125)
+		 	try match(MxsParser.Tokens.T__0.rawValue)
+		 	setState(127)
+		 	try _errHandler.sync(self)
+		 	_la = try _input.LA(1)
+		 	if (//closure
+		 	 { () -> Bool in
+		 	      let testSet: Bool = {  () -> Bool in
+		 	   let testArray: [Int] = [_la, MxsParser.Tokens.T__1.rawValue,MxsParser.Tokens.New.rawValue,MxsParser.Tokens.This.rawValue,MxsParser.Tokens.BoolLiteral.rawValue,MxsParser.Tokens.IntLiteral.rawValue,MxsParser.Tokens.StringLiteral.rawValue,MxsParser.Tokens.NullLiteral.rawValue,MxsParser.Tokens.Add.rawValue,MxsParser.Tokens.Sub.rawValue,MxsParser.Tokens.Negation.rawValue,MxsParser.Tokens.Bitwise.rawValue,MxsParser.Tokens.SelfAdd.rawValue,MxsParser.Tokens.SelfSub.rawValue,MxsParser.Tokens.Identifier.rawValue]
+		 	    return  Utils.testBitLeftShiftArray(testArray, 0)
+		 	}()
+		 	      return testSet
+		 	 }()) {
+		 		setState(126)
+		 		try {
+		 				let assignmentValue = try expression(0)
+		 				_localctx.castdown(ForSentenceContext.self).cod = assignmentValue
+		 		     }()
+
+
+		 	}
+
+		 	setState(129)
+		 	try match(MxsParser.Tokens.T__0.rawValue)
 		 	setState(131)
 		 	try _errHandler.sync(self)
 		 	_la = try _input.LA(1)
@@ -795,50 +926,18 @@ open class MxsParser: Parser {
 		 	      return testSet
 		 	 }()) {
 		 		setState(130)
-		 		try expression(0)
+		 		try {
+		 				let assignmentValue = try expression(0)
+		 				_localctx.castdown(ForSentenceContext.self).inc = assignmentValue
+		 		     }()
+
 
 		 	}
 
 		 	setState(133)
-		 	try match(MxsParser.Tokens.T__0.rawValue)
-		 	setState(135)
-		 	try _errHandler.sync(self)
-		 	_la = try _input.LA(1)
-		 	if (//closure
-		 	 { () -> Bool in
-		 	      let testSet: Bool = {  () -> Bool in
-		 	   let testArray: [Int] = [_la, MxsParser.Tokens.T__1.rawValue,MxsParser.Tokens.New.rawValue,MxsParser.Tokens.This.rawValue,MxsParser.Tokens.BoolLiteral.rawValue,MxsParser.Tokens.IntLiteral.rawValue,MxsParser.Tokens.StringLiteral.rawValue,MxsParser.Tokens.NullLiteral.rawValue,MxsParser.Tokens.Add.rawValue,MxsParser.Tokens.Sub.rawValue,MxsParser.Tokens.Negation.rawValue,MxsParser.Tokens.Bitwise.rawValue,MxsParser.Tokens.SelfAdd.rawValue,MxsParser.Tokens.SelfSub.rawValue,MxsParser.Tokens.Identifier.rawValue]
-		 	    return  Utils.testBitLeftShiftArray(testArray, 0)
-		 	}()
-		 	      return testSet
-		 	 }()) {
-		 		setState(134)
-		 		try expression(0)
-
-		 	}
-
-		 	setState(137)
-		 	try match(MxsParser.Tokens.T__0.rawValue)
-		 	setState(139)
-		 	try _errHandler.sync(self)
-		 	_la = try _input.LA(1)
-		 	if (//closure
-		 	 { () -> Bool in
-		 	      let testSet: Bool = {  () -> Bool in
-		 	   let testArray: [Int] = [_la, MxsParser.Tokens.T__1.rawValue,MxsParser.Tokens.New.rawValue,MxsParser.Tokens.This.rawValue,MxsParser.Tokens.BoolLiteral.rawValue,MxsParser.Tokens.IntLiteral.rawValue,MxsParser.Tokens.StringLiteral.rawValue,MxsParser.Tokens.NullLiteral.rawValue,MxsParser.Tokens.Add.rawValue,MxsParser.Tokens.Sub.rawValue,MxsParser.Tokens.Negation.rawValue,MxsParser.Tokens.Bitwise.rawValue,MxsParser.Tokens.SelfAdd.rawValue,MxsParser.Tokens.SelfSub.rawValue,MxsParser.Tokens.Identifier.rawValue]
-		 	    return  Utils.testBitLeftShiftArray(testArray, 0)
-		 	}()
-		 	      return testSet
-		 	 }()) {
-		 		setState(138)
-		 		try expression(0)
-
-		 	}
-
-		 	setState(141)
 		 	try match(MxsParser.Tokens.T__3.rawValue)
-		 	setState(142)
-		 	try codeBlock()
+		 	setState(134)
+		 	try sentence()
 
 		}
 		catch ANTLRException.recognition(let re) {
@@ -875,6 +974,18 @@ open class MxsParser: Parser {
 				listener.exitReturnSentence(self)
 			}
 		}
+		override open
+		func accept<T>(_ visitor: ParseTreeVisitor<T>) -> T? {
+			if let visitor = visitor as? MxsVisitor {
+			    return visitor.visitReturnSentence(self)
+			}
+			else if let visitor = visitor as? MxsBaseVisitor {
+			    return visitor.visitReturnSentence(self)
+			}
+			else {
+			     return visitor.visitChildren(self)
+			}
+		}
 	}
 	@discardableResult
 	 open func returnSentence() throws -> ReturnSentenceContext {
@@ -886,9 +997,9 @@ open class MxsParser: Parser {
 	    }
 		do {
 		 	try enterOuterAlt(_localctx, 1)
-		 	setState(144)
+		 	setState(136)
 		 	try match(MxsParser.Tokens.Return.rawValue)
-		 	setState(146)
+		 	setState(138)
 		 	try _errHandler.sync(self)
 		 	_la = try _input.LA(1)
 		 	if (//closure
@@ -899,12 +1010,12 @@ open class MxsParser: Parser {
 		 	}()
 		 	      return testSet
 		 	 }()) {
-		 		setState(145)
+		 		setState(137)
 		 		try expression(0)
 
 		 	}
 
-		 	setState(148)
+		 	setState(140)
 		 	try match(MxsParser.Tokens.T__0.rawValue)
 
 		}
@@ -938,6 +1049,18 @@ open class MxsParser: Parser {
 				listener.exitBreakSentence(self)
 			}
 		}
+		override open
+		func accept<T>(_ visitor: ParseTreeVisitor<T>) -> T? {
+			if let visitor = visitor as? MxsVisitor {
+			    return visitor.visitBreakSentence(self)
+			}
+			else if let visitor = visitor as? MxsBaseVisitor {
+			    return visitor.visitBreakSentence(self)
+			}
+			else {
+			     return visitor.visitChildren(self)
+			}
+		}
 	}
 	@discardableResult
 	 open func breakSentence() throws -> BreakSentenceContext {
@@ -948,9 +1071,9 @@ open class MxsParser: Parser {
 	    }
 		do {
 		 	try enterOuterAlt(_localctx, 1)
-		 	setState(150)
+		 	setState(142)
 		 	try match(MxsParser.Tokens.Break.rawValue)
-		 	setState(151)
+		 	setState(143)
 		 	try match(MxsParser.Tokens.T__0.rawValue)
 
 		}
@@ -984,6 +1107,18 @@ open class MxsParser: Parser {
 				listener.exitContinueSentence(self)
 			}
 		}
+		override open
+		func accept<T>(_ visitor: ParseTreeVisitor<T>) -> T? {
+			if let visitor = visitor as? MxsVisitor {
+			    return visitor.visitContinueSentence(self)
+			}
+			else if let visitor = visitor as? MxsBaseVisitor {
+			    return visitor.visitContinueSentence(self)
+			}
+			else {
+			     return visitor.visitChildren(self)
+			}
+		}
 	}
 	@discardableResult
 	 open func continueSentence() throws -> ContinueSentenceContext {
@@ -994,9 +1129,9 @@ open class MxsParser: Parser {
 	    }
 		do {
 		 	try enterOuterAlt(_localctx, 1)
-		 	setState(153)
+		 	setState(145)
 		 	try match(MxsParser.Tokens.Continue.rawValue)
-		 	setState(154)
+		 	setState(146)
 		 	try match(MxsParser.Tokens.T__0.rawValue)
 
 		}
@@ -1030,6 +1165,18 @@ open class MxsParser: Parser {
 				listener.exitExpressionSentence(self)
 			}
 		}
+		override open
+		func accept<T>(_ visitor: ParseTreeVisitor<T>) -> T? {
+			if let visitor = visitor as? MxsVisitor {
+			    return visitor.visitExpressionSentence(self)
+			}
+			else if let visitor = visitor as? MxsBaseVisitor {
+			    return visitor.visitExpressionSentence(self)
+			}
+			else {
+			     return visitor.visitChildren(self)
+			}
+		}
 	}
 	@discardableResult
 	 open func expressionSentence() throws -> ExpressionSentenceContext {
@@ -1040,9 +1187,9 @@ open class MxsParser: Parser {
 	    }
 		do {
 		 	try enterOuterAlt(_localctx, 1)
-		 	setState(156)
+		 	setState(148)
 		 	try expression(0)
-		 	setState(157)
+		 	setState(149)
 		 	try match(MxsParser.Tokens.T__0.rawValue)
 
 		}
@@ -1057,8 +1204,8 @@ open class MxsParser: Parser {
 
 	public class SentenceContext: ParserRuleContext {
 			open
-			func declarationSentence() -> DeclarationSentenceContext? {
-				return getRuleContext(DeclarationSentenceContext.self, 0)
+			func declSentence() -> DeclSentenceContext? {
+				return getRuleContext(DeclSentenceContext.self, 0)
 			}
 			open
 			func ifSentence() -> IfSentenceContext? {
@@ -1088,6 +1235,10 @@ open class MxsParser: Parser {
 			func expressionSentence() -> ExpressionSentenceContext? {
 				return getRuleContext(ExpressionSentenceContext.self, 0)
 			}
+			open
+			func codeBlock() -> CodeBlockContext? {
+				return getRuleContext(CodeBlockContext.self, 0)
+			}
 		override open
 		func getRuleIndex() -> Int {
 			return MxsParser.RULE_sentence
@@ -1104,6 +1255,18 @@ open class MxsParser: Parser {
 				listener.exitSentence(self)
 			}
 		}
+		override open
+		func accept<T>(_ visitor: ParseTreeVisitor<T>) -> T? {
+			if let visitor = visitor as? MxsVisitor {
+			    return visitor.visitSentence(self)
+			}
+			else if let visitor = visitor as? MxsBaseVisitor {
+			    return visitor.visitSentence(self)
+			}
+			else {
+			     return visitor.visitChildren(self)
+			}
+		}
 	}
 	@discardableResult
 	 open func sentence() throws -> SentenceContext {
@@ -1114,47 +1277,57 @@ open class MxsParser: Parser {
 	    }
 		do {
 		 	try enterOuterAlt(_localctx, 1)
-		 	setState(167)
+		 	setState(161)
 		 	try _errHandler.sync(self)
-		 	switch(try getInterpreter().adaptivePredict(_input,15, _ctx)) {
+		 	switch(try getInterpreter().adaptivePredict(_input,14, _ctx)) {
 		 	case 1:
-		 		setState(159)
-		 		try declarationSentence()
+		 		setState(151)
+		 		try declSentence()
 
 		 		break
 		 	case 2:
-		 		setState(160)
+		 		setState(152)
 		 		try ifSentence()
 
 		 		break
 		 	case 3:
-		 		setState(161)
+		 		setState(153)
 		 		try whileSentence()
 
 		 		break
 		 	case 4:
-		 		setState(162)
+		 		setState(154)
 		 		try forSentence()
 
 		 		break
 		 	case 5:
-		 		setState(163)
+		 		setState(155)
 		 		try returnSentence()
 
 		 		break
 		 	case 6:
-		 		setState(164)
+		 		setState(156)
 		 		try breakSentence()
 
 		 		break
 		 	case 7:
-		 		setState(165)
+		 		setState(157)
 		 		try continueSentence()
 
 		 		break
 		 	case 8:
-		 		setState(166)
+		 		setState(158)
 		 		try expressionSentence()
+
+		 		break
+		 	case 9:
+		 		setState(159)
+		 		try codeBlock()
+
+		 		break
+		 	case 10:
+		 		setState(160)
+		 		try match(MxsParser.Tokens.T__0.rawValue)
 
 		 		break
 		 	default: break
@@ -1195,6 +1368,18 @@ open class MxsParser: Parser {
 				listener.exitCodeBlock(self)
 			}
 		}
+		override open
+		func accept<T>(_ visitor: ParseTreeVisitor<T>) -> T? {
+			if let visitor = visitor as? MxsVisitor {
+			    return visitor.visitCodeBlock(self)
+			}
+			else if let visitor = visitor as? MxsBaseVisitor {
+			    return visitor.visitCodeBlock(self)
+			}
+			else {
+			     return visitor.visitChildren(self)
+			}
+		}
 	}
 	@discardableResult
 	 open func codeBlock() throws -> CodeBlockContext {
@@ -1205,68 +1390,31 @@ open class MxsParser: Parser {
 	    		try! exitRule()
 	    }
 		do {
-		 	setState(178)
+		 	try enterOuterAlt(_localctx, 1)
+		 	setState(163)
+		 	try match(MxsParser.Tokens.T__4.rawValue)
+		 	setState(167)
 		 	try _errHandler.sync(self)
-		 	switch (MxsParser.Tokens(rawValue: try _input.LA(1))!) {
-		 	case .T__5:
-		 		try enterOuterAlt(_localctx, 1)
-		 		setState(169)
-		 		try match(MxsParser.Tokens.T__5.rawValue)
-		 		setState(173)
-		 		try _errHandler.sync(self)
-		 		_la = try _input.LA(1)
-		 		while (//closure
-		 		 { () -> Bool in
-		 		      let testSet: Bool = {  () -> Bool in
-		 		   let testArray: [Int] = [_la, MxsParser.Tokens.T__1.rawValue,MxsParser.Tokens.Bool.rawValue,MxsParser.Tokens.Int.rawValue,MxsParser.Tokens.String.rawValue,MxsParser.Tokens.Void.rawValue,MxsParser.Tokens.If.rawValue,MxsParser.Tokens.For.rawValue,MxsParser.Tokens.While.rawValue,MxsParser.Tokens.Break.rawValue,MxsParser.Tokens.Continue.rawValue,MxsParser.Tokens.Return.rawValue,MxsParser.Tokens.New.rawValue,MxsParser.Tokens.This.rawValue,MxsParser.Tokens.BoolLiteral.rawValue,MxsParser.Tokens.IntLiteral.rawValue,MxsParser.Tokens.StringLiteral.rawValue,MxsParser.Tokens.NullLiteral.rawValue,MxsParser.Tokens.Add.rawValue,MxsParser.Tokens.Sub.rawValue,MxsParser.Tokens.Negation.rawValue,MxsParser.Tokens.Bitwise.rawValue,MxsParser.Tokens.SelfAdd.rawValue,MxsParser.Tokens.SelfSub.rawValue,MxsParser.Tokens.Identifier.rawValue]
-		 		    return  Utils.testBitLeftShiftArray(testArray, 0)
-		 		}()
-		 		      return testSet
-		 		 }()) {
-		 			setState(170)
-		 			try sentence()
-
-
-		 			setState(175)
-		 			try _errHandler.sync(self)
-		 			_la = try _input.LA(1)
-		 		}
-		 		setState(176)
-		 		try match(MxsParser.Tokens.T__6.rawValue)
-
-		 		break
-		 	case .T__1:fallthrough
-		 	case .Bool:fallthrough
-		 	case .Int:fallthrough
-		 	case .String:fallthrough
-		 	case .Void:fallthrough
-		 	case .If:fallthrough
-		 	case .For:fallthrough
-		 	case .While:fallthrough
-		 	case .Break:fallthrough
-		 	case .Continue:fallthrough
-		 	case .Return:fallthrough
-		 	case .New:fallthrough
-		 	case .This:fallthrough
-		 	case .BoolLiteral:fallthrough
-		 	case .IntLiteral:fallthrough
-		 	case .StringLiteral:fallthrough
-		 	case .NullLiteral:fallthrough
-		 	case .Add:fallthrough
-		 	case .Sub:fallthrough
-		 	case .Negation:fallthrough
-		 	case .Bitwise:fallthrough
-		 	case .SelfAdd:fallthrough
-		 	case .SelfSub:fallthrough
-		 	case .Identifier:
-		 		try enterOuterAlt(_localctx, 2)
-		 		setState(177)
+		 	_la = try _input.LA(1)
+		 	while (//closure
+		 	 { () -> Bool in
+		 	      let testSet: Bool = {  () -> Bool in
+		 	   let testArray: [Int] = [_la, MxsParser.Tokens.T__0.rawValue,MxsParser.Tokens.T__1.rawValue,MxsParser.Tokens.T__4.rawValue,MxsParser.Tokens.Bool.rawValue,MxsParser.Tokens.Int.rawValue,MxsParser.Tokens.String.rawValue,MxsParser.Tokens.Void.rawValue,MxsParser.Tokens.If.rawValue,MxsParser.Tokens.For.rawValue,MxsParser.Tokens.While.rawValue,MxsParser.Tokens.Break.rawValue,MxsParser.Tokens.Continue.rawValue,MxsParser.Tokens.Return.rawValue,MxsParser.Tokens.New.rawValue,MxsParser.Tokens.This.rawValue,MxsParser.Tokens.BoolLiteral.rawValue,MxsParser.Tokens.IntLiteral.rawValue,MxsParser.Tokens.StringLiteral.rawValue,MxsParser.Tokens.NullLiteral.rawValue,MxsParser.Tokens.Add.rawValue,MxsParser.Tokens.Sub.rawValue,MxsParser.Tokens.Negation.rawValue,MxsParser.Tokens.Bitwise.rawValue,MxsParser.Tokens.SelfAdd.rawValue,MxsParser.Tokens.SelfSub.rawValue,MxsParser.Tokens.Identifier.rawValue]
+		 	    return  Utils.testBitLeftShiftArray(testArray, 0)
+		 	}()
+		 	      return testSet
+		 	 }()) {
+		 		setState(164)
 		 		try sentence()
 
-		 		break
-		 	default:
-		 		throw ANTLRException.recognition(e: NoViableAltException(self))
+
+		 		setState(169)
+		 		try _errHandler.sync(self)
+		 		_la = try _input.LA(1)
 		 	}
+		 	setState(170)
+		 	try match(MxsParser.Tokens.T__5.rawValue)
+
 		}
 		catch ANTLRException.recognition(let re) {
 			_localctx.exception = re
@@ -1322,6 +1470,18 @@ open class MxsParser: Parser {
 				listener.exitType(self)
 			}
 		}
+		override open
+		func accept<T>(_ visitor: ParseTreeVisitor<T>) -> T? {
+			if let visitor = visitor as? MxsVisitor {
+			    return visitor.visitType(self)
+			}
+			else if let visitor = visitor as? MxsBaseVisitor {
+			    return visitor.visitType(self)
+			}
+			else {
+			     return visitor.visitChildren(self)
+			}
+		}
 	}
 	@discardableResult
 	 open func type() throws -> TypeContext {
@@ -1333,7 +1493,7 @@ open class MxsParser: Parser {
 	    }
 		do {
 		 	try enterOuterAlt(_localctx, 1)
-		 	setState(180)
+		 	setState(172)
 		 	_la = try _input.LA(1)
 		 	if (!(//closure
 		 	 { () -> Bool in
@@ -1349,17 +1509,17 @@ open class MxsParser: Parser {
 		 		_errHandler.reportMatch(self)
 		 		try consume()
 		 	}
-		 	setState(188)
+		 	setState(180)
 		 	try _errHandler.sync(self)
 		 	_la = try _input.LA(1)
 		 	while (//closure
 		 	 { () -> Bool in
-		 	      let testSet: Bool = _la == MxsParser.Tokens.T__7.rawValue
+		 	      let testSet: Bool = _la == MxsParser.Tokens.T__6.rawValue
 		 	      return testSet
 		 	 }()) {
-		 		setState(181)
-		 		try match(MxsParser.Tokens.T__7.rawValue)
-		 		setState(183)
+		 		setState(173)
+		 		try match(MxsParser.Tokens.T__6.rawValue)
+		 		setState(175)
 		 		try _errHandler.sync(self)
 		 		_la = try _input.LA(1)
 		 		if (//closure
@@ -1370,16 +1530,16 @@ open class MxsParser: Parser {
 		 		}()
 		 		      return testSet
 		 		 }()) {
-		 			setState(182)
+		 			setState(174)
 		 			try expression(0)
 
 		 		}
 
-		 		setState(185)
-		 		try match(MxsParser.Tokens.T__8.rawValue)
+		 		setState(177)
+		 		try match(MxsParser.Tokens.T__7.rawValue)
 
 
-		 		setState(190)
+		 		setState(182)
 		 		try _errHandler.sync(self)
 		 		_la = try _input.LA(1)
 		 	}
@@ -1394,100 +1554,18 @@ open class MxsParser: Parser {
 		return _localctx
 	}
 
-
-	public class ArgumentListContext: ParserRuleContext {
-			open
-			func expression() -> ExpressionContext? {
-				return getRuleContext(ExpressionContext.self, 0)
-			}
-			open
-			func argumentList() -> ArgumentListContext? {
-				return getRuleContext(ArgumentListContext.self, 0)
-			}
-		override open
-		func getRuleIndex() -> Int {
-			return MxsParser.RULE_argumentList
-		}
-		override open
-		func enterRule(_ listener: ParseTreeListener) {
-			if let listener = listener as? MxsListener {
-				listener.enterArgumentList(self)
-			}
-		}
-		override open
-		func exitRule(_ listener: ParseTreeListener) {
-			if let listener = listener as? MxsListener {
-				listener.exitArgumentList(self)
-			}
-		}
-	}
-
-	 public final  func argumentList( ) throws -> ArgumentListContext   {
-		return try argumentList(0)
-	}
-	@discardableResult
-	private func argumentList(_ _p: Int) throws -> ArgumentListContext   {
-		let _parentctx: ParserRuleContext? = _ctx
-		var _parentState: Int = getState()
-		var _localctx: ArgumentListContext = ArgumentListContext(_ctx, _parentState)
-		var  _prevctx: ArgumentListContext = _localctx
-		var _startState: Int = 30
-		try enterRecursionRule(_localctx, 30, MxsParser.RULE_argumentList, _p)
-		defer {
-	    		try! unrollRecursionContexts(_parentctx)
-	    }
-		do {
-			var _alt: Int
-			try enterOuterAlt(_localctx, 1)
-			setState(192)
-			try expression(0)
-
-			_ctx!.stop = try _input.LT(-1)
-			setState(199)
-			try _errHandler.sync(self)
-			_alt = try getInterpreter().adaptivePredict(_input,20,_ctx)
-			while (_alt != 2 && _alt != ATN.INVALID_ALT_NUMBER) {
-				if ( _alt==1 ) {
-					if _parseListeners != nil {
-					   try triggerExitRuleEvent()
-					}
-					_prevctx = _localctx
-					_localctx = ArgumentListContext(_parentctx, _parentState);
-					try pushNewRecursionContext(_localctx, _startState, MxsParser.RULE_argumentList)
-					setState(194)
-					if (!(precpred(_ctx, 1))) {
-					    throw ANTLRException.recognition(e:FailedPredicateException(self, "precpred(_ctx, 1)"))
-					}
-					setState(195)
-					try match(MxsParser.Tokens.T__2.rawValue)
-					setState(196)
-					try expression(0)
-
-			 
-				}
-				setState(201)
-				try _errHandler.sync(self)
-				_alt = try getInterpreter().adaptivePredict(_input,20,_ctx)
-			}
-
-		}
-		catch ANTLRException.recognition(let re) {
-			_localctx.exception = re
-			_errHandler.reportError(self, re)
-			try _errHandler.recover(self, re)
-		}
-
-		return _localctx;
-	}
-
 	public class FunctionExpressionContext: ParserRuleContext {
 			open
 			func Identifier() -> TerminalNode? {
 				return getToken(MxsParser.Tokens.Identifier.rawValue, 0)
 			}
 			open
-			func argumentList() -> ArgumentListContext? {
-				return getRuleContext(ArgumentListContext.self, 0)
+			func expression() -> [ExpressionContext] {
+				return getRuleContexts(ExpressionContext.self)
+			}
+			open
+			func expression(_ i: Int) -> ExpressionContext? {
+				return getRuleContext(ExpressionContext.self, i)
 			}
 		override open
 		func getRuleIndex() -> Int {
@@ -1505,22 +1583,35 @@ open class MxsParser: Parser {
 				listener.exitFunctionExpression(self)
 			}
 		}
+		override open
+		func accept<T>(_ visitor: ParseTreeVisitor<T>) -> T? {
+			if let visitor = visitor as? MxsVisitor {
+			    return visitor.visitFunctionExpression(self)
+			}
+			else if let visitor = visitor as? MxsBaseVisitor {
+			    return visitor.visitFunctionExpression(self)
+			}
+			else {
+			     return visitor.visitChildren(self)
+			}
+		}
 	}
 	@discardableResult
 	 open func functionExpression() throws -> FunctionExpressionContext {
 		var _localctx: FunctionExpressionContext = FunctionExpressionContext(_ctx, getState())
-		try enterRule(_localctx, 32, MxsParser.RULE_functionExpression)
+		try enterRule(_localctx, 30, MxsParser.RULE_functionExpression)
 		var _la: Int = 0
 		defer {
 	    		try! exitRule()
 	    }
 		do {
+			var _alt:Int
 		 	try enterOuterAlt(_localctx, 1)
-		 	setState(202)
+		 	setState(183)
 		 	try match(MxsParser.Tokens.Identifier.rawValue)
-		 	setState(203)
+		 	setState(184)
 		 	try match(MxsParser.Tokens.T__1.rawValue)
-		 	setState(205)
+		 	setState(194)
 		 	try _errHandler.sync(self)
 		 	_la = try _input.LA(1)
 		 	if (//closure
@@ -1531,12 +1622,28 @@ open class MxsParser: Parser {
 		 	}()
 		 	      return testSet
 		 	 }()) {
-		 		setState(204)
-		 		try argumentList(0)
+		 		setState(190)
+		 		try _errHandler.sync(self)
+		 		_alt = try getInterpreter().adaptivePredict(_input,18,_ctx)
+		 		while (_alt != 2 && _alt != ATN.INVALID_ALT_NUMBER) {
+		 			if ( _alt==1 ) {
+		 				setState(185)
+		 				try expression(0)
+		 				setState(186)
+		 				try match(MxsParser.Tokens.T__2.rawValue)
+
+		 		 
+		 			}
+		 			setState(192)
+		 			try _errHandler.sync(self)
+		 			_alt = try getInterpreter().adaptivePredict(_input,18,_ctx)
+		 		}
+		 		setState(193)
+		 		try expression(0)
 
 		 	}
 
-		 	setState(207)
+		 	setState(196)
 		 	try match(MxsParser.Tokens.T__3.rawValue)
 
 		}
@@ -1557,10 +1664,18 @@ open class MxsParser: Parser {
 		}
 	}
 	public class NewExprContext: ExpressionContext {
-		public var op: Token!
+		public var ty: Token!
 			open
 			func New() -> TerminalNode? {
 				return getToken(MxsParser.Tokens.New.rawValue, 0)
+			}
+			open
+			func expression() -> [ExpressionContext] {
+				return getRuleContexts(ExpressionContext.self)
+			}
+			open
+			func expression(_ i: Int) -> ExpressionContext? {
+				return getRuleContext(ExpressionContext.self, i)
 			}
 			open
 			func Bool() -> TerminalNode? {
@@ -1583,12 +1698,12 @@ open class MxsParser: Parser {
 				return getToken(MxsParser.Tokens.Identifier.rawValue, 0)
 			}
 			open
-			func expression() -> [ExpressionContext] {
-				return getRuleContexts(ExpressionContext.self)
+			func EmptySet() -> [TerminalNode] {
+				return getTokens(MxsParser.Tokens.EmptySet.rawValue)
 			}
 			open
-			func expression(_ i: Int) -> ExpressionContext? {
-				return getRuleContext(ExpressionContext.self, i)
+			func EmptySet(_ i:Int) -> TerminalNode? {
+				return getToken(MxsParser.Tokens.EmptySet.rawValue, i)
 			}
 
 		public
@@ -1608,57 +1723,16 @@ open class MxsParser: Parser {
 				listener.exitNewExpr(self)
 			}
 		}
-	}
-	public class SingleExprContext: ExpressionContext {
-		public var op: Token!
-			open
-			func Identifier() -> TerminalNode? {
-				return getToken(MxsParser.Tokens.Identifier.rawValue, 0)
-			}
-			open
-			func This() -> TerminalNode? {
-				return getToken(MxsParser.Tokens.This.rawValue, 0)
-			}
-			open
-			func BoolLiteral() -> TerminalNode? {
-				return getToken(MxsParser.Tokens.BoolLiteral.rawValue, 0)
-			}
-			open
-			func IntLiteral() -> TerminalNode? {
-				return getToken(MxsParser.Tokens.IntLiteral.rawValue, 0)
-			}
-			open
-			func StringLiteral() -> TerminalNode? {
-				return getToken(MxsParser.Tokens.StringLiteral.rawValue, 0)
-			}
-			open
-			func NullLiteral() -> TerminalNode? {
-				return getToken(MxsParser.Tokens.NullLiteral.rawValue, 0)
-			}
-			open
-			func expression() -> ExpressionContext? {
-				return getRuleContext(ExpressionContext.self, 0)
-			}
-			open
-			func functionExpression() -> FunctionExpressionContext? {
-				return getRuleContext(FunctionExpressionContext.self, 0)
-			}
-
-		public
-		init(_ ctx: ExpressionContext) {
-			super.init()
-			copyFrom(ctx)
-		}
 		override open
-		func enterRule(_ listener: ParseTreeListener) {
-			if let listener = listener as? MxsListener {
-				listener.enterSingleExpr(self)
+		func accept<T>(_ visitor: ParseTreeVisitor<T>) -> T? {
+			if let visitor = visitor as? MxsVisitor {
+			    return visitor.visitNewExpr(self)
 			}
-		}
-		override open
-		func exitRule(_ listener: ParseTreeListener) {
-			if let listener = listener as? MxsListener {
-				listener.exitSingleExpr(self)
+			else if let visitor = visitor as? MxsBaseVisitor {
+			    return visitor.visitNewExpr(self)
+			}
+			else {
+			     return visitor.visitChildren(self)
 			}
 		}
 	}
@@ -1683,6 +1757,18 @@ open class MxsParser: Parser {
 		func exitRule(_ listener: ParseTreeListener) {
 			if let listener = listener as? MxsListener {
 				listener.exitFuncExpr(self)
+			}
+		}
+		override open
+		func accept<T>(_ visitor: ParseTreeVisitor<T>) -> T? {
+			if let visitor = visitor as? MxsVisitor {
+			    return visitor.visitFuncExpr(self)
+			}
+			else if let visitor = visitor as? MxsBaseVisitor {
+			    return visitor.visitFuncExpr(self)
+			}
+			else {
+			     return visitor.visitChildren(self)
 			}
 		}
 	}
@@ -1734,9 +1820,23 @@ open class MxsParser: Parser {
 				listener.exitUnaryExpr(self)
 			}
 		}
+		override open
+		func accept<T>(_ visitor: ParseTreeVisitor<T>) -> T? {
+			if let visitor = visitor as? MxsVisitor {
+			    return visitor.visitUnaryExpr(self)
+			}
+			else if let visitor = visitor as? MxsBaseVisitor {
+			    return visitor.visitUnaryExpr(self)
+			}
+			else {
+			     return visitor.visitChildren(self)
+			}
+		}
 	}
 	public class ArrayExprContext: ExpressionContext {
+		public var array: ExpressionContext!
 		public var op: Token!
+		public var idx: ExpressionContext!
 			open
 			func expression() -> [ExpressionContext] {
 				return getRuleContexts(ExpressionContext.self)
@@ -1761,6 +1861,152 @@ open class MxsParser: Parser {
 		func exitRule(_ listener: ParseTreeListener) {
 			if let listener = listener as? MxsListener {
 				listener.exitArrayExpr(self)
+			}
+		}
+		override open
+		func accept<T>(_ visitor: ParseTreeVisitor<T>) -> T? {
+			if let visitor = visitor as? MxsVisitor {
+			    return visitor.visitArrayExpr(self)
+			}
+			else if let visitor = visitor as? MxsBaseVisitor {
+			    return visitor.visitArrayExpr(self)
+			}
+			else {
+			     return visitor.visitChildren(self)
+			}
+		}
+	}
+	public class ParaExprContext: ExpressionContext {
+		public var op: Token!
+			open
+			func expression() -> ExpressionContext? {
+				return getRuleContext(ExpressionContext.self, 0)
+			}
+
+		public
+		init(_ ctx: ExpressionContext) {
+			super.init()
+			copyFrom(ctx)
+		}
+		override open
+		func enterRule(_ listener: ParseTreeListener) {
+			if let listener = listener as? MxsListener {
+				listener.enterParaExpr(self)
+			}
+		}
+		override open
+		func exitRule(_ listener: ParseTreeListener) {
+			if let listener = listener as? MxsListener {
+				listener.exitParaExpr(self)
+			}
+		}
+		override open
+		func accept<T>(_ visitor: ParseTreeVisitor<T>) -> T? {
+			if let visitor = visitor as? MxsVisitor {
+			    return visitor.visitParaExpr(self)
+			}
+			else if let visitor = visitor as? MxsBaseVisitor {
+			    return visitor.visitParaExpr(self)
+			}
+			else {
+			     return visitor.visitChildren(self)
+			}
+		}
+	}
+	public class LiteralExprContext: ExpressionContext {
+			open
+			func This() -> TerminalNode? {
+				return getToken(MxsParser.Tokens.This.rawValue, 0)
+			}
+			open
+			func BoolLiteral() -> TerminalNode? {
+				return getToken(MxsParser.Tokens.BoolLiteral.rawValue, 0)
+			}
+			open
+			func IntLiteral() -> TerminalNode? {
+				return getToken(MxsParser.Tokens.IntLiteral.rawValue, 0)
+			}
+			open
+			func StringLiteral() -> TerminalNode? {
+				return getToken(MxsParser.Tokens.StringLiteral.rawValue, 0)
+			}
+			open
+			func NullLiteral() -> TerminalNode? {
+				return getToken(MxsParser.Tokens.NullLiteral.rawValue, 0)
+			}
+
+		public
+		init(_ ctx: ExpressionContext) {
+			super.init()
+			copyFrom(ctx)
+		}
+		override open
+		func enterRule(_ listener: ParseTreeListener) {
+			if let listener = listener as? MxsListener {
+				listener.enterLiteralExpr(self)
+			}
+		}
+		override open
+		func exitRule(_ listener: ParseTreeListener) {
+			if let listener = listener as? MxsListener {
+				listener.exitLiteralExpr(self)
+			}
+		}
+		override open
+		func accept<T>(_ visitor: ParseTreeVisitor<T>) -> T? {
+			if let visitor = visitor as? MxsVisitor {
+			    return visitor.visitLiteralExpr(self)
+			}
+			else if let visitor = visitor as? MxsBaseVisitor {
+			    return visitor.visitLiteralExpr(self)
+			}
+			else {
+			     return visitor.visitChildren(self)
+			}
+		}
+	}
+	public class MemberExprContext: ExpressionContext {
+		public var op: Token!
+			open
+			func expression() -> ExpressionContext? {
+				return getRuleContext(ExpressionContext.self, 0)
+			}
+			open
+			func Identifier() -> TerminalNode? {
+				return getToken(MxsParser.Tokens.Identifier.rawValue, 0)
+			}
+			open
+			func functionExpression() -> FunctionExpressionContext? {
+				return getRuleContext(FunctionExpressionContext.self, 0)
+			}
+
+		public
+		init(_ ctx: ExpressionContext) {
+			super.init()
+			copyFrom(ctx)
+		}
+		override open
+		func enterRule(_ listener: ParseTreeListener) {
+			if let listener = listener as? MxsListener {
+				listener.enterMemberExpr(self)
+			}
+		}
+		override open
+		func exitRule(_ listener: ParseTreeListener) {
+			if let listener = listener as? MxsListener {
+				listener.exitMemberExpr(self)
+			}
+		}
+		override open
+		func accept<T>(_ visitor: ParseTreeVisitor<T>) -> T? {
+			if let visitor = visitor as? MxsVisitor {
+			    return visitor.visitMemberExpr(self)
+			}
+			else if let visitor = visitor as? MxsBaseVisitor {
+			    return visitor.visitMemberExpr(self)
+			}
+			else {
+			     return visitor.visitChildren(self)
 			}
 		}
 	}
@@ -1864,6 +2110,18 @@ open class MxsParser: Parser {
 				listener.exitBinaryExpr(self)
 			}
 		}
+		override open
+		func accept<T>(_ visitor: ParseTreeVisitor<T>) -> T? {
+			if let visitor = visitor as? MxsVisitor {
+			    return visitor.visitBinaryExpr(self)
+			}
+			else if let visitor = visitor as? MxsBaseVisitor {
+			    return visitor.visitBinaryExpr(self)
+			}
+			else {
+			     return visitor.visitChildren(self)
+			}
+		}
 	}
 	public class SufExprContext: ExpressionContext {
 		public var op: Token!
@@ -1897,6 +2155,18 @@ open class MxsParser: Parser {
 				listener.exitSufExpr(self)
 			}
 		}
+		override open
+		func accept<T>(_ visitor: ParseTreeVisitor<T>) -> T? {
+			if let visitor = visitor as? MxsVisitor {
+			    return visitor.visitSufExpr(self)
+			}
+			else if let visitor = visitor as? MxsBaseVisitor {
+			    return visitor.visitSufExpr(self)
+			}
+			else {
+			     return visitor.visitChildren(self)
+			}
+		}
 	}
 	public class AssignExprContext: ExpressionContext {
 		public var op: Token!
@@ -1907,6 +2177,10 @@ open class MxsParser: Parser {
 			open
 			func expression(_ i: Int) -> ExpressionContext? {
 				return getRuleContext(ExpressionContext.self, i)
+			}
+			open
+			func Assign() -> TerminalNode? {
+				return getToken(MxsParser.Tokens.Assign.rawValue, 0)
 			}
 
 		public
@@ -1926,6 +2200,54 @@ open class MxsParser: Parser {
 				listener.exitAssignExpr(self)
 			}
 		}
+		override open
+		func accept<T>(_ visitor: ParseTreeVisitor<T>) -> T? {
+			if let visitor = visitor as? MxsVisitor {
+			    return visitor.visitAssignExpr(self)
+			}
+			else if let visitor = visitor as? MxsBaseVisitor {
+			    return visitor.visitAssignExpr(self)
+			}
+			else {
+			     return visitor.visitChildren(self)
+			}
+		}
+	}
+	public class IdExprContext: ExpressionContext {
+			open
+			func Identifier() -> TerminalNode? {
+				return getToken(MxsParser.Tokens.Identifier.rawValue, 0)
+			}
+
+		public
+		init(_ ctx: ExpressionContext) {
+			super.init()
+			copyFrom(ctx)
+		}
+		override open
+		func enterRule(_ listener: ParseTreeListener) {
+			if let listener = listener as? MxsListener {
+				listener.enterIdExpr(self)
+			}
+		}
+		override open
+		func exitRule(_ listener: ParseTreeListener) {
+			if let listener = listener as? MxsListener {
+				listener.exitIdExpr(self)
+			}
+		}
+		override open
+		func accept<T>(_ visitor: ParseTreeVisitor<T>) -> T? {
+			if let visitor = visitor as? MxsVisitor {
+			    return visitor.visitIdExpr(self)
+			}
+			else if let visitor = visitor as? MxsBaseVisitor {
+			    return visitor.visitIdExpr(self)
+			}
+			else {
+			     return visitor.visitChildren(self)
+			}
+		}
 	}
 
 	 public final  func expression( ) throws -> ExpressionContext   {
@@ -1937,8 +2259,8 @@ open class MxsParser: Parser {
 		var _parentState: Int = getState()
 		var _localctx: ExpressionContext = ExpressionContext(_ctx, _parentState)
 		var  _prevctx: ExpressionContext = _localctx
-		var _startState: Int = 34
-		try enterRecursionRule(_localctx, 34, MxsParser.RULE_expression, _p)
+		var _startState: Int = 32
+		try enterRecursionRule(_localctx, 32, MxsParser.RULE_expression, _p)
 		var _la: Int = 0
 		defer {
 	    		try! unrollRecursionContexts(_parentctx)
@@ -1948,21 +2270,21 @@ open class MxsParser: Parser {
 			try enterOuterAlt(_localctx, 1)
 			setState(230)
 			try _errHandler.sync(self)
-			switch(try getInterpreter().adaptivePredict(_input,24, _ctx)) {
+			switch(try getInterpreter().adaptivePredict(_input,22, _ctx)) {
 			case 1:
-				_localctx = SingleExprContext(_localctx)
+				_localctx = IdExprContext(_localctx)
 				_ctx = _localctx
 				_prevctx = _localctx
 
-				setState(210)
+				setState(199)
 				try match(MxsParser.Tokens.Identifier.rawValue)
 
 				break
 			case 2:
-				_localctx = SingleExprContext(_localctx)
+				_localctx = LiteralExprContext(_localctx)
 				_ctx = _localctx
 				_prevctx = _localctx
-				setState(211)
+				setState(200)
 				_la = try _input.LA(1)
 				if (!(//closure
 				 { () -> Bool in
@@ -1981,18 +2303,18 @@ open class MxsParser: Parser {
 
 				break
 			case 3:
-				_localctx = SingleExprContext(_localctx)
+				_localctx = ParaExprContext(_localctx)
 				_ctx = _localctx
 				_prevctx = _localctx
-				setState(212)
+				setState(201)
 				try {
 						let assignmentValue = try match(MxsParser.Tokens.T__1.rawValue)
-						_localctx.castdown(SingleExprContext.self).op = assignmentValue
+						_localctx.castdown(ParaExprContext.self).op = assignmentValue
 				     }()
 
-				setState(213)
+				setState(202)
 				try expression(0)
-				setState(214)
+				setState(203)
 				try match(MxsParser.Tokens.T__3.rawValue)
 
 				break
@@ -2000,7 +2322,7 @@ open class MxsParser: Parser {
 				_localctx = FuncExprContext(_localctx)
 				_ctx = _localctx
 				_prevctx = _localctx
-				setState(216)
+				setState(205)
 				try functionExpression()
 
 				break
@@ -2008,7 +2330,7 @@ open class MxsParser: Parser {
 				_localctx = UnaryExprContext(_localctx)
 				_ctx = _localctx
 				_prevctx = _localctx
-				setState(217)
+				setState(206)
 				_localctx.castdown(UnaryExprContext.self).op = try _input.LT(1)
 				_la = try _input.LA(1)
 				if (!(//closure
@@ -2025,17 +2347,18 @@ open class MxsParser: Parser {
 					_errHandler.reportMatch(self)
 					try consume()
 				}
-				setState(218)
-				try expression(13)
+				setState(207)
+				try expression(14)
 
 				break
 			case 6:
 				_localctx = NewExprContext(_localctx)
 				_ctx = _localctx
 				_prevctx = _localctx
-				setState(219)
+				setState(208)
 				try match(MxsParser.Tokens.New.rawValue)
-				setState(220)
+				setState(209)
+				_localctx.castdown(NewExprContext.self).ty = try _input.LT(1)
 				_la = try _input.LA(1)
 				if (!(//closure
 				 { () -> Bool in
@@ -2045,52 +2368,77 @@ open class MxsParser: Parser {
 				}()
 				      return testSet
 				 }())) {
-				try _errHandler.recoverInline(self)
+					_localctx.castdown(NewExprContext.self).ty = try _errHandler.recoverInline(self) as Token
 				}
 				else {
 					_errHandler.reportMatch(self)
 					try consume()
 				}
-				setState(226); 
+				setState(210)
+				try match(MxsParser.Tokens.T__6.rawValue)
+				setState(211)
+				try expression(0)
+				setState(212)
+				try match(MxsParser.Tokens.T__7.rawValue)
+
+				setState(216)
 				try _errHandler.sync(self)
-				_alt = 1;
-				repeat {
-					switch (_alt) {
-					case 1:
-						setState(221)
-						try {
-								let assignmentValue = try match(MxsParser.Tokens.T__7.rawValue)
-								_localctx.castdown(NewExprContext.self).op = assignmentValue
-						     }()
+				_alt = try getInterpreter().adaptivePredict(_input,20,_ctx)
+				while (_alt != 2 && _alt != ATN.INVALID_ALT_NUMBER) {
+					if ( _alt==1 ) {
+						setState(213)
+						try match(MxsParser.Tokens.EmptySet.rawValue)
 
-						setState(223)
-						try _errHandler.sync(self)
-						_la = try _input.LA(1)
-						if (//closure
-						 { () -> Bool in
-						      let testSet: Bool = {  () -> Bool in
-						   let testArray: [Int] = [_la, MxsParser.Tokens.T__1.rawValue,MxsParser.Tokens.New.rawValue,MxsParser.Tokens.This.rawValue,MxsParser.Tokens.BoolLiteral.rawValue,MxsParser.Tokens.IntLiteral.rawValue,MxsParser.Tokens.StringLiteral.rawValue,MxsParser.Tokens.NullLiteral.rawValue,MxsParser.Tokens.Add.rawValue,MxsParser.Tokens.Sub.rawValue,MxsParser.Tokens.Negation.rawValue,MxsParser.Tokens.Bitwise.rawValue,MxsParser.Tokens.SelfAdd.rawValue,MxsParser.Tokens.SelfSub.rawValue,MxsParser.Tokens.Identifier.rawValue]
-						    return  Utils.testBitLeftShiftArray(testArray, 0)
-						}()
-						      return testSet
-						 }()) {
-							setState(222)
-							try expression(0)
-
-						}
-
-						setState(225)
-						try match(MxsParser.Tokens.T__8.rawValue)
-
-
-						break
-					default:
-						throw ANTLRException.recognition(e: NoViableAltException(self))
+				 
 					}
-					setState(228); 
+					setState(218)
 					try _errHandler.sync(self)
-					_alt = try getInterpreter().adaptivePredict(_input,23,_ctx)
-				} while (_alt != 2 && _alt !=  ATN.INVALID_ALT_NUMBER)
+					_alt = try getInterpreter().adaptivePredict(_input,20,_ctx)
+				}
+
+
+				break
+			case 7:
+				_localctx = NewExprContext(_localctx)
+				_ctx = _localctx
+				_prevctx = _localctx
+				setState(219)
+				try match(MxsParser.Tokens.New.rawValue)
+				setState(220)
+				_localctx.castdown(NewExprContext.self).ty = try _input.LT(1)
+				_la = try _input.LA(1)
+				if (!(//closure
+				 { () -> Bool in
+				      let testSet: Bool = {  () -> Bool in
+				   let testArray: [Int] = [_la, MxsParser.Tokens.Bool.rawValue,MxsParser.Tokens.Int.rawValue,MxsParser.Tokens.String.rawValue,MxsParser.Tokens.Void.rawValue,MxsParser.Tokens.Identifier.rawValue]
+				    return  Utils.testBitLeftShiftArray(testArray, 0)
+				}()
+				      return testSet
+				 }())) {
+					_localctx.castdown(NewExprContext.self).ty = try _errHandler.recoverInline(self) as Token
+				}
+				else {
+					_errHandler.reportMatch(self)
+					try consume()
+				}
+				setState(227)
+				try _errHandler.sync(self)
+				_alt = try getInterpreter().adaptivePredict(_input,21,_ctx)
+				while (_alt != 2 && _alt != ATN.INVALID_ALT_NUMBER) {
+					if ( _alt==1 ) {
+						setState(221)
+						try match(MxsParser.Tokens.T__6.rawValue)
+						setState(222)
+						try expression(0)
+						setState(223)
+						try match(MxsParser.Tokens.T__7.rawValue)
+
+				 
+					}
+					setState(229)
+					try _errHandler.sync(self)
+					_alt = try getInterpreter().adaptivePredict(_input,21,_ctx)
+				}
 
 				break
 			default: break
@@ -2098,7 +2446,7 @@ open class MxsParser: Parser {
 			_ctx!.stop = try _input.LT(-1)
 			setState(280)
 			try _errHandler.sync(self)
-			_alt = try getInterpreter().adaptivePredict(_input,27,_ctx)
+			_alt = try getInterpreter().adaptivePredict(_input,25,_ctx)
 			while (_alt != 2 && _alt != ATN.INVALID_ALT_NUMBER) {
 				if ( _alt==1 ) {
 					if _parseListeners != nil {
@@ -2107,7 +2455,7 @@ open class MxsParser: Parser {
 					_prevctx = _localctx
 					setState(278)
 					try _errHandler.sync(self)
-					switch(try getInterpreter().adaptivePredict(_input,26, _ctx)) {
+					switch(try getInterpreter().adaptivePredict(_input,24, _ctx)) {
 					case 1:
 						_localctx = BinaryExprContext(  ExpressionContext(_parentctx, _parentState))
 						try pushNewRecursionContext(_localctx, _startState, MxsParser.RULE_expression)
@@ -2333,7 +2681,7 @@ open class MxsParser: Parser {
 						}
 						setState(263)
 						try {
-								let assignmentValue = try match(MxsParser.Tokens.T__4.rawValue)
+								let assignmentValue = try match(MxsParser.Tokens.Assign.rawValue)
 								_localctx.castdown(AssignExprContext.self).op = assignmentValue
 						     }()
 
@@ -2342,21 +2690,21 @@ open class MxsParser: Parser {
 
 						break
 					case 12:
-						_localctx = SingleExprContext(  ExpressionContext(_parentctx, _parentState))
+						_localctx = MemberExprContext(  ExpressionContext(_parentctx, _parentState))
 						try pushNewRecursionContext(_localctx, _startState, MxsParser.RULE_expression)
 						setState(265)
-						if (!(precpred(_ctx, 17))) {
-						    throw ANTLRException.recognition(e:FailedPredicateException(self, "precpred(_ctx, 17)"))
+						if (!(precpred(_ctx, 18))) {
+						    throw ANTLRException.recognition(e:FailedPredicateException(self, "precpred(_ctx, 18)"))
 						}
 						setState(266)
 						try {
-								let assignmentValue = try match(MxsParser.Tokens.T__9.rawValue)
-								_localctx.castdown(SingleExprContext.self).op = assignmentValue
+								let assignmentValue = try match(MxsParser.Tokens.T__8.rawValue)
+								_localctx.castdown(MemberExprContext.self).op = assignmentValue
 						     }()
 
 						setState(269)
 						try _errHandler.sync(self)
-						switch(try getInterpreter().adaptivePredict(_input,25, _ctx)) {
+						switch(try getInterpreter().adaptivePredict(_input,23, _ctx)) {
 						case 1:
 							setState(267)
 							try match(MxsParser.Tokens.Identifier.rawValue)
@@ -2373,29 +2721,34 @@ open class MxsParser: Parser {
 						break
 					case 13:
 						_localctx = ArrayExprContext(  ExpressionContext(_parentctx, _parentState))
+						(_localctx as! ArrayExprContext).array = _prevctx
 						try pushNewRecursionContext(_localctx, _startState, MxsParser.RULE_expression)
 						setState(271)
-						if (!(precpred(_ctx, 16))) {
-						    throw ANTLRException.recognition(e:FailedPredicateException(self, "precpred(_ctx, 16)"))
+						if (!(precpred(_ctx, 17))) {
+						    throw ANTLRException.recognition(e:FailedPredicateException(self, "precpred(_ctx, 17)"))
 						}
 						setState(272)
 						try {
-								let assignmentValue = try match(MxsParser.Tokens.T__7.rawValue)
+								let assignmentValue = try match(MxsParser.Tokens.T__6.rawValue)
 								_localctx.castdown(ArrayExprContext.self).op = assignmentValue
 						     }()
 
 						setState(273)
-						try expression(0)
+						try {
+								let assignmentValue = try expression(0)
+								_localctx.castdown(ArrayExprContext.self).idx = assignmentValue
+						     }()
+
 						setState(274)
-						try match(MxsParser.Tokens.T__8.rawValue)
+						try match(MxsParser.Tokens.T__7.rawValue)
 
 						break
 					case 14:
 						_localctx = SufExprContext(  ExpressionContext(_parentctx, _parentState))
 						try pushNewRecursionContext(_localctx, _startState, MxsParser.RULE_expression)
 						setState(276)
-						if (!(precpred(_ctx, 14))) {
-						    throw ANTLRException.recognition(e:FailedPredicateException(self, "precpred(_ctx, 14)"))
+						if (!(precpred(_ctx, 15))) {
+						    throw ANTLRException.recognition(e:FailedPredicateException(self, "precpred(_ctx, 15)"))
 						}
 						setState(277)
 						_localctx.castdown(SufExprContext.self).op = try _input.LT(1)
@@ -2419,7 +2772,7 @@ open class MxsParser: Parser {
 				}
 				setState(282)
 				try _errHandler.sync(self)
-				_alt = try getInterpreter().adaptivePredict(_input,27,_ctx)
+				_alt = try getInterpreter().adaptivePredict(_input,25,_ctx)
 			}
 
 		}
@@ -2435,35 +2788,27 @@ open class MxsParser: Parser {
 	override open
 	func sempred(_ _localctx: RuleContext?, _ ruleIndex: Int,  _ predIndex: Int)throws -> Bool {
 		switch (ruleIndex) {
-		case  15:
-			return try argumentList_sempred(_localctx?.castdown(ArgumentListContext.self), predIndex)
-		case  17:
+		case  16:
 			return try expression_sempred(_localctx?.castdown(ExpressionContext.self), predIndex)
 	    default: return true
 		}
 	}
-	private func argumentList_sempred(_ _localctx: ArgumentListContext!,  _ predIndex: Int) throws -> Bool {
-		switch (predIndex) {
-		    case 0:return precpred(_ctx, 1)
-		    default: return true
-		}
-	}
 	private func expression_sempred(_ _localctx: ExpressionContext!,  _ predIndex: Int) throws -> Bool {
 		switch (predIndex) {
-		    case 1:return precpred(_ctx, 11)
-		    case 2:return precpred(_ctx, 10)
-		    case 3:return precpred(_ctx, 9)
-		    case 4:return precpred(_ctx, 8)
-		    case 5:return precpred(_ctx, 7)
-		    case 6:return precpred(_ctx, 6)
-		    case 7:return precpred(_ctx, 5)
-		    case 8:return precpred(_ctx, 4)
-		    case 9:return precpred(_ctx, 3)
-		    case 10:return precpred(_ctx, 2)
-		    case 11:return precpred(_ctx, 1)
+		    case 0:return precpred(_ctx, 11)
+		    case 1:return precpred(_ctx, 10)
+		    case 2:return precpred(_ctx, 9)
+		    case 3:return precpred(_ctx, 8)
+		    case 4:return precpred(_ctx, 7)
+		    case 5:return precpred(_ctx, 6)
+		    case 6:return precpred(_ctx, 5)
+		    case 7:return precpred(_ctx, 4)
+		    case 8:return precpred(_ctx, 3)
+		    case 9:return precpred(_ctx, 2)
+		    case 10:return precpred(_ctx, 1)
+		    case 11:return precpred(_ctx, 18)
 		    case 12:return precpred(_ctx, 17)
-		    case 13:return precpred(_ctx, 16)
-		    case 14:return precpred(_ctx, 14)
+		    case 13:return precpred(_ctx, 15)
 		    default: return true
 		}
 	}
