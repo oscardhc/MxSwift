@@ -19,6 +19,18 @@ public protocol MxsListener: ParseTreeListener {
 	 */
 	func exitDeclarations(_ ctx: MxsParser.DeclarationsContext)
 	/**
+	 * Enter a parse tree produced by {@link MxsParser#declaration}.
+	 - Parameters:
+	   - ctx: the parse tree
+	 */
+	func enterDeclaration(_ ctx: MxsParser.DeclarationContext)
+	/**
+	 * Exit a parse tree produced by {@link MxsParser#declaration}.
+	 - Parameters:
+	   - ctx: the parse tree
+	 */
+	func exitDeclaration(_ ctx: MxsParser.DeclarationContext)
+	/**
 	 * Enter a parse tree produced by {@link MxsParser#functionDeclaration}.
 	 - Parameters:
 	   - ctx: the parse tree
@@ -30,6 +42,18 @@ public protocol MxsListener: ParseTreeListener {
 	   - ctx: the parse tree
 	 */
 	func exitFunctionDeclaration(_ ctx: MxsParser.FunctionDeclarationContext)
+	/**
+	 * Enter a parse tree produced by {@link MxsParser#initialDeclaration}.
+	 - Parameters:
+	   - ctx: the parse tree
+	 */
+	func enterInitialDeclaration(_ ctx: MxsParser.InitialDeclarationContext)
+	/**
+	 * Exit a parse tree produced by {@link MxsParser#initialDeclaration}.
+	 - Parameters:
+	   - ctx: the parse tree
+	 */
+	func exitInitialDeclaration(_ ctx: MxsParser.InitialDeclarationContext)
 	/**
 	 * Enter a parse tree produced by {@link MxsParser#variableDeclaration}.
 	 - Parameters:
@@ -175,6 +199,18 @@ public protocol MxsListener: ParseTreeListener {
 	 */
 	func exitCodeBlock(_ ctx: MxsParser.CodeBlockContext)
 	/**
+	 * Enter a parse tree produced by {@link MxsParser#emptySet}.
+	 - Parameters:
+	   - ctx: the parse tree
+	 */
+	func enterEmptySet(_ ctx: MxsParser.EmptySetContext)
+	/**
+	 * Exit a parse tree produced by {@link MxsParser#emptySet}.
+	 - Parameters:
+	   - ctx: the parse tree
+	 */
+	func exitEmptySet(_ ctx: MxsParser.EmptySetContext)
+	/**
 	 * Enter a parse tree produced by {@link MxsParser#type}.
 	 - Parameters:
 	   - ctx: the parse tree
@@ -212,6 +248,20 @@ public protocol MxsListener: ParseTreeListener {
 	   - ctx: the parse tree
 	 */
 	func exitNewExpr(_ ctx: MxsParser.NewExprContext)
+	/**
+	 * Enter a parse tree produced by the {@code instExpr}
+	 * labeled alternative in {@link MxsParser#expression}.
+	 - Parameters:
+	   - ctx: the parse tree
+	 */
+	func enterInstExpr(_ ctx: MxsParser.InstExprContext)
+	/**
+	 * Exit a parse tree produced by the {@code instExpr}
+	 * labeled alternative in {@link MxsParser#expression}.
+	 - Parameters:
+	   - ctx: the parse tree
+	 */
+	func exitInstExpr(_ ctx: MxsParser.InstExprContext)
 	/**
 	 * Enter a parse tree produced by the {@code funcExpr}
 	 * labeled alternative in {@link MxsParser#expression}.

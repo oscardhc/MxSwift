@@ -10,32 +10,32 @@ import Foundation
 protocol ASTVisitor {
     
     func visit(node: Program)
-    func visit(node: VariableDeclaration)
-    func visit(node: FunctionDeclaration)
-    func visit(node: ClassDeclaration)
-    func visit(node: Decl)
-    func visit(node: CodeBlock)
-    func visit(node: If)
-    func visit(node: While)
-    func visit(node: For)
-    func visit(node: Return)
-    func visit(node: Break)
-    func visit(node: Continue)
-    func visit(node: Expr)
-    func visit(node: Variable)
-    func visit(node: ThisLiteral)
-    func visit(node: BoolLiteral)
-    func visit(node: IntLiteral)
-    func visit(node: StringLiteral)
-    func visit(node: NullLiteral)
-    func visit(node: MethodAccess)
-    func visit(node: PropertyAccess)
-    func visit(node: ArrayExpr)
-    func visit(node: FunctionCall)
-    func visit(node: SuffixExpr)
-    func visit(node: PrefixExpr)
-    func visit(node: NewExpr)
-    func visit(node: BinaryExpr)
+    func visit(node: VariableDecl)
+    func visit(node: FunctionDecl)
+    func visit(node: ClassDecl)
+    func visit(node: DeclarationS)
+    func visit(node: CodeblockS)
+    func visit(node: IfS)
+    func visit(node: WhileS)
+    func visit(node: ForS)
+    func visit(node: ReturnS)
+    func visit(node: BreakS)
+    func visit(node: ContinueS)
+    func visit(node: ExpressionS)
+    func visit(node: VariableE)
+    func visit(node: ThisLiteralE)
+    func visit(node: BoolLiteralE)
+    func visit(node: IntLiteralE)
+    func visit(node: StringLiteralE)
+    func visit(node: NullLiteralE)
+    func visit(node: MethodAccessE)
+    func visit(node: PropertyAccessE)
+    func visit(node: ArrayE)
+    func visit(node: FunctionCallE)
+    func visit(node: SuffixE)
+    func visit(node: PrefixE)
+    func visit(node: NewE)
+    func visit(node: BinaryE)
     
 }
 
@@ -45,116 +45,117 @@ class ASTBaseVisitor: ASTVisitor {
         node.declarations.forEach{$0.accept(visitor: self)}
     }
     
-    func visit(node: VariableDeclaration) {
+    func visit(node: VariableDecl) {
         node.expressions.forEach{$0?.accept(visitor: self)}
     }
     
-    func visit(node: FunctionDeclaration) {
+    func visit(node: FunctionDecl) {
         node.parameters.forEach{$0.accept(visitor: self)}
         node.statements.forEach{$0.accept(visitor: self)}
     }
     
-    func visit(node: ClassDeclaration) {
+    func visit(node: ClassDecl) {
         node.properties.forEach{$0.accept(visitor: self)}
         node.methods.forEach{$0.accept(visitor: self)}
     }
     
-    func visit(node: Decl) {
+    func visit(node: DeclarationS) {
         node.decl.accept(visitor: self)
     }
     
-    func visit(node: CodeBlock) {
+    func visit(node: CodeblockS) {
         node.statements.forEach{$0.accept(visitor: self)}
     }
     
-    func visit(node: If) {
+    func visit(node: IfS) {
         node.condition.accept(visitor: self)
-        node.accept.accept(visitor: self)
+        node.accept?.accept(visitor: self)
         node.reject?.accept(visitor: self)
     }
     
-    func visit(node: While) {
+    func visit(node: WhileS) {
         node.condition.accept(visitor: self)
-        node.accept.accept(visitor: self)
+        node.accept?.accept(visitor: self)
     }
     
-    func visit(node: For) {
+    func visit(node: ForS) {
         node.initial?.accept(visitor: self)
         node.condition?.accept(visitor: self)
         node.increment?.accept(visitor: self)
+        node.accept?.accept(visitor: self)
     }
     
-    func visit(node: Return) {
+    func visit(node: ReturnS) {
         node.expression?.accept(visitor: self)
     }
     
-    func visit(node: Break) {
+    func visit(node: BreakS) {
         
     }
     
-    func visit(node: Continue) {
+    func visit(node: ContinueS) {
         
     }
     
-    func visit(node: Expr) {
+    func visit(node: ExpressionS) {
         node.expression.accept(visitor: self)
     }
     
-    func visit(node: Variable) {
+    func visit(node: VariableE) {
         
     }
     
-    func visit(node: ThisLiteral) {
+    func visit(node: ThisLiteralE) {
         
     }
     
-    func visit(node: BoolLiteral) {
+    func visit(node: BoolLiteralE) {
         
     }
     
-    func visit(node: IntLiteral) {
+    func visit(node: IntLiteralE) {
         
     }
     
-    func visit(node: StringLiteral) {
+    func visit(node: StringLiteralE) {
         
     }
     
-    func visit(node: NullLiteral) {
+    func visit(node: NullLiteralE) {
         
     }
     
-    func visit(node: MethodAccess) {
+    func visit(node: MethodAccessE) {
         node.toAccess.accept(visitor: self)
         node.method.accept(visitor: self)
     }
     
-    func visit(node: PropertyAccess) {
+    func visit(node: PropertyAccessE) {
         node.toAccess.accept(visitor: self)
     }
     
-    func visit(node: ArrayExpr) {
+    func visit(node: ArrayE) {
         node.array.accept(visitor: self)
         node.index.accept(visitor: self)
     }
     
-    func visit(node: FunctionCall) {
+    func visit(node: FunctionCallE) {
         node.arguments.forEach{$0.accept(visitor: self)}
     }
     
-    func visit(node: SuffixExpr) {
+    func visit(node: SuffixE) {
         node.expression.accept(visitor: self)
     }
     
-    func visit(node: PrefixExpr) {
+    func visit(node: PrefixE) {
         node.expression.accept(visitor: self)
     }
     
-    func visit(node: NewExpr) {
+    func visit(node: NewE) {
         node.expressions.forEach{$0.accept(visitor: self)}
     }
     
-    func visit(node: BinaryExpr) {
+    func visit(node: BinaryE) {
         node.lhs.accept(visitor: self)
         node.rhs.accept(visitor: self)
     }

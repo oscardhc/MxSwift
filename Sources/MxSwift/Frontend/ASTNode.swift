@@ -7,13 +7,16 @@
 
 import Foundation
 
-class ASTNode {
+class ASTNode: BaseObject, CustomStringConvertible {
     var scope: Scope!
     init(scope: Scope) {
         self.scope = scope
     }
+    var custom: String {
+        return ""
+    }
     var description: String {
-        return "\(type(of: self)) in scope \(scope.scopeName)"
+        return "\(hashString) \(scope.scopeName)::\(type(of: self)) \t \(custom)"
     }
     func accept(visitor: ASTVisitor) {}
 }
@@ -30,7 +33,7 @@ class Program: ASTNode {
 class Declaration: ASTNode {
     
 }
-class VariableDeclaration: Declaration {
+class VariableDecl: Declaration {
     var id: [String]!
     var type: String!
     var expressions: [Expression?]!
@@ -40,31 +43,35 @@ class VariableDeclaration: Declaration {
         self.type = type
         self.expressions = expressions
     }
+    override var custom: String {return "\(type!) \(id!)"}
     override func accept(visitor: ASTVisitor) { visitor.visit(node: self) }
 }
-class FunctionDeclaration: Declaration {
+class FunctionDecl: Declaration {
     var id: String!
     var type: String!
-    var parameters: [VariableDeclaration]!
+    var parameters: [VariableDecl]!
     var statements: [Statement]!
-    init(id: String, scope: Scope, type: String, parameters: [VariableDeclaration] = [], statements: [Statement] = []) {
+    init(id: String, scope: Scope, type: String, parameters: [VariableDecl] = [], statements: [Statement] = []) {
         super.init(scope: scope)
         self.id = id
         self.type = type
         self.parameters = parameters
         self.statements = statements
     }
+    override var custom: String {return "\(type!) \(id!)"}
     override func accept(visitor: ASTVisitor) { visitor.visit(node: self) }
 }
-class ClassDeclaration: Declaration {
+class ClassDecl: Declaration {
     var id: String!
-    var properties: [VariableDeclaration]!
-    var methods: [FunctionDeclaration]!
-    init(id: String, scope: Scope, properties: [VariableDeclaration] = [], methods: [FunctionDeclaration] = []) {
+    var properties: [VariableDecl]!
+    var methods: [FunctionDecl]!
+    var initial: [FunctionDecl]!
+    init(id: String, scope: Scope, properties: [VariableDecl] = [], methods: [FunctionDecl] = [], initial: [FunctionDecl] = []) {
         super.init(scope: scope)
         self.id = id
         self.properties = properties
         self.methods = methods
+        self.initial = initial
     }
     override func accept(visitor: ASTVisitor) { visitor.visit(node: self) }
 }
@@ -73,7 +80,7 @@ class ClassDeclaration: Declaration {
 class Statement: ASTNode {
     
 }
-class Decl: Statement {
+class DeclarationS: Statement {
     var decl: Declaration!
     init(scope: Scope, decl: Declaration) {
         super.init(scope: scope)
@@ -81,19 +88,20 @@ class Decl: Statement {
     }
     override func accept(visitor: ASTVisitor) { visitor.visit(node: self) }
 }
-class CodeBlock: Statement {
+class CodeblockS: Statement {
     var statements: [Statement]!
     init(scope: Scope, statements: [Statement] = []) {
         super.init(scope: scope)
         self.statements = statements
     }
+    override var custom: String { var str = ""; statements.forEach{str += "\($0.hashString) "}; return str; }
     override func accept(visitor: ASTVisitor) { visitor.visit(node: self) }
 }
-class If: Statement {
+class IfS: Statement {
     var condition: Expression!
-    var accept: Statement!
+    var accept: Statement?
     var reject: Statement?
-    init(scope: Scope, condition: Expression, accept: Statement, reject: Statement?) {
+    init(scope: Scope, condition: Expression, accept: Statement?, reject: Statement?) {
         super.init(scope: scope)
         self.condition = condition
         self.accept = accept
@@ -101,29 +109,32 @@ class If: Statement {
     }
     override func accept(visitor: ASTVisitor) { visitor.visit(node: self) }
 }
-class While: Statement {
+class WhileS: Statement {
     var condition: Expression!
-    var accept: Statement!
-    init(scope: Scope, condition: Expression, accept: Statement) {
+    var accept: Statement?
+    init(scope: Scope, condition: Expression, accept: Statement?) {
         super.init(scope: scope)
         self.condition = condition
         self.accept = accept
     }
     override func accept(visitor: ASTVisitor) { visitor.visit(node: self) }
 }
-class For: Statement {
+class ForS: Statement {
     var initial: Expression?
     var condition: Expression?
     var increment: Expression?
-    init(scope: Scope, initial: Expression?, condition: Expression?, increment: Expression?) {
+    var accept: Statement?
+    init(scope: Scope, initial: Expression?, condition: Expression?, increment: Expression?, accept: Statement?) {
         super.init(scope: scope)
         self.initial = initial
         self.condition = condition
         self.increment = increment
+        self.accept = accept
     }
+    override var custom: String {return "\(initial?.hashString) | \(condition?.hashString) | \(increment?.hashString)"}
     override func accept(visitor: ASTVisitor) { visitor.visit(node: self) }
 }
-class Return: Statement {
+class ReturnS: Statement {
     var expression: Expression?
     init(scope: Scope, expression: Expression?) {
         super.init(scope: scope)
@@ -131,13 +142,13 @@ class Return: Statement {
     }
     override func accept(visitor: ASTVisitor) { visitor.visit(node: self) }
 }
-class Break: Statement {
+class BreakS: Statement {
     override func accept(visitor: ASTVisitor) { visitor.visit(node: self) }
 }
-class Continue: Statement {
+class ContinueS: Statement {
     override func accept(visitor: ASTVisitor) { visitor.visit(node: self) }
 }
-class Expr: Statement {
+class ExpressionS: Statement {
     var expression: Expression!
     init(scope: Scope, expression: Expression) {
         super.init(scope: scope)
@@ -155,43 +166,47 @@ class Expression: ASTNode {
         self.lValue = lValue
     }
 }
-class Variable: Expression {
+class VariableE: Expression {
     var id: String!
     init(id: String, scope: Scope) {
         super.init(scope: scope, lValue: true)
         self.id = id;
     }
+    override var custom: String {return "\(id!)"}
     override func accept(visitor: ASTVisitor) { visitor.visit(node: self) }
 }
-class ThisLiteral: Expression {
+class ThisLiteralE: Expression {
     override func accept(visitor: ASTVisitor) { visitor.visit(node: self) }
 }
-class BoolLiteral: Expression {
+class BoolLiteralE: Expression {
     var value = true
+    override var custom: String {return "\(value)"}
     override func accept(visitor: ASTVisitor) { visitor.visit(node: self) }
 }
-class IntLiteral: Expression {
+class IntLiteralE: Expression {
     var value = 0;
+    override var custom: String {return "\(value)"}
     override func accept(visitor: ASTVisitor) { visitor.visit(node: self) }
 }
-class StringLiteral: Expression {
+class StringLiteralE: Expression {
     var value = "";
+    override var custom: String {return "\(value)"}
     override func accept(visitor: ASTVisitor) { visitor.visit(node: self) }
 }
-class NullLiteral: Expression {
+class NullLiteralE: Expression {
     override func accept(visitor: ASTVisitor) { visitor.visit(node: self) }
 }
-class MethodAccess: Expression {
+class MethodAccessE: Expression {
     var toAccess: Expression!
-    var method: FunctionCall!
-    init(scope: Scope, toAccess: Expression, method: FunctionCall) {
+    var method: FunctionCallE!
+    init(scope: Scope, toAccess: Expression, method: FunctionCallE) {
         super.init(scope: scope)
         self.toAccess = toAccess
         self.method = method
     }
     override func accept(visitor: ASTVisitor) { visitor.visit(node: self) }
 }
-class PropertyAccess: Expression {
+class PropertyAccessE: Expression {
     var toAccess: Expression!
     var property: String!
     init(scope: Scope, toAccess: Expression, property: String) {
@@ -201,7 +216,7 @@ class PropertyAccess: Expression {
     }
     override func accept(visitor: ASTVisitor) { visitor.visit(node: self) }
 }
-class ArrayExpr: Expression {
+class ArrayE: Expression {
     var array: Expression!
     var index: Expression!
     init(scope: Scope, array: Expression, index: Expression) {
@@ -211,18 +226,18 @@ class ArrayExpr: Expression {
     }
     override func accept(visitor: ASTVisitor) { visitor.visit(node: self) }
 }
-class FunctionCall: Expression {
+class FunctionCallE: Expression {
+    var id: String!
     var arguments: [Expression]!
     init(id: String, scope: Scope, arguments: [Expression]) {
         super.init(scope: scope)
+        self.id = id
         self.arguments = arguments
     }
     override func accept(visitor: ASTVisitor) { visitor.visit(node: self) }
 }
-enum UnaryOperator {
-    case doubleAdd, doubleSub, add, sub, bitwise, negation
-}
-class SuffixExpr: Expression {
+
+class SuffixE: Expression {
     var expression: Expression!
     var operation: UnaryOperator!
     init(scope: Scope, expression: Expression, operation: UnaryOperator) {
@@ -232,7 +247,7 @@ class SuffixExpr: Expression {
     }
     override func accept(visitor: ASTVisitor) { visitor.visit(node: self) }
 }
-class PrefixExpr: Expression {
+class PrefixE: Expression {
     var expression: Expression!
     var operation: UnaryOperator!
     init(scope: Scope, expression: Expression, operation: UnaryOperator) {
@@ -242,7 +257,7 @@ class PrefixExpr: Expression {
     }
     override func accept(visitor: ASTVisitor) { visitor.visit(node: self) }
 }
-class NewExpr: Expression {
+class NewE: Expression {
     var baseType: String!
     var expressions: [Expression]!
     var empty: Int!
@@ -254,10 +269,7 @@ class NewExpr: Expression {
     }
     override func accept(visitor: ASTVisitor) { visitor.visit(node: self) }
 }
-enum BinaryOperator {
-    case add, sub, mul, div, mod, gt, lt, geq, leq, eq, neq, bitAnd, bitOr, bitXor, logAnd, logOr, lShift, rShift, assign
-}
-class BinaryExpr: Expression {
+class BinaryE: Expression {
     var lhs, rhs: Expression!
     var op: BinaryOperator!
     init(scope: Scope, lhs: Expression, rhs: Expression, op: BinaryOperator) {
@@ -266,6 +278,7 @@ class BinaryExpr: Expression {
         self.rhs = rhs
         self.op = op
     }
+    override var custom: String {return "\(op!)"}
     override func accept(visitor: ASTVisitor) { visitor.visit(node: self) }
 }
 

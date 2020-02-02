@@ -12,11 +12,11 @@ class CompilationError: Error {
     var message = [String]()
     
     func redifinition(id: String, scopeName: String) {
-        message.append("[Error] Redefinition of variable \"\(id)\" in scope \"\(scopeName)\".\n")
+        message.append("[Error] Redefinition of variable \"\(id)\" in scope \"\(scopeName)\".")
     }
     
-    func notDeclared(id: String) {
-        message.append("[Error] Use of undeclared identifier \"\(id)\".\n")
+    func notDeclared(id: String, scopeName: String) {
+        message.append("[Error] Use of undeclared identifier \"\(id)\" in scope \"\(scopeName)\".")
     }
     
     func thisNotInClass() {
@@ -27,6 +27,9 @@ class CompilationError: Error {
         message.append("[Error] Subscriptiion of the non-array object \"\(id)\".")
     }
     
+    func show() {
+        message.forEach{print($0)}
+    }
 }
 
 let error = CompilationError()

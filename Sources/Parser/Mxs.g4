@@ -2,18 +2,21 @@
 grammar Mxs;
 
 // top rule - declarations
-declarations: ((functionDeclaration | variableDeclaration | classDeclaration ';'))*;
+declarations: declaration*;
+declaration: functionDeclaration | variableDeclaration | classDeclaration;
 
 functionDeclaration: type Identifier '(' ((type Identifier ',')* type Identifier)? ')' '{' sentence* '}';
+
+initialDeclaration: Identifier '(' ((type Identifier ',')* type Identifier)? ')' '{' sentence* '}';
 
 variableDeclaration: type (Identifier ('=' expression)? ',')* Identifier ('=' expression)? ';';
 
 classDeclaration
-    : Class Identifier '{' (variableDeclaration | functionDeclaration)* '}'
+    : Class Identifier '{' (variableDeclaration | functionDeclaration | initialDeclaration)* '}' ';'
     ;
 
 declSentence: variableDeclaration;
-ifSentence: If '(' expression ')' sentence Else sentence;
+ifSentence: If '(' expression ')' sentence (Else sentence)?;
 whileSentence: While '(' expression ')' sentence;
 forSentence: For '(' ini=expression? ';' cod=expression? ';' inc=expression? ')' sentence;
 returnSentence: Return expression? ';';
@@ -27,7 +30,8 @@ codeBlock
     : '{' sentence* '}'
     ;
 
-type: (Bool | Int | String | Void | Identifier)('[' expression? ']')*;
+emptySet        : ('[' ']');
+type: (Bool | Int | String | Void | Identifier) emptySet*;
 
 functionExpression: Identifier '(' ((expression ',')* expression)? ')';
 
@@ -40,7 +44,8 @@ expression
     | functionExpression                                                            #funcExpr
     | expression op=(SelfAdd | SelfSub)                                             #sufExpr
     | op=(SelfAdd | SelfSub | Add | Sub | Negation | Bitwise) expression            #unaryExpr
-    | New ty=(Bool | Int | String | Void | Identifier) '[' expression ']' (EmptySet*)       #newExpr
+    | New functionExpression                                                        #instExpr
+    | New ty=(Bool | Int | String | Void | Identifier) '[' expression ']' (emptySet*)       #newExpr
     | New ty=(Bool | Int | String | Void | Identifier) ('[' expression ']')*        #newExpr
     | expression op=(Mul | Div | Mod) expression                                    #binaryExpr
     | expression op=(Add | Sub) expression                                          #binaryExpr
@@ -52,7 +57,7 @@ expression
     | expression op=BitOr expression                                                #binaryExpr
     | expression op=LogicAnd expression                                             #binaryExpr
     | expression op=LogicOr expression                                              #binaryExpr
-    | <assoc=right> expression op=Assign expression                                    #assignExpr
+    | <assoc=right> expression op=Assign expression                                 #assignExpr
     ;
 
 Bool            : 'bool';
@@ -73,7 +78,6 @@ BoolLiteral     : 'true' | 'false';
 IntLiteral      : [1-9][0-9]* | '0';
 StringLiteral   : '"' (~["\\\n\r] | '\\' ["n\\])* '"';
 NullLiteral     : 'null';
-EmptySet        : '[]';
 
 Assign      : '=';
 Mul         : '*';

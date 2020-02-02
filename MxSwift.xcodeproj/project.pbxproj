@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		55EEB69123E4043100E9FE2C /* StaticTypeChecker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55EEB69023E4043100E9FE2C /* StaticTypeChecker.swift */; };
+		555C57ED23E6B3BA00D9192A /* SemanticChecker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 555C57EC23E6B3BA00D9192A /* SemanticChecker.swift */; };
 		55EEB69423E41ABC00E9FE2C /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55EEB69323E41ABC00E9FE2C /* Utils.swift */; };
 		55EEB69723E4225D00E9FE2C /* MxsBaseVisitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55EEB69523E4225D00E9FE2C /* MxsBaseVisitor.swift */; };
 		55EEB69823E4225D00E9FE2C /* MxsVisitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55EEB69623E4225D00E9FE2C /* MxsVisitor.swift */; };
@@ -168,11 +168,8 @@
 		OBJ_351 /* TextChunk.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_167 /* TextChunk.swift */; };
 		OBJ_352 /* TokenTagToken.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_168 /* TokenTagToken.swift */; };
 		OBJ_359 /* CompilationError.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_171 /* CompilationError.swift */; };
-		OBJ_360 /* GlobalScope.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_172 /* GlobalScope.swift */; };
-		OBJ_361 /* LocalScope.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_173 /* LocalScope.swift */; };
 		OBJ_362 /* Scope.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_174 /* Scope.swift */; };
 		OBJ_363 /* Symbol.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_175 /* Symbol.swift */; };
-		OBJ_364 /* SymbolTableBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_176 /* SymbolTableBuilder.swift */; };
 		OBJ_365 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_177 /* main.swift */; };
 		OBJ_367 /* Parser.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = "MxSwift::Parser::Product" /* Parser.framework */; };
 		OBJ_368 /* Antlr4.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = "MxSwift::Antlr4::Product" /* Antlr4.framework */; };
@@ -211,8 +208,8 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		555C57EC23E6B3BA00D9192A /* SemanticChecker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SemanticChecker.swift; sourceTree = "<group>"; };
 		55ACD0CE23E309EC0087376F /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
-		55EEB69023E4043100E9FE2C /* StaticTypeChecker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StaticTypeChecker.swift; sourceTree = "<group>"; };
 		55EEB69323E41ABC00E9FE2C /* Utils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utils.swift; sourceTree = "<group>"; };
 		55EEB69523E4225D00E9FE2C /* MxsBaseVisitor.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MxsBaseVisitor.swift; sourceTree = "<group>"; };
 		55EEB69623E4225D00E9FE2C /* MxsVisitor.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MxsVisitor.swift; sourceTree = "<group>"; };
@@ -294,11 +291,8 @@
 		OBJ_168 /* TokenTagToken.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TokenTagToken.swift; sourceTree = "<group>"; };
 		OBJ_17 /* CommonToken.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommonToken.swift; sourceTree = "<group>"; };
 		OBJ_171 /* CompilationError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompilationError.swift; sourceTree = "<group>"; };
-		OBJ_172 /* GlobalScope.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlobalScope.swift; sourceTree = "<group>"; };
-		OBJ_173 /* LocalScope.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalScope.swift; sourceTree = "<group>"; };
 		OBJ_174 /* Scope.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Scope.swift; sourceTree = "<group>"; };
 		OBJ_175 /* Symbol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Symbol.swift; sourceTree = "<group>"; };
-		OBJ_176 /* SymbolTableBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SymbolTableBuilder.swift; sourceTree = "<group>"; };
 		OBJ_177 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
 		OBJ_179 /* Mxs.interp */ = {isa = PBXFileReference; lastKnownFileType = text; path = Mxs.interp; sourceTree = "<group>"; };
 		OBJ_18 /* CommonTokenFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommonTokenFactory.swift; sourceTree = "<group>"; };
@@ -545,15 +539,12 @@
 			isa = PBXGroup;
 			children = (
 				OBJ_174 /* Scope.swift */,
-				OBJ_172 /* GlobalScope.swift */,
-				OBJ_173 /* LocalScope.swift */,
 				OBJ_175 /* Symbol.swift */,
-				55EEB69B23E4919D00E9FE2C /* ASTBuilder.swift */,
-				55EEB69D23E55D5500E9FE2C /* ASTPrinter.swift */,
-				55EEB69F23E562A700E9FE2C /* ASTVisitor.swift */,
-				OBJ_176 /* SymbolTableBuilder.swift */,
-				55EEB69023E4043100E9FE2C /* StaticTypeChecker.swift */,
 				55EEB69923E4311B00E9FE2C /* ASTNode.swift */,
+				55EEB69B23E4919D00E9FE2C /* ASTBuilder.swift */,
+				55EEB69F23E562A700E9FE2C /* ASTVisitor.swift */,
+				55EEB69D23E55D5500E9FE2C /* ASTPrinter.swift */,
+				555C57EC23E6B3BA00D9192A /* SemanticChecker.swift */,
 			);
 			path = Frontend;
 			sourceTree = "<group>";
@@ -1013,18 +1004,15 @@
 			buildActionMask = 0;
 			files = (
 				OBJ_359 /* CompilationError.swift in Sources */,
-				55EEB69123E4043100E9FE2C /* StaticTypeChecker.swift in Sources */,
 				55EEB69423E41ABC00E9FE2C /* Utils.swift in Sources */,
-				OBJ_360 /* GlobalScope.swift in Sources */,
 				55EEB69A23E4311B00E9FE2C /* ASTNode.swift in Sources */,
-				OBJ_361 /* LocalScope.swift in Sources */,
 				OBJ_362 /* Scope.swift in Sources */,
 				55EEB69E23E55D5500E9FE2C /* ASTPrinter.swift in Sources */,
 				OBJ_363 /* Symbol.swift in Sources */,
 				55EEB6A023E562A700E9FE2C /* ASTVisitor.swift in Sources */,
 				55EEB69C23E4919D00E9FE2C /* ASTBuilder.swift in Sources */,
-				OBJ_364 /* SymbolTableBuilder.swift in Sources */,
 				OBJ_365 /* main.swift in Sources */,
+				555C57ED23E6B3BA00D9192A /* SemanticChecker.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -28,6 +28,19 @@ open class MxsBaseListener: MxsListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	open func enterDeclaration(_ ctx: MxsParser.DeclarationContext) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	open func exitDeclaration(_ ctx: MxsParser.DeclarationContext) { }
+
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	open func enterFunctionDeclaration(_ ctx: MxsParser.FunctionDeclarationContext) { }
 	/**
 	 * {@inheritDoc}
@@ -35,6 +48,19 @@ open class MxsBaseListener: MxsListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	open func exitFunctionDeclaration(_ ctx: MxsParser.FunctionDeclarationContext) { }
+
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	open func enterInitialDeclaration(_ ctx: MxsParser.InitialDeclarationContext) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	open func exitInitialDeclaration(_ ctx: MxsParser.InitialDeclarationContext) { }
 
 	/**
 	 * {@inheritDoc}
@@ -197,6 +223,19 @@ open class MxsBaseListener: MxsListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	open func enterEmptySet(_ ctx: MxsParser.EmptySetContext) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	open func exitEmptySet(_ ctx: MxsParser.EmptySetContext) { }
+
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	open func enterType(_ ctx: MxsParser.TypeContext) { }
 	/**
 	 * {@inheritDoc}
@@ -230,6 +269,19 @@ open class MxsBaseListener: MxsListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	open func exitNewExpr(_ ctx: MxsParser.NewExprContext) { }
+
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	open func enterInstExpr(_ ctx: MxsParser.InstExprContext) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	open func exitInstExpr(_ ctx: MxsParser.InstExprContext) { }
 
 	/**
 	 * {@inheritDoc}
