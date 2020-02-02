@@ -35,6 +35,8 @@ enum BinaryOperator {
 let bool = "bool", int = "int", string = "string", void = "void", null = "null"
 let builtinTypes = [bool, int, string, void]
 
+var preOperation: Bool = false
+
 extension Int {
     func getUnaryOp() -> UnaryOperator {
         switch self {
@@ -75,6 +77,13 @@ extension String {
     func dropArray() -> String {
         let idx = index(endIndex, offsetBy: -2)
         return String(self[..<idx])
+    }
+    func dropAllArray() -> String {
+        var ret = String(self)
+        while ret.hasSuffix("[]") {
+            ret = ret.dropArray()
+        }
+        return ret;
     }
     func isBuiltinType() -> Bool {
         return builtinTypes.contains(self)

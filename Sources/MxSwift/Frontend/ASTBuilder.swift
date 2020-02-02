@@ -93,7 +93,7 @@ class ASTBuilder: MxsBaseVisitor<ASTNode> {
     }
     
     override func visitClassDeclaration(_ ctx: MxsParser.ClassDeclarationContext) -> ASTNode? {
-        let id = ctx.Identifier()!.getText()
+        let id = preOperation ? "string" : ctx.Identifier()!.getText()
         
         let _s = current.newSubscope(withName: id, withType: .CLASS)
         current.newSymbol(name: id, value: Symbol(_type: "class", _subScope: _s))
@@ -115,18 +115,12 @@ class ASTBuilder: MxsBaseVisitor<ASTNode> {
         if let expr = ctx.expression(0) {
             current.newSymbol(name: ctx.Identifier(0)!.getText(), value: Symbol(_type: type))
             node.id.append(ctx.Identifier(0)!.getText())
-            node.expressions.append(visit(expr) as! Expression)
+            node.expressions.append(visit(expr) as? Expression)
         } else {
             for id in ctx.Identifier() {
                 current.newSymbol(name: id.getText(), value: Symbol(_type: type))
                 node.id.append(id.getText())
             }
-        }
-        if error.message.count > 0 {
-            error.show()
-            print(ctx.getText())
-            current.printScope()
-            exit(-1)
         }
         return node
     }
@@ -175,9 +169,7 @@ class ASTBuilder: MxsBaseVisitor<ASTNode> {
     
     override func visitFunctionExpression(_ ctx: MxsParser.FunctionExpressionContext) -> ASTNode? {
         let node = FunctionCallE(id: ctx.Identifier()!.getText(), scope: current, arguments: [])
-        for expr in ctx.expression() {
-            node.arguments.append(visit(expr) as! Expression)
-        }
+        ctx.expression().forEach{node.arguments.append(visit($0) as! Expression)}
         return node
     }
     
@@ -260,7 +252,7 @@ class ASTBuilder: MxsBaseVisitor<ASTNode> {
     
     override func visitReturnSentence(_ ctx: MxsParser.ReturnSentenceContext) -> ASTNode? {
         return ReturnS(scope: current,
-                       expression: ctx.expression() == nil ? nil : visit(ctx.expression()!) as! Expression)
+                       expression: ctx.expression() == nil ? nil : visit(ctx.expression()!) as? Expression)
     }
     
     override func visitBreakSentence(_ ctx: MxsParser.BreakSentenceContext) -> ASTNode? {

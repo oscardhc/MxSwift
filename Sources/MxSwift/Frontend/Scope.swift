@@ -25,7 +25,6 @@ class Scope: BaseObject {
     }
     
     func newSymbol(name: String, value: Symbol) {
-//        printScope()
         if (table[name] == nil) {
             table[name] = value;
         } else {
@@ -33,12 +32,12 @@ class Scope: BaseObject {
         }
     }
     
-    func find(name: String) -> Symbol? {return nil;}
+    func find(name: String, check: ((String) -> Bool) = {_ in true}) -> Symbol? {return nil;}
     func printScope() {
-        print(hashString, "-", scopeName, ":")
+        print(hashString, "-", scopeName, "(\(scopeType))", ":")
         table.forEach{print("        ", $0, $1.type!, $1.subScope)}
     }
-    func currentClass() -> String? {return nil;}
+    func currentClass() -> Scope? {return nil;}
     
     func newSubscope(withName _id: String, withType _ty: ScopeType) -> LocalScope {
         let newScope = LocalScope(_name: _id, _type: _ty, _father: self)
@@ -49,8 +48,13 @@ class Scope: BaseObject {
 
 class GlobalScope: Scope {
     
-    override func find(name: String) -> Symbol? {
-        return table[name]
+    override func find(name: String, check: ((String) -> Bool) = {_ in true}) -> Symbol? {
+        let res = table[name]
+        if res != nil && check(res!.type) {
+            return res!
+        } else {
+            return nil
+        }
     }
     
     override func printScope() {
@@ -69,12 +73,12 @@ class LocalScope: Scope {
         father = _father;
     }
     
-    override func find(name: String) -> Symbol? {
+    override func find(name: String, check: ((String) -> Bool) = {_ in true}) -> Symbol? {
         let res = table[name]
-        if res != nil {
+        if res != nil && check(res!.type) {
             return res!
         } else {
-            return father.find(name: name);
+            return father.find(name: name, check: check);
         }
     }
     
@@ -83,9 +87,9 @@ class LocalScope: Scope {
         father.printScope()
     }
     
-    override func currentClass() -> String? {
+    override func currentClass() -> Scope? {
         if scopeType == .CLASS {
-            return scopeName
+            return self
         } else {
             return father.currentClass()
         }

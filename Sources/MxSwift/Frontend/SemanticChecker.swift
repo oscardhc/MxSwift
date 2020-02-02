@@ -20,8 +20,9 @@ class SemanticChecker: ASTBaseVisitor {
 
     override func visit(node: VariableDecl) {
         super.visit(node: node)
-        if !node.type.isBuiltinType() && node.scope.find(name: node.type) == nil {
-            error.notDeclared(id: node.type, scopeName: node.scope.scopeName)
+        let baseType = node.type.dropAllArray()
+        if !baseType.isBuiltinType() && node.scope.find(name: baseType) == nil {
+            error.notDeclared(id: baseType, scopeName: node.scope.scopeName)
         }
     }
 
@@ -76,10 +77,10 @@ class SemanticChecker: ASTBaseVisitor {
 
     override func visit(node: ThisLiteralE) {
         super.visit(node: node)
-        if let t = node.scope.currentClass() {
-            node.type = t
+        if let c = node.scope.currentClass() {
+            node.type = c.scopeName
         } else {
-            error.thisNotInClass()
+            error.notInClass(key: "this")
         }
     }
 
@@ -104,20 +105,40 @@ class SemanticChecker: ASTBaseVisitor {
     }
 
     override func visit(node: MethodAccessE) {
-        super.visit(node: node)
-        if let t = node.scope.find(name: node.method.id) {
-            node.type = t.type
+//        super.visit(node: node)
+        
+        node.toAccess.accept(visitor: self)
+        let c = node.toAccess.type!
+//        if c == string {
+//
+//        } else
+        if let sym = node.scope.find(name: c, check: {(str) in return str == "class"}) {
+            if sym.type == "class" {
+                if let m = sym.subScope!.table[node.method.id] {
+                    node.type = m.type
+                    node.method.scope = sym.subScope!
+                } else {
+                    error.noSuchMember(name: node.method.id, c: c)
+                }
+            } else {
+                error.notInClass(key: node.method.id)
+            }
         } else {
-            error.notDeclared(id: node.method.id, scopeName: node.scope.scopeName)
+            error.notInClass(key: node.method.id)
         }
+        node.method.accept(visitor: self)
     }
 
     override func visit(node: PropertyAccessE) {
         super.visit(node: node)
-        if let t = node.scope.find(name: node.property) {
-            node.type = t.type
+        if let c = node.scope.currentClass() {
+            if let t = c.table[node.property] {
+                node.type = t.type
+            } else {
+                error.noSuchMember(name: node.property, c: c.scopeName)
+            }
         } else {
-            error.notDeclared(id: node.property, scopeName: node.scope.scopeName)
+            error.notInClass(key: node.property)
         }
     }
 
@@ -140,28 +161,30 @@ class SemanticChecker: ASTBaseVisitor {
     }
 
     override func visit(node: SuffixE) {
+        let unaryError = {error.unaryOperatorError(op: node.op, type1: node.expression.type)}
         super.visit(node: node)
         switch node.op {
         case .doubleAdd, .doubleSub:
             if node.expression.type == int {
                 node.type = int
-            } else {fallthrough}
+            } else {unaryError()}
         default:
-            error.unaryOperatorError(op: node.op, type1: node.expression.type)
+            break
         }
     }
 
     override func visit(node: PrefixE) {
+        let unaryError = {error.unaryOperatorError(op: node.op, type1: node.expression.type)}
         super.visit(node: node)
         switch node.op {
         case .doubleAdd, .doubleSub, .add, .sub, .bitwise:
             if node.expression.type == int {
                 node.type = int
-            } else {fallthrough}
+            } else {unaryError()}
         case .negation:
             if node.expression.type == bool {
                 node.type = bool
-            } else {fallthrough}
+            } else {unaryError()}
         default:
             error.unaryOperatorError(op: node.op, type1: node.expression.type)
         }
@@ -172,26 +195,25 @@ class SemanticChecker: ASTBaseVisitor {
     }
     
     override func visit(node: BinaryE) {
+        let binaryError = {error.binaryOperatorError(op: node.op, type1: node.lhs.type, type2: node.rhs.type)}
         super.visit(node: node)
-        switch node.op {
+        switch node.op! {
         case .assign:
             if node.lhs.lValue == false {
                 error.notAssignable(id: node.lhs.description)
-            } else if node.lhs.type != node.rhs.type {fallthrough}
+            } else if node.lhs.type != node.rhs.type {binaryError()}
         case .add, .sub, .mul, .mod, .div, .bitAnd, .bitOr, .bitXor, .lShift, .rShift:
             if node.lhs.type == node.rhs.type && [int].contains(node.lhs.type) {
                 node.type = int
-            } else {fallthrough}
+            } else {binaryError()}
         case .eq, .neq, .gt, .geq, .lt, .leq:
             if node.lhs.type == node.rhs.type && [int, string, bool].contains(node.lhs.type) {
                 node.type = bool
-            }
+            } else {binaryError()}
         case .logAnd, .logOr:
             if node.lhs.type == node.rhs.type && [bool].contains(node.lhs.type) {
                 node.type = bool
-            }
-        default:
-            error.binaryOperatorError(op: node.op, type1: node.lhs.type, type2: node.rhs.type)
+            } else {binaryError()}
         }
     }
 

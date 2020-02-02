@@ -422,8 +422,8 @@
 		55EEB69223E41A9F00E9FE2C /* Utils */ = {
 			isa = PBXGroup;
 			children = (
-				OBJ_171 /* CompilationError.swift */,
 				55EEB69323E41ABC00E9FE2C /* Utils.swift */,
+				OBJ_171 /* CompilationError.swift */,
 			);
 			path = Utils;
 			sourceTree = "<group>";

@@ -11,6 +11,8 @@
 
 import Foundation
 
+var parserMeetsError = false
+
 open class DefaultErrorStrategy: ANTLRErrorStrategy {
     /// 
     /// Indicates whether the error strategy is currently "recovering from an
@@ -111,6 +113,7 @@ open class DefaultErrorStrategy: ANTLRErrorStrategy {
     open func reportError(_ recognizer: Parser, _ e: RecognitionException) {
         // if we've already reported an error and have not matched a token
         // yet successfully, don't report any errors.
+        
         if inErrorRecoveryMode(recognizer) {
 
             return // don't report spurious errors
@@ -129,6 +132,9 @@ open class DefaultErrorStrategy: ANTLRErrorStrategy {
             errPrint("unknown recognition error type: " + String(describing: type(of: e)))
             recognizer.notifyErrorListeners(e.getOffendingToken(), e.message ?? "", e)
         }
+        
+        exit(-1)
+        
     }
 
     /// 

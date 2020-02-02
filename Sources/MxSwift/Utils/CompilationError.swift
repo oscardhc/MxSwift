@@ -17,8 +17,8 @@ class CompilationError: Error {
     func notDeclared(id: String, scopeName: String) {
         message.append("[Error] Use of undeclared identifier \"\(id)\" in scope \"\(scopeName)\".")
     }
-    func thisNotInClass() {
-        message.append("[Error] Use of \"this\" without a class.")
+    func notInClass(key: String) {
+        message.append("[Error] Use of \"\(key)\" without a class.")
     }
     func subscriptError(id: String) {
         message.append("[Error] Subscriptiion of a non-array object \"\(id)\".")
@@ -27,10 +27,13 @@ class CompilationError: Error {
         message.append("[Error] Assign to not-assignable expression \"\(id)\".")
     }
     func unaryOperatorError(op: UnaryOperator, type1: String) {
-        message.append("[Error] Type error with \(op) for type \(type1)")
+        message.append("[Error] Type error with \"\(op)\" for type \"\(type1)\"")
     }
     func binaryOperatorError(op: BinaryOperator, type1: String, type2: String) {
-        message.append("[Error] Type error with \(op) for types \(type1) and \(type2)")
+        message.append("[Error] Type error with \"\(op)\" for types \"\(type1)\" and \"\(type2)\"")
+    }
+    func noSuchMember(name: String, c: String) {
+        message.append("[Error] Member \"\(name)\" not found in class \"\(c)\"")
     }
     
     func show() {
