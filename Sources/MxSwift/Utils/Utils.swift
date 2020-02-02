@@ -32,7 +32,8 @@ enum BinaryOperator {
     case add, sub, mul, div, mod, gt, lt, geq, leq, eq, neq, bitAnd, bitOr, bitXor, logAnd, logOr, lShift, rShift, assign
 }
 
-let builtinTypes = ["bool", "int", "string", "null"]
+let bool = "bool", int = "int", string = "string", void = "void", null = "null"
+let builtinTypes = [bool, int, string, void]
 
 extension Int {
     func getUnaryOp() -> UnaryOperator {

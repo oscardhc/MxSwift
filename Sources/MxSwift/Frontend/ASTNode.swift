@@ -159,17 +159,24 @@ class ExpressionS: Statement {
 
 class Expression: ASTNode {
     var type: String!
-    var lValue: Bool!
-    init(scope: Scope, type: String = "", lValue: Bool = false) {
+    var lValue: Bool {
+        return false
+    }
+    override var custom: String {
+        return "(\(type!))"
+    }
+    init(scope: Scope, type: String = "*") {
         super.init(scope: scope)
         self.type = type
-        self.lValue = lValue
     }
 }
 class VariableE: Expression {
     var id: String!
+    override var lValue: Bool {
+        return true
+    }
     init(id: String, scope: Scope) {
-        super.init(scope: scope, lValue: true)
+        super.init(scope: scope)
         self.id = id;
     }
     override var custom: String {return "\(id!)"}
@@ -209,6 +216,9 @@ class MethodAccessE: Expression {
 class PropertyAccessE: Expression {
     var toAccess: Expression!
     var property: String!
+    override var lValue: Bool {
+        return true
+    }
     init(scope: Scope, toAccess: Expression, property: String) {
         super.init(scope: scope)
         self.toAccess = toAccess
@@ -219,6 +229,9 @@ class PropertyAccessE: Expression {
 class ArrayE: Expression {
     var array: Expression!
     var index: Expression!
+    override var lValue: Bool {
+        return true
+    }
     init(scope: Scope, array: Expression, index: Expression) {
         super.init(scope: scope)
         self.array = array
@@ -239,21 +252,21 @@ class FunctionCallE: Expression {
 
 class SuffixE: Expression {
     var expression: Expression!
-    var operation: UnaryOperator!
-    init(scope: Scope, expression: Expression, operation: UnaryOperator) {
+    var op: UnaryOperator!
+    init(scope: Scope, expression: Expression, op: UnaryOperator) {
         super.init(scope: scope)
         self.expression = expression
-        self.operation = operation
+        self.op = op
     }
     override func accept(visitor: ASTVisitor) { visitor.visit(node: self) }
 }
 class PrefixE: Expression {
     var expression: Expression!
-    var operation: UnaryOperator!
-    init(scope: Scope, expression: Expression, operation: UnaryOperator) {
+    var op: UnaryOperator!
+    init(scope: Scope, expression: Expression, op: UnaryOperator) {
         super.init(scope: scope)
         self.expression = expression
-        self.operation = operation
+        self.op = op
     }
     override func accept(visitor: ASTVisitor) { visitor.visit(node: self) }
 }

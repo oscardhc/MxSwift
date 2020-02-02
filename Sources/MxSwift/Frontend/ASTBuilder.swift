@@ -16,13 +16,16 @@ class ASTBuilder: MxsBaseVisitor<ASTNode> {
         return scopes.last!
     }
     
-    override func visitDeclarations(_ ctx: MxsParser.DeclarationsContext) -> ASTNode? {
+    override init() {
+        super.init()
         scopes.append(GlobalScope(_name: "Global", _type: .BLOCK))
+    }
+    
+    override func visitDeclarations(_ ctx: MxsParser.DeclarationsContext) -> ASTNode? {
         let node = Program(scope: current)
         for decl in ctx.declaration() {
             node.declarations.append(visit(decl) as! Declaration)
         }
-        _ = scopes.popLast()
         return node
     }
     
@@ -179,15 +182,19 @@ class ASTBuilder: MxsBaseVisitor<ASTNode> {
     }
     
     override func visitSufExpr(_ ctx: MxsParser.SufExprContext) -> ASTNode? {
-        return SuffixE(scope: current, expression: visit(ctx.expression()!) as! Expression, operation: ctx.op.getType().getUnaryOp())
+        return SuffixE(scope: current, expression: visit(ctx.expression()!) as! Expression, op: ctx.op.getType().getUnaryOp())
     }
     
     override func visitUnaryExpr(_ ctx: MxsParser.UnaryExprContext) -> ASTNode? {
-        return PrefixE(scope: current, expression: visit(ctx.expression()!) as! Expression, operation: ctx.op.getType().getUnaryOp())
+        return PrefixE(scope: current, expression: visit(ctx.expression()!) as! Expression, op: ctx.op.getType().getUnaryOp())
     }
     
     override func visitInstExpr(_ ctx: MxsParser.InstExprContext) -> ASTNode? {
-        return visit(ctx.functionExpression()!) as! Expression
+        if ctx.functionExpression() != nil {
+            return visit(ctx.functionExpression()!) as! Expression
+        } else {
+            return FunctionCallE(id: ctx.Identifier()!.getText(), scope: current, arguments: [])
+        }
     }
     
     override func visitNewExpr(_ ctx: MxsParser.NewExprContext) -> ASTNode? {

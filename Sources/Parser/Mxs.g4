@@ -44,7 +44,7 @@ expression
     | functionExpression                                                            #funcExpr
     | expression op=(SelfAdd | SelfSub)                                             #sufExpr
     | op=(SelfAdd | SelfSub | Add | Sub | Negation | Bitwise) expression            #unaryExpr
-    | New functionExpression                                                        #instExpr
+    | New (functionExpression | Identifier)                                         #instExpr
     | New ty=(Bool | Int | String | Void | Identifier) '[' expression ']' (emptySet*)       #newExpr
     | New ty=(Bool | Int | String | Void | Identifier) ('[' expression ']')*        #newExpr
     | expression op=(Mul | Div | Mod) expression                                    #binaryExpr
