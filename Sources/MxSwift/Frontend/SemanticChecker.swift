@@ -16,18 +16,32 @@ class SemanticChecker: ASTBaseVisitor {
 
     override func visit(node: Program) {
         super.visit(node: node)
+        var hasMain = false
+        for decl in node.declarations where decl is FunctionDecl && (decl as! FunctionDecl).id == "main" {
+            hasMain = true
+        }
+        if !hasMain {
+            error.noMainFunction()
+        }
     }
 
     override func visit(node: VariableDecl) {
         super.visit(node: node)
         let baseType = node.type.dropAllArray()
-        if !baseType.isBuiltinType() && node.scope.find(name: baseType) == nil {
+        if baseType.isBuiltinType() || node.scope.find(name: baseType) != nil {
+            if baseType == void {
+                error.typeError(name: node.id.description, type: baseType)
+            }
+        } else {
             error.notDeclared(id: baseType, scopeName: node.scope.scopeName)
         }
     }
 
     override func visit(node: FunctionDecl) {
         super.visit(node: node)
+        if node.id == "main" && node.type != int {
+            error.mainTypeError()
+        }
     }
 
     override func visit(node: ClassDecl) {
@@ -56,14 +70,34 @@ class SemanticChecker: ASTBaseVisitor {
 
     override func visit(node: ReturnS) {
         super.visit(node: node)
+        if let _c = node.scope.currentScope(type: .FUNCTION) {
+            let c = _c.correspondingNode as! FunctionDecl
+            if node.expression == nil {
+                if c.type != void {
+                    error.returnTypeError(name: c.id, expected: c.type, recieved: void)
+                }
+            } else {
+                if c.type != node.expression?.type {
+                    error.returnTypeError(name: c.id, expected: c.type, recieved: node.expression!.type)
+                }
+            }
+        } else {
+            error.statementError(name: node.description, environment: node.scope.scopeName)
+        }
     }
 
     override func visit(node: BreakS) {
         super.visit(node: node)
+        if node.scope.currentScope(type: .LOOP) == nil {
+            error.statementError(name: node.description, environment: node.scope.scopeName)
+        }
     }
 
     override func visit(node: ContinueS) {
         super.visit(node: node)
+        if node.scope.currentScope(type: .LOOP) == nil {
+            error.statementError(name: node.description, environment: node.scope.scopeName)
+        }
     }
 
     override func visit(node: ExpressionS) {
@@ -77,7 +111,7 @@ class SemanticChecker: ASTBaseVisitor {
 
     override func visit(node: ThisLiteralE) {
         super.visit(node: node)
-        if let c = node.scope.currentClass() {
+        if let c = node.scope.currentScope(type: .CLASS) {
             node.type = c.scopeName
         } else {
             error.notInClass(key: "this")
@@ -106,13 +140,12 @@ class SemanticChecker: ASTBaseVisitor {
 
     override func visit(node: MethodAccessE) {
 //        super.visit(node: node)
-        
         node.toAccess.accept(visitor: self)
         let c = node.toAccess.type!
-//        if c == string {
-//
-//        } else
-        if let sym = node.scope.find(name: c, check: {(str) in return str == "class"}) {
+        if c.hasSuffix("[]") && node.method.id == "size" {
+            node.type = int
+            node.method.id = builtinSize
+        } else if let sym = node.scope.find(name: c, check: {(str) in return str == "class"}) {
             if sym.type == "class" {
                 if let m = sym.subScope!.table[node.method.id] {
                     node.type = m.type
@@ -131,7 +164,7 @@ class SemanticChecker: ASTBaseVisitor {
 
     override func visit(node: PropertyAccessE) {
         super.visit(node: node)
-        if let c = node.scope.currentClass() {
+        if let c = node.scope.currentScope(type: .CLASS) {
             if let t = c.table[node.property] {
                 node.type = t.type
             } else {
@@ -153,8 +186,18 @@ class SemanticChecker: ASTBaseVisitor {
 
     override func visit(node: FunctionCallE) {
         super.visit(node: node)
-        if let t = node.scope.find(name: node.id) {
+        if node.id == builtinSize {
+            node.type = int
+        } else if let t = node.scope.find(name: node.id) {
             node.type = t.type
+            let scp = t.subScope!
+            let decl = (scp.scopeType == .CLASS ? scp.table[node.id]!.subScope!.correspondingNode! : scp.correspondingNode!) as! FunctionDecl
+            var exp: [Type] = [], rec: [Type] = []
+            decl.parameters.forEach{exp.append($0.type)}
+            node.arguments.forEach{rec.append($0.type)}
+            if exp != rec {
+                error.argumentError(name: node.id, expected: exp, recieved: rec)
+            }
         } else {
             error.notDeclared(id: node.id, scopeName: node.scope.scopeName)
         }
@@ -167,6 +210,9 @@ class SemanticChecker: ASTBaseVisitor {
         case .doubleAdd, .doubleSub:
             if node.expression.type == int {
                 node.type = int
+                if !node.expression.lValue {
+                    error.notAssignable(id: node.expression.description)
+                }
             } else {unaryError()}
         default:
             break
@@ -177,6 +223,11 @@ class SemanticChecker: ASTBaseVisitor {
         let unaryError = {error.unaryOperatorError(op: node.op, type1: node.expression.type)}
         super.visit(node: node)
         switch node.op {
+//        case .doubleAdd, .doubleSub:
+//            if !node.expression.lValue {
+//                error.notAssignable(id: node.expression.description)
+//            }
+//            fallthrough
         case .doubleAdd, .doubleSub, .add, .sub, .bitwise:
             if node.expression.type == int {
                 node.type = int
@@ -192,6 +243,12 @@ class SemanticChecker: ASTBaseVisitor {
 
     override func visit(node: NewE) {
         super.visit(node: node)
+        if node.baseType.isBuiltinType() || node.scope.find(name: node.type) != nil {
+            node.expressions.forEach{if $0.type != int {error.indexError(name: $0.description, type: $0.type)}}
+            
+            node.type = node.baseType
+            for _ in 0 ..< (node.expressions.count + node.empty) {node.type += "[]"}
+        }
     }
     
     override func visit(node: BinaryE) {
@@ -201,10 +258,16 @@ class SemanticChecker: ASTBaseVisitor {
         case .assign:
             if node.lhs.lValue == false {
                 error.notAssignable(id: node.lhs.description)
-            } else if node.lhs.type != node.rhs.type {binaryError()}
-        case .add, .sub, .mul, .mod, .div, .bitAnd, .bitOr, .bitXor, .lShift, .rShift:
+            } else if node.lhs.type == node.rhs.type || (node.rhs.type == null && (node.lhs.type.hasSuffix("[]") || !node.lhs.type.isBuiltinType())) {
+//                node.type =
+            } else {binaryError()}
+        case .add:
+            if node.lhs.type == node.rhs.type && [int, string].contains(node.lhs.type) {
+                node.type = node.lhs.type
+            } else {binaryError()}
+        case .sub, .mul, .mod, .div, .bitAnd, .bitOr, .bitXor, .lShift, .rShift:
             if node.lhs.type == node.rhs.type && [int].contains(node.lhs.type) {
-                node.type = int
+                node.type = node.lhs.type
             } else {binaryError()}
         case .eq, .neq, .gt, .geq, .lt, .leq:
             if node.lhs.type == node.rhs.type && [int, string, bool].contains(node.lhs.type) {

@@ -35,6 +35,27 @@ class CompilationError: Error {
     func noSuchMember(name: String, c: String) {
         message.append("[Error] Member \"\(name)\" not found in class \"\(c)\"")
     }
+    func indexError(name: String, type: String) {
+        message.append("[Error] Expect \"int\" for subscription but get \"\(type)\" for \(name).")
+    }
+    func noMainFunction() {
+        message.append("[Error] No \"main\" function declared.")
+    }
+    func typeError(name: String, type: String) {
+        message.append("[Error] Type error for \"\(name)\" with type \"\(type)\"")
+    }
+    func argumentError(name: String, expected: [String], recieved: [String]) {
+        message.append("[Error] Argument error when calling \"\(name)\", expected \(expected), recieved \(recieved).")
+    }
+    func statementError(name: String, environment: String) {
+        message.append("[Error] Statement \"\(name)\" error in environment \"\(environment)\"")
+    }
+    func returnTypeError(name: String, expected: String, recieved: String) {
+        message.append("[Error] Return type error in function \"\(name)\", expected \(expected), recieved \(recieved).")
+    }
+    func mainTypeError() {
+        message.append("[Error] Function main must have return type \"int\".")
+    }
     
     func show() {
         message.forEach{print($0)}

@@ -30,9 +30,8 @@ class ASTBuilder: MxsBaseVisitor<ASTNode> {
     }
     
     override func visitCodeBlock(_ ctx: MxsParser.CodeBlockContext) -> ASTNode? {
-        let newScope = current.newSubscope(withName: "Block", withType: .BLOCK)
-        scopes.append(newScope)
-        let node = CodeblockS(scope: newScope)
+        scopes.append(current.newSubscope(withName: "Block", withType: .BLOCK))
+        let node = CodeblockS(scope: current)
         for stmt in ctx.sentence() {
             if let s = visit(stmt) {
                 node.statements.append(s as! Statement)
@@ -63,7 +62,7 @@ class ASTBuilder: MxsBaseVisitor<ASTNode> {
             }
         }
         
-        _ = scopes.popLast()
+        scopes.popLast()!.correspondingNode = node
         
         return node
     }
@@ -87,7 +86,7 @@ class ASTBuilder: MxsBaseVisitor<ASTNode> {
             node.statements.append(visit(stmt) as! Statement)
         }
         
-        _ = scopes.popLast()
+        scopes.popLast()!.correspondingNode = node
         
         return node
     }
@@ -104,6 +103,14 @@ class ASTBuilder: MxsBaseVisitor<ASTNode> {
         ctx.variableDeclaration().forEach{node.properties.append(visit($0) as! VariableDecl)}
         ctx.functionDeclaration().forEach{node.methods.append(visit($0) as! FunctionDecl)}
         ctx.initialDeclaration().forEach{node.initial.append(visit($0) as! FunctionDecl)}
+        if ctx.initialDeclaration().count == 0 {
+            let _s = current.newSubscope(withName: id, withType: .FUNCTION)
+            current.newSymbol(name: id, value: Symbol(_type: id, _subScope: _s))
+            scopes.append(_s)
+            let _node = FunctionDecl(id: id, scope: current, type: id, parameters: [], statements: [])
+            scopes.popLast()!.correspondingNode = _node
+            node.initial.append(_node)
+        }
         
         _ = scopes.popLast()
     
@@ -154,6 +161,8 @@ class ASTBuilder: MxsBaseVisitor<ASTNode> {
     override func visitMemberExpr(_ ctx: MxsParser.MemberExprContext) -> ASTNode? {
         if ctx.Identifier() != nil {
             return PropertyAccessE(scope: current, toAccess: visit(ctx.expression()!) as! Expression, property: ctx.Identifier()!.getText())
+        } else if ctx.This() != nil {
+            return PropertyAccessE(scope: current, toAccess: visit(ctx.expression()!) as! Expression, property: ctx.This()!.getText())
         } else {
             return MethodAccessE(scope: current, toAccess: visit(ctx.expression()!) as! Expression, method: visit(ctx.functionExpression()!) as! FunctionCallE)
         }
@@ -182,11 +191,7 @@ class ASTBuilder: MxsBaseVisitor<ASTNode> {
     }
     
     override func visitInstExpr(_ ctx: MxsParser.InstExprContext) -> ASTNode? {
-        if ctx.functionExpression() != nil {
-            return visit(ctx.functionExpression()!) as! Expression
-        } else {
-            return FunctionCallE(id: ctx.Identifier()!.getText(), scope: current, arguments: [])
-        }
+        return FunctionCallE(id: ctx.Identifier()!.getText(), scope: current, arguments: [])
     }
     
     override func visitNewExpr(_ ctx: MxsParser.NewExprContext) -> ASTNode? {
@@ -216,14 +221,14 @@ class ASTBuilder: MxsBaseVisitor<ASTNode> {
     }
     
     override func visitIfSentence(_ ctx: MxsParser.IfSentenceContext) -> ASTNode? {
-        scopes.append(current.newSubscope(withName: "If", withType: .BLOCK))
+        scopes.append(current.newSubscope(withName: "If", withType: .CONDITION))
         let node = IfS(scope: current,
                       condition: visit(ctx.expression()!) as! Expression,
                       accept: visit(ctx.sentence(0)!) as? Statement,
                       reject: nil)
         _ = scopes.popLast()
         if let r = ctx.sentence(1) {
-            scopes.append(current.newSubscope(withName: "Else", withType: .BLOCK))
+            scopes.append(current.newSubscope(withName: "Else", withType: .CONDITION))
             node.reject = visit(r) as? Statement
             _ = scopes.popLast()
         }
@@ -231,7 +236,7 @@ class ASTBuilder: MxsBaseVisitor<ASTNode> {
     }
     
     override func visitForSentence(_ ctx: MxsParser.ForSentenceContext) -> ASTNode? {
-        scopes.append(current.newSubscope(withName: "For", withType: .BLOCK))
+        scopes.append(current.newSubscope(withName: "For", withType: .LOOP))
         let node = ForS(scope: current,
                         initial: ctx.ini == nil ? nil : visit(ctx.ini!) as? Expression,
                         condition: ctx.cod == nil ? nil : visit(ctx.cod!) as? Expression,
@@ -242,7 +247,7 @@ class ASTBuilder: MxsBaseVisitor<ASTNode> {
     }
     
     override func visitWhileSentence(_ ctx: MxsParser.WhileSentenceContext) -> ASTNode? {
-        scopes.append(current.newSubscope(withName: "While", withType: .BLOCK))
+        scopes.append(current.newSubscope(withName: "While", withType: .LOOP))
         let node = WhileS(scope: current,
                           condition: visit(ctx.expression()!) as! Expression,
                           accept: visit(ctx.sentence()!) as? Statement)

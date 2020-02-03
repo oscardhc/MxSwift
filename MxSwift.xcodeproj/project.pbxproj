@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		555C57ED23E6B3BA00D9192A /* SemanticChecker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 555C57EC23E6B3BA00D9192A /* SemanticChecker.swift */; };
+		555C57EF23E7314900D9192A /* ErrorListener.swift in Sources */ = {isa = PBXBuildFile; fileRef = 555C57EE23E7314900D9192A /* ErrorListener.swift */; };
 		55EEB69423E41ABC00E9FE2C /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55EEB69323E41ABC00E9FE2C /* Utils.swift */; };
 		55EEB69723E4225D00E9FE2C /* MxsBaseVisitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55EEB69523E4225D00E9FE2C /* MxsBaseVisitor.swift */; };
 		55EEB69823E4225D00E9FE2C /* MxsVisitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55EEB69623E4225D00E9FE2C /* MxsVisitor.swift */; };
@@ -209,6 +210,7 @@
 
 /* Begin PBXFileReference section */
 		555C57EC23E6B3BA00D9192A /* SemanticChecker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SemanticChecker.swift; sourceTree = "<group>"; };
+		555C57EE23E7314900D9192A /* ErrorListener.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorListener.swift; sourceTree = "<group>"; };
 		55ACD0CE23E309EC0087376F /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		55EEB69323E41ABC00E9FE2C /* Utils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utils.swift; sourceTree = "<group>"; };
 		55EEB69523E4225D00E9FE2C /* MxsBaseVisitor.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MxsBaseVisitor.swift; sourceTree = "<group>"; };
@@ -545,6 +547,7 @@
 				55EEB69F23E562A700E9FE2C /* ASTVisitor.swift */,
 				55EEB69D23E55D5500E9FE2C /* ASTPrinter.swift */,
 				555C57EC23E6B3BA00D9192A /* SemanticChecker.swift */,
+				555C57EE23E7314900D9192A /* ErrorListener.swift */,
 			);
 			path = Frontend;
 			sourceTree = "<group>";
@@ -1004,6 +1007,7 @@
 			buildActionMask = 0;
 			files = (
 				OBJ_359 /* CompilationError.swift in Sources */,
+				555C57EF23E7314900D9192A /* ErrorListener.swift in Sources */,
 				55EEB69423E41ABC00E9FE2C /* Utils.swift in Sources */,
 				55EEB69A23E4311B00E9FE2C /* ASTNode.swift in Sources */,
 				OBJ_362 /* Scope.swift in Sources */,

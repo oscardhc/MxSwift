@@ -39,14 +39,13 @@ expression
     : Identifier                                                                    #idExpr
     | (This | BoolLiteral | IntLiteral | StringLiteral | NullLiteral)               #literalExpr
     | op='(' expression ')'                                                         #paraExpr
-    | expression op='.' (Identifier | functionExpression)                           #memberExpr
+    | expression op='.' (Identifier | This | functionExpression)                    #memberExpr
+    | New ty=(Bool | Int | String | Void | Identifier) ('[' expression ']')+  emptySet*     #newExpr
     | array=expression op='[' idx=expression ']'                                    #arrayExpr
     | functionExpression                                                            #funcExpr
     | expression op=(SelfAdd | SelfSub)                                             #sufExpr
     | op=(SelfAdd | SelfSub | Add | Sub | Negation | Bitwise) expression            #unaryExpr
-    | New (functionExpression | Identifier)                                         #instExpr
-    | New ty=(Bool | Int | String | Void | Identifier) '[' expression ']' (emptySet*)       #newExpr
-    | New ty=(Bool | Int | String | Void | Identifier) ('[' expression ']')*        #newExpr
+    | New Identifier ('(' ')')?                                                     #instExpr
     | expression op=(Mul | Div | Mod) expression                                    #binaryExpr
     | expression op=(Add | Sub) expression                                          #binaryExpr
     | expression op=(RightShift | LeftShift) expression                             #binaryExpr

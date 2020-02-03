@@ -11,6 +11,8 @@ enum ScopeType {
     case CLASS
     case FUNCTION
     case BLOCK
+    case CONDITION
+    case LOOP
 }
 
 class Scope: BaseObject {
@@ -18,11 +20,20 @@ class Scope: BaseObject {
     var scopeType: ScopeType
     var scopeName = ""
     var table = [String: Symbol]()
+    var correspondingNode: ASTNode? = nil
     
     init(_name: String, _type: ScopeType) {
         scopeName = _name
         scopeType = _type
     }
+    
+    func find(name: String, check: ((String) -> Bool) = {_ in true}) -> Symbol? {return nil;}
+    func printScope() {
+        print(hashString, "-", scopeName, "(\(scopeType))", ":")
+        table.forEach{print("        ", $0, $1.type!, $1.subScope?.hashString ?? "nil")}
+    }
+    func currentScope(type: ScopeType) -> Scope? {return nil;}
+//    func currentFunction() -> Symbol? {return nil;}
     
     func newSymbol(name: String, value: Symbol) {
         if (table[name] == nil) {
@@ -32,15 +43,8 @@ class Scope: BaseObject {
         }
     }
     
-    func find(name: String, check: ((String) -> Bool) = {_ in true}) -> Symbol? {return nil;}
-    func printScope() {
-        print(hashString, "-", scopeName, "(\(scopeType))", ":")
-        table.forEach{print("        ", $0, $1.type!, $1.subScope)}
-    }
-    func currentClass() -> Scope? {return nil;}
-    
-    func newSubscope(withName _id: String, withType _ty: ScopeType) -> LocalScope {
-        let newScope = LocalScope(_name: _id, _type: _ty, _father: self)
+    func newSubscope(withName _id: String, withType _ty: ScopeType, withNode _nd: ASTNode? = nil) -> LocalScope {
+        let newScope = LocalScope(_name: _id, _type: _ty, _father: self, _node: _nd)
         return newScope
     }
     
@@ -68,9 +72,10 @@ class LocalScope: Scope {
     
     var father: Scope!
     
-    init(_name: String, _type: ScopeType, _father: Scope) {
+    init(_name: String, _type: ScopeType, _father: Scope, _node: ASTNode?) {
         super.init(_name: _name, _type: _type)
-        father = _father;
+        father = _father
+        correspondingNode = _node
     }
     
     override func find(name: String, check: ((String) -> Bool) = {_ in true}) -> Symbol? {
@@ -87,13 +92,21 @@ class LocalScope: Scope {
         father.printScope()
     }
     
-    override func currentClass() -> Scope? {
-        if scopeType == .CLASS {
+    override func currentScope(type: ScopeType) -> Scope? {
+        if scopeType == type {
             return self
         } else {
-            return father.currentClass()
+            return father.currentScope(type: type)
         }
     }
+    
+//    override func currentFunction() -> Symbol? {
+//        if scopeType == .FUNCTION {
+//            return father.table[scopeName]
+//        } else {
+//            return father.currentFunction()
+//        }
+//    }
     
 }
 

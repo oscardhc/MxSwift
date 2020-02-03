@@ -18,6 +18,8 @@ import Parser
 //
 //}
 
+typealias Type = String
+
 class BaseObject {
     var hashString: String {
         return String(String(UInt(bitPattern: ObjectIdentifier(self))).suffix(4))
@@ -34,8 +36,23 @@ enum BinaryOperator {
 
 let bool = "bool", int = "int", string = "string", void = "void", null = "null"
 let builtinTypes = [bool, int, string, void]
+let builtinSize = "__size"
 
 var preOperation: Bool = false
+
+extension Array where Element == String {
+    static func == (lhs: Array, rhs: Array) -> Bool {
+        if lhs.count != rhs.count {
+            return false
+        }
+        for i in 0..<lhs.count {
+            if lhs[i] != rhs[i] {
+                return false
+            }
+        }
+        return true
+    }
+}
 
 extension Int {
     func getUnaryOp() -> UnaryOperator {
