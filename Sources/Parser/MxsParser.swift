@@ -20,8 +20,8 @@ open class MxsParser: Parser {
                  T__6 = 7, T__7 = 8, T__8 = 9, Bool = 10, Int = 11, String = 12, 
                  Void = 13, If = 14, Else = 15, For = 16, While = 17, Break = 18, 
                  Continue = 19, Return = 20, New = 21, Class = 22, This = 23, 
-                 BoolLiteral = 24, IntLiteral = 25, StringLiteral = 26, 
-                 NullLiteral = 27, Assign = 28, Mul = 29, Div = 30, Add = 31, 
+                 StringLiteral = 24, BoolLiteral = 25, NullLiteral = 26, 
+                 IntLiteral = 27, Assign = 28, Mul = 29, Div = 30, Add = 31, 
                  Sub = 32, Mod = 33, Negation = 34, Bitwise = 35, SelfAdd = 36, 
                  SelfSub = 37, RightShift = 38, LeftShift = 39, GreaterEq = 40, 
                  LessEq = 41, Greater = 42, Less = 43, Equal = 44, Inequal = 45, 
@@ -51,15 +51,15 @@ open class MxsParser: Parser {
 	private static let _LITERAL_NAMES: [String?] = [
 		nil, "'('", "','", "')'", "'{'", "'}'", "';'", "'['", "']'", "'.'", "'bool'", 
 		"'int'", "'string'", "'void'", "'if'", "'else'", "'for'", "'while'", "'break'", 
-		"'continue'", "'return'", "'new'", "'class'", "'this'", nil, nil, nil, 
-		"'null'", "'='", "'*'", "'/'", "'+'", "'-'", "'%'", "'!'", "'~'", "'++'", 
-		"'--'", "'>>'", "'<<'", "'>='", "'<='", "'>'", "'<'", "'=='", "'!='", 
-		"'&'", "'|'", "'^'", "'&&'", "'||'"
+		"'continue'", "'return'", "'new'", "'class'", "'this'", nil, nil, "'null'", 
+		nil, "'='", "'*'", "'/'", "'+'", "'-'", "'%'", "'!'", "'~'", "'++'", "'--'", 
+		"'>>'", "'<<'", "'>='", "'<='", "'>'", "'<'", "'=='", "'!='", "'&'", "'|'", 
+		"'^'", "'&&'", "'||'"
 	]
 	private static let _SYMBOLIC_NAMES: [String?] = [
 		nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, "Bool", "Int", "String", 
 		"Void", "If", "Else", "For", "While", "Break", "Continue", "Return", "New", 
-		"Class", "This", "BoolLiteral", "IntLiteral", "StringLiteral", "NullLiteral", 
+		"Class", "This", "StringLiteral", "BoolLiteral", "NullLiteral", "IntLiteral", 
 		"Assign", "Mul", "Div", "Add", "Sub", "Mod", "Negation", "Bitwise", "SelfAdd", 
 		"SelfSub", "RightShift", "LeftShift", "GreaterEq", "LessEq", "Greater", 
 		"Less", "Equal", "Inequal", "BitAnd", "BitOr", "BitXor", "LogicAnd", "LogicOr", 
@@ -372,7 +372,7 @@ open class MxsParser: Parser {
 		 	while (//closure
 		 	 { () -> Bool in
 		 	      let testSet: Bool = {  () -> Bool in
-		 	   let testArray: [Int] = [_la, MxsParser.Tokens.T__0.rawValue,MxsParser.Tokens.T__3.rawValue,MxsParser.Tokens.T__5.rawValue,MxsParser.Tokens.Bool.rawValue,MxsParser.Tokens.Int.rawValue,MxsParser.Tokens.String.rawValue,MxsParser.Tokens.Void.rawValue,MxsParser.Tokens.If.rawValue,MxsParser.Tokens.For.rawValue,MxsParser.Tokens.While.rawValue,MxsParser.Tokens.Break.rawValue,MxsParser.Tokens.Continue.rawValue,MxsParser.Tokens.Return.rawValue,MxsParser.Tokens.New.rawValue,MxsParser.Tokens.This.rawValue,MxsParser.Tokens.BoolLiteral.rawValue,MxsParser.Tokens.IntLiteral.rawValue,MxsParser.Tokens.StringLiteral.rawValue,MxsParser.Tokens.NullLiteral.rawValue,MxsParser.Tokens.Add.rawValue,MxsParser.Tokens.Sub.rawValue,MxsParser.Tokens.Negation.rawValue,MxsParser.Tokens.Bitwise.rawValue,MxsParser.Tokens.SelfAdd.rawValue,MxsParser.Tokens.SelfSub.rawValue,MxsParser.Tokens.Identifier.rawValue]
+		 	   let testArray: [Int] = [_la, MxsParser.Tokens.T__0.rawValue,MxsParser.Tokens.T__3.rawValue,MxsParser.Tokens.T__5.rawValue,MxsParser.Tokens.Bool.rawValue,MxsParser.Tokens.Int.rawValue,MxsParser.Tokens.String.rawValue,MxsParser.Tokens.Void.rawValue,MxsParser.Tokens.If.rawValue,MxsParser.Tokens.For.rawValue,MxsParser.Tokens.While.rawValue,MxsParser.Tokens.Break.rawValue,MxsParser.Tokens.Continue.rawValue,MxsParser.Tokens.Return.rawValue,MxsParser.Tokens.New.rawValue,MxsParser.Tokens.This.rawValue,MxsParser.Tokens.StringLiteral.rawValue,MxsParser.Tokens.BoolLiteral.rawValue,MxsParser.Tokens.NullLiteral.rawValue,MxsParser.Tokens.IntLiteral.rawValue,MxsParser.Tokens.Add.rawValue,MxsParser.Tokens.Sub.rawValue,MxsParser.Tokens.Negation.rawValue,MxsParser.Tokens.Bitwise.rawValue,MxsParser.Tokens.SelfAdd.rawValue,MxsParser.Tokens.SelfSub.rawValue,MxsParser.Tokens.Identifier.rawValue]
 		 	    return  Utils.testBitLeftShiftArray(testArray, 0)
 		 	}()
 		 	      return testSet
@@ -513,7 +513,7 @@ open class MxsParser: Parser {
 		 	while (//closure
 		 	 { () -> Bool in
 		 	      let testSet: Bool = {  () -> Bool in
-		 	   let testArray: [Int] = [_la, MxsParser.Tokens.T__0.rawValue,MxsParser.Tokens.T__3.rawValue,MxsParser.Tokens.T__5.rawValue,MxsParser.Tokens.Bool.rawValue,MxsParser.Tokens.Int.rawValue,MxsParser.Tokens.String.rawValue,MxsParser.Tokens.Void.rawValue,MxsParser.Tokens.If.rawValue,MxsParser.Tokens.For.rawValue,MxsParser.Tokens.While.rawValue,MxsParser.Tokens.Break.rawValue,MxsParser.Tokens.Continue.rawValue,MxsParser.Tokens.Return.rawValue,MxsParser.Tokens.New.rawValue,MxsParser.Tokens.This.rawValue,MxsParser.Tokens.BoolLiteral.rawValue,MxsParser.Tokens.IntLiteral.rawValue,MxsParser.Tokens.StringLiteral.rawValue,MxsParser.Tokens.NullLiteral.rawValue,MxsParser.Tokens.Add.rawValue,MxsParser.Tokens.Sub.rawValue,MxsParser.Tokens.Negation.rawValue,MxsParser.Tokens.Bitwise.rawValue,MxsParser.Tokens.SelfAdd.rawValue,MxsParser.Tokens.SelfSub.rawValue,MxsParser.Tokens.Identifier.rawValue]
+		 	   let testArray: [Int] = [_la, MxsParser.Tokens.T__0.rawValue,MxsParser.Tokens.T__3.rawValue,MxsParser.Tokens.T__5.rawValue,MxsParser.Tokens.Bool.rawValue,MxsParser.Tokens.Int.rawValue,MxsParser.Tokens.String.rawValue,MxsParser.Tokens.Void.rawValue,MxsParser.Tokens.If.rawValue,MxsParser.Tokens.For.rawValue,MxsParser.Tokens.While.rawValue,MxsParser.Tokens.Break.rawValue,MxsParser.Tokens.Continue.rawValue,MxsParser.Tokens.Return.rawValue,MxsParser.Tokens.New.rawValue,MxsParser.Tokens.This.rawValue,MxsParser.Tokens.StringLiteral.rawValue,MxsParser.Tokens.BoolLiteral.rawValue,MxsParser.Tokens.NullLiteral.rawValue,MxsParser.Tokens.IntLiteral.rawValue,MxsParser.Tokens.Add.rawValue,MxsParser.Tokens.Sub.rawValue,MxsParser.Tokens.Negation.rawValue,MxsParser.Tokens.Bitwise.rawValue,MxsParser.Tokens.SelfAdd.rawValue,MxsParser.Tokens.SelfSub.rawValue,MxsParser.Tokens.Identifier.rawValue]
 		 	    return  Utils.testBitLeftShiftArray(testArray, 0)
 		 	}()
 		 	      return testSet
@@ -1089,7 +1089,7 @@ open class MxsParser: Parser {
 		 	if (//closure
 		 	 { () -> Bool in
 		 	      let testSet: Bool = {  () -> Bool in
-		 	   let testArray: [Int] = [_la, MxsParser.Tokens.T__0.rawValue,MxsParser.Tokens.New.rawValue,MxsParser.Tokens.This.rawValue,MxsParser.Tokens.BoolLiteral.rawValue,MxsParser.Tokens.IntLiteral.rawValue,MxsParser.Tokens.StringLiteral.rawValue,MxsParser.Tokens.NullLiteral.rawValue,MxsParser.Tokens.Add.rawValue,MxsParser.Tokens.Sub.rawValue,MxsParser.Tokens.Negation.rawValue,MxsParser.Tokens.Bitwise.rawValue,MxsParser.Tokens.SelfAdd.rawValue,MxsParser.Tokens.SelfSub.rawValue,MxsParser.Tokens.Identifier.rawValue]
+		 	   let testArray: [Int] = [_la, MxsParser.Tokens.T__0.rawValue,MxsParser.Tokens.New.rawValue,MxsParser.Tokens.This.rawValue,MxsParser.Tokens.StringLiteral.rawValue,MxsParser.Tokens.BoolLiteral.rawValue,MxsParser.Tokens.NullLiteral.rawValue,MxsParser.Tokens.IntLiteral.rawValue,MxsParser.Tokens.Add.rawValue,MxsParser.Tokens.Sub.rawValue,MxsParser.Tokens.Negation.rawValue,MxsParser.Tokens.Bitwise.rawValue,MxsParser.Tokens.SelfAdd.rawValue,MxsParser.Tokens.SelfSub.rawValue,MxsParser.Tokens.Identifier.rawValue]
 		 	    return  Utils.testBitLeftShiftArray(testArray, 0)
 		 	}()
 		 	      return testSet
@@ -1111,7 +1111,7 @@ open class MxsParser: Parser {
 		 	if (//closure
 		 	 { () -> Bool in
 		 	      let testSet: Bool = {  () -> Bool in
-		 	   let testArray: [Int] = [_la, MxsParser.Tokens.T__0.rawValue,MxsParser.Tokens.New.rawValue,MxsParser.Tokens.This.rawValue,MxsParser.Tokens.BoolLiteral.rawValue,MxsParser.Tokens.IntLiteral.rawValue,MxsParser.Tokens.StringLiteral.rawValue,MxsParser.Tokens.NullLiteral.rawValue,MxsParser.Tokens.Add.rawValue,MxsParser.Tokens.Sub.rawValue,MxsParser.Tokens.Negation.rawValue,MxsParser.Tokens.Bitwise.rawValue,MxsParser.Tokens.SelfAdd.rawValue,MxsParser.Tokens.SelfSub.rawValue,MxsParser.Tokens.Identifier.rawValue]
+		 	   let testArray: [Int] = [_la, MxsParser.Tokens.T__0.rawValue,MxsParser.Tokens.New.rawValue,MxsParser.Tokens.This.rawValue,MxsParser.Tokens.StringLiteral.rawValue,MxsParser.Tokens.BoolLiteral.rawValue,MxsParser.Tokens.NullLiteral.rawValue,MxsParser.Tokens.IntLiteral.rawValue,MxsParser.Tokens.Add.rawValue,MxsParser.Tokens.Sub.rawValue,MxsParser.Tokens.Negation.rawValue,MxsParser.Tokens.Bitwise.rawValue,MxsParser.Tokens.SelfAdd.rawValue,MxsParser.Tokens.SelfSub.rawValue,MxsParser.Tokens.Identifier.rawValue]
 		 	    return  Utils.testBitLeftShiftArray(testArray, 0)
 		 	}()
 		 	      return testSet
@@ -1133,7 +1133,7 @@ open class MxsParser: Parser {
 		 	if (//closure
 		 	 { () -> Bool in
 		 	      let testSet: Bool = {  () -> Bool in
-		 	   let testArray: [Int] = [_la, MxsParser.Tokens.T__0.rawValue,MxsParser.Tokens.New.rawValue,MxsParser.Tokens.This.rawValue,MxsParser.Tokens.BoolLiteral.rawValue,MxsParser.Tokens.IntLiteral.rawValue,MxsParser.Tokens.StringLiteral.rawValue,MxsParser.Tokens.NullLiteral.rawValue,MxsParser.Tokens.Add.rawValue,MxsParser.Tokens.Sub.rawValue,MxsParser.Tokens.Negation.rawValue,MxsParser.Tokens.Bitwise.rawValue,MxsParser.Tokens.SelfAdd.rawValue,MxsParser.Tokens.SelfSub.rawValue,MxsParser.Tokens.Identifier.rawValue]
+		 	   let testArray: [Int] = [_la, MxsParser.Tokens.T__0.rawValue,MxsParser.Tokens.New.rawValue,MxsParser.Tokens.This.rawValue,MxsParser.Tokens.StringLiteral.rawValue,MxsParser.Tokens.BoolLiteral.rawValue,MxsParser.Tokens.NullLiteral.rawValue,MxsParser.Tokens.IntLiteral.rawValue,MxsParser.Tokens.Add.rawValue,MxsParser.Tokens.Sub.rawValue,MxsParser.Tokens.Negation.rawValue,MxsParser.Tokens.Bitwise.rawValue,MxsParser.Tokens.SelfAdd.rawValue,MxsParser.Tokens.SelfSub.rawValue,MxsParser.Tokens.Identifier.rawValue]
 		 	    return  Utils.testBitLeftShiftArray(testArray, 0)
 		 	}()
 		 	      return testSet
@@ -1218,7 +1218,7 @@ open class MxsParser: Parser {
 		 	if (//closure
 		 	 { () -> Bool in
 		 	      let testSet: Bool = {  () -> Bool in
-		 	   let testArray: [Int] = [_la, MxsParser.Tokens.T__0.rawValue,MxsParser.Tokens.New.rawValue,MxsParser.Tokens.This.rawValue,MxsParser.Tokens.BoolLiteral.rawValue,MxsParser.Tokens.IntLiteral.rawValue,MxsParser.Tokens.StringLiteral.rawValue,MxsParser.Tokens.NullLiteral.rawValue,MxsParser.Tokens.Add.rawValue,MxsParser.Tokens.Sub.rawValue,MxsParser.Tokens.Negation.rawValue,MxsParser.Tokens.Bitwise.rawValue,MxsParser.Tokens.SelfAdd.rawValue,MxsParser.Tokens.SelfSub.rawValue,MxsParser.Tokens.Identifier.rawValue]
+		 	   let testArray: [Int] = [_la, MxsParser.Tokens.T__0.rawValue,MxsParser.Tokens.New.rawValue,MxsParser.Tokens.This.rawValue,MxsParser.Tokens.StringLiteral.rawValue,MxsParser.Tokens.BoolLiteral.rawValue,MxsParser.Tokens.NullLiteral.rawValue,MxsParser.Tokens.IntLiteral.rawValue,MxsParser.Tokens.Add.rawValue,MxsParser.Tokens.Sub.rawValue,MxsParser.Tokens.Negation.rawValue,MxsParser.Tokens.Bitwise.rawValue,MxsParser.Tokens.SelfAdd.rawValue,MxsParser.Tokens.SelfSub.rawValue,MxsParser.Tokens.Identifier.rawValue]
 		 	    return  Utils.testBitLeftShiftArray(testArray, 0)
 		 	}()
 		 	      return testSet
@@ -1612,7 +1612,7 @@ open class MxsParser: Parser {
 		 	while (//closure
 		 	 { () -> Bool in
 		 	      let testSet: Bool = {  () -> Bool in
-		 	   let testArray: [Int] = [_la, MxsParser.Tokens.T__0.rawValue,MxsParser.Tokens.T__3.rawValue,MxsParser.Tokens.T__5.rawValue,MxsParser.Tokens.Bool.rawValue,MxsParser.Tokens.Int.rawValue,MxsParser.Tokens.String.rawValue,MxsParser.Tokens.Void.rawValue,MxsParser.Tokens.If.rawValue,MxsParser.Tokens.For.rawValue,MxsParser.Tokens.While.rawValue,MxsParser.Tokens.Break.rawValue,MxsParser.Tokens.Continue.rawValue,MxsParser.Tokens.Return.rawValue,MxsParser.Tokens.New.rawValue,MxsParser.Tokens.This.rawValue,MxsParser.Tokens.BoolLiteral.rawValue,MxsParser.Tokens.IntLiteral.rawValue,MxsParser.Tokens.StringLiteral.rawValue,MxsParser.Tokens.NullLiteral.rawValue,MxsParser.Tokens.Add.rawValue,MxsParser.Tokens.Sub.rawValue,MxsParser.Tokens.Negation.rawValue,MxsParser.Tokens.Bitwise.rawValue,MxsParser.Tokens.SelfAdd.rawValue,MxsParser.Tokens.SelfSub.rawValue,MxsParser.Tokens.Identifier.rawValue]
+		 	   let testArray: [Int] = [_la, MxsParser.Tokens.T__0.rawValue,MxsParser.Tokens.T__3.rawValue,MxsParser.Tokens.T__5.rawValue,MxsParser.Tokens.Bool.rawValue,MxsParser.Tokens.Int.rawValue,MxsParser.Tokens.String.rawValue,MxsParser.Tokens.Void.rawValue,MxsParser.Tokens.If.rawValue,MxsParser.Tokens.For.rawValue,MxsParser.Tokens.While.rawValue,MxsParser.Tokens.Break.rawValue,MxsParser.Tokens.Continue.rawValue,MxsParser.Tokens.Return.rawValue,MxsParser.Tokens.New.rawValue,MxsParser.Tokens.This.rawValue,MxsParser.Tokens.StringLiteral.rawValue,MxsParser.Tokens.BoolLiteral.rawValue,MxsParser.Tokens.NullLiteral.rawValue,MxsParser.Tokens.IntLiteral.rawValue,MxsParser.Tokens.Add.rawValue,MxsParser.Tokens.Sub.rawValue,MxsParser.Tokens.Negation.rawValue,MxsParser.Tokens.Bitwise.rawValue,MxsParser.Tokens.SelfAdd.rawValue,MxsParser.Tokens.SelfSub.rawValue,MxsParser.Tokens.Identifier.rawValue]
 		 	    return  Utils.testBitLeftShiftArray(testArray, 0)
 		 	}()
 		 	      return testSet
@@ -1867,7 +1867,7 @@ open class MxsParser: Parser {
 		 	if (//closure
 		 	 { () -> Bool in
 		 	      let testSet: Bool = {  () -> Bool in
-		 	   let testArray: [Int] = [_la, MxsParser.Tokens.T__0.rawValue,MxsParser.Tokens.New.rawValue,MxsParser.Tokens.This.rawValue,MxsParser.Tokens.BoolLiteral.rawValue,MxsParser.Tokens.IntLiteral.rawValue,MxsParser.Tokens.StringLiteral.rawValue,MxsParser.Tokens.NullLiteral.rawValue,MxsParser.Tokens.Add.rawValue,MxsParser.Tokens.Sub.rawValue,MxsParser.Tokens.Negation.rawValue,MxsParser.Tokens.Bitwise.rawValue,MxsParser.Tokens.SelfAdd.rawValue,MxsParser.Tokens.SelfSub.rawValue,MxsParser.Tokens.Identifier.rawValue]
+		 	   let testArray: [Int] = [_la, MxsParser.Tokens.T__0.rawValue,MxsParser.Tokens.New.rawValue,MxsParser.Tokens.This.rawValue,MxsParser.Tokens.StringLiteral.rawValue,MxsParser.Tokens.BoolLiteral.rawValue,MxsParser.Tokens.NullLiteral.rawValue,MxsParser.Tokens.IntLiteral.rawValue,MxsParser.Tokens.Add.rawValue,MxsParser.Tokens.Sub.rawValue,MxsParser.Tokens.Negation.rawValue,MxsParser.Tokens.Bitwise.rawValue,MxsParser.Tokens.SelfAdd.rawValue,MxsParser.Tokens.SelfSub.rawValue,MxsParser.Tokens.Identifier.rawValue]
 		 	    return  Utils.testBitLeftShiftArray(testArray, 0)
 		 	}()
 		 	      return testSet
@@ -2583,7 +2583,7 @@ open class MxsParser: Parser {
 				if (!(//closure
 				 { () -> Bool in
 				      let testSet: Bool = {  () -> Bool in
-				   let testArray: [Int] = [_la, MxsParser.Tokens.This.rawValue,MxsParser.Tokens.BoolLiteral.rawValue,MxsParser.Tokens.IntLiteral.rawValue,MxsParser.Tokens.StringLiteral.rawValue,MxsParser.Tokens.NullLiteral.rawValue]
+				   let testArray: [Int] = [_la, MxsParser.Tokens.This.rawValue,MxsParser.Tokens.StringLiteral.rawValue,MxsParser.Tokens.BoolLiteral.rawValue,MxsParser.Tokens.NullLiteral.rawValue,MxsParser.Tokens.IntLiteral.rawValue]
 				    return  Utils.testBitLeftShiftArray(testArray, 0)
 				}()
 				      return testSet
@@ -2613,12 +2613,20 @@ open class MxsParser: Parser {
 
 				break
 			case 4:
-				_localctx = NewExprContext(_localctx)
+				_localctx = FuncExprContext(_localctx)
 				_ctx = _localctx
 				_prevctx = _localctx
 				setState(238)
-				try match(MxsParser.Tokens.New.rawValue)
+				try functionExpression()
+
+				break
+			case 5:
+				_localctx = NewExprContext(_localctx)
+				_ctx = _localctx
+				_prevctx = _localctx
 				setState(239)
+				try match(MxsParser.Tokens.New.rawValue)
+				setState(240)
 				_localctx.castdown(NewExprContext.self).ty = try _input.LT(1)
 				_la = try _input.LA(1)
 				if (!(//closure
@@ -2635,17 +2643,17 @@ open class MxsParser: Parser {
 					_errHandler.reportMatch(self)
 					try consume()
 				}
-				setState(244); 
+				setState(245); 
 				try _errHandler.sync(self)
 				_alt = 1;
 				repeat {
 					switch (_alt) {
 					case 1:
-						setState(240)
-						try match(MxsParser.Tokens.T__6.rawValue)
 						setState(241)
-						try expression(0)
+						try match(MxsParser.Tokens.T__6.rawValue)
 						setState(242)
+						try expression(0)
+						setState(243)
 						try match(MxsParser.Tokens.T__7.rawValue)
 
 
@@ -2653,32 +2661,24 @@ open class MxsParser: Parser {
 					default:
 						throw ANTLRException.recognition(e: NoViableAltException(self))
 					}
-					setState(246); 
+					setState(247); 
 					try _errHandler.sync(self)
 					_alt = try getInterpreter().adaptivePredict(_input,23,_ctx)
 				} while (_alt != 2 && _alt !=  ATN.INVALID_ALT_NUMBER)
-				setState(251)
+				setState(252)
 				try _errHandler.sync(self)
 				_alt = try getInterpreter().adaptivePredict(_input,24,_ctx)
 				while (_alt != 2 && _alt != ATN.INVALID_ALT_NUMBER) {
 					if ( _alt==1 ) {
-						setState(248)
+						setState(249)
 						try emptySet()
 
 				 
 					}
-					setState(253)
+					setState(254)
 					try _errHandler.sync(self)
 					_alt = try getInterpreter().adaptivePredict(_input,24,_ctx)
 				}
-
-				break
-			case 5:
-				_localctx = FuncExprContext(_localctx)
-				_ctx = _localctx
-				_prevctx = _localctx
-				setState(254)
-				try functionExpression()
 
 				break
 			case 6:
@@ -3016,8 +3016,8 @@ open class MxsParser: Parser {
 						(_localctx as! ArrayExprContext).array = _prevctx
 						try pushNewRecursionContext(_localctx, _startState, MxsParser.RULE_expression)
 						setState(305)
-						if (!(precpred(_ctx, 16))) {
-						    throw ANTLRException.recognition(e:FailedPredicateException(self, "precpred(_ctx, 16)"))
+						if (!(precpred(_ctx, 17))) {
+						    throw ANTLRException.recognition(e:FailedPredicateException(self, "precpred(_ctx, 17)"))
 						}
 						setState(306)
 						try {
@@ -3099,7 +3099,7 @@ open class MxsParser: Parser {
 		    case 9:return precpred(_ctx, 2)
 		    case 10:return precpred(_ctx, 1)
 		    case 11:return precpred(_ctx, 18)
-		    case 12:return precpred(_ctx, 16)
+		    case 12:return precpred(_ctx, 17)
 		    case 13:return precpred(_ctx, 14)
 		    default: return true
 		}

@@ -37,7 +37,7 @@ class ASTBuilder: MxsBaseVisitor<ASTNode> {
                 node.statements.append(s as! Statement)
             }
         }
-        _ = scopes.popLast()
+        scopes.popLast()!.correspondingNode = node
         return node
     }
     
@@ -112,7 +112,7 @@ class ASTBuilder: MxsBaseVisitor<ASTNode> {
             node.initial.append(_node)
         }
         
-        _ = scopes.popLast()
+        scopes.popLast()!.correspondingNode = node
     
         return node
     }
@@ -229,7 +229,7 @@ class ASTBuilder: MxsBaseVisitor<ASTNode> {
                       condition: visit(ctx.expression()!) as! Expression,
                       accept: visit(ctx.sentence(0)!) as? Statement,
                       reject: nil)
-        _ = scopes.popLast()
+        scopes.popLast()!.correspondingNode = node
         if let r = ctx.sentence(1) {
             scopes.append(current.newSubscope(withName: "Else", withType: .CONDITION))
             node.reject = visit(r) as? Statement
@@ -245,7 +245,7 @@ class ASTBuilder: MxsBaseVisitor<ASTNode> {
                         condition: ctx.cod == nil ? nil : visit(ctx.cod!) as? Expression,
                         increment: ctx.inc == nil ? nil : visit(ctx.inc!) as? Expression,
                         accept: visit(ctx.sentence()!) as? Statement)
-        _ = scopes.popLast()
+        scopes.popLast()!.correspondingNode = node
         return node
     }
     
@@ -254,7 +254,7 @@ class ASTBuilder: MxsBaseVisitor<ASTNode> {
         let node = WhileS(scope: current,
                           condition: visit(ctx.expression()!) as! Expression,
                           accept: visit(ctx.sentence()!) as? Statement)
-        _ = scopes.popLast()
+        scopes.popLast()!.correspondingNode = node
         return node
     }
     

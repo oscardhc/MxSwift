@@ -27,7 +27,7 @@ class Scope: BaseObject {
         scopeType = _type
     }
     
-    func find(name: String, check: ((String) -> Bool) = {_ in true}) -> Symbol? {return nil;}
+    func find(name: String, check: ((Symbol) -> Bool) = {_ in true}) -> Symbol? {return nil;}
     func printScope() {
         print(hashString, "-", scopeName, "(\(scopeType))", ":")
         table.forEach{print("        ", $0, $1.type!, $1.subScope?.hashString ?? "nil")}
@@ -52,9 +52,9 @@ class Scope: BaseObject {
 
 class GlobalScope: Scope {
     
-    override func find(name: String, check: ((String) -> Bool) = {_ in true}) -> Symbol? {
+    override func find(name: String, check: ((Symbol) -> Bool) = {_ in true}) -> Symbol? {
         let res = table[name]
-        if res != nil && check(res!.type) {
+        if res != nil && check(res!) {
             return res!
         } else {
             return nil
@@ -78,9 +78,9 @@ class LocalScope: Scope {
         correspondingNode = _node
     }
     
-    override func find(name: String, check: ((String) -> Bool) = {_ in true}) -> Symbol? {
+    override func find(name: String, check: ((Symbol) -> Bool) = {_ in true}) -> Symbol? {
         let res = table[name]
-        if res != nil && check(res!.type) {
+        if res != nil && check(res!) {
             return res!
         } else {
             return father.find(name: name, check: check);

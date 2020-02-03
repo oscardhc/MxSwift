@@ -23,6 +23,9 @@ class CompilationError: Error {
     func subscriptError(id: String) {
         message.append("[Error] Subscriptiion of a non-array object \"\(id)\".")
     }
+    func indexError(type: String) {
+        message.append(#"[Error] Subscriptiion index expected "int", received "\#(type)"."#)
+    }
     func notAssignable(id: String) {
         message.append("[Error] Assign to not-assignable expression \"\(id)\".")
     }
@@ -44,20 +47,23 @@ class CompilationError: Error {
     func typeError(name: String, type: String) {
         message.append("[Error] Type error for \"\(name)\" with type \"\(type)\"")
     }
-    func argumentError(name: String, expected: [String], recieved: [String]) {
-        message.append("[Error] Argument error when calling \"\(name)\", expected \(expected), recieved \(recieved).")
+    func argumentError(name: String, expected: [String], received: [String]) {
+        message.append("[Error] Argument error when calling \"\(name)\", expected \(expected), received \(received).")
     }
     func statementError(name: String, environment: String) {
         message.append("[Error] Statement \"\(name)\" error in environment \"\(environment)\"")
     }
-    func returnTypeError(name: String, expected: String, recieved: String) {
-        message.append("[Error] Return type error in function \"\(name)\", expected \(expected), recieved \(recieved).")
+    func returnTypeError(name: String, expected: String, received: String) {
+        message.append("[Error] Return type error in function \"\(name)\", expected \(expected), received \(received).")
     }
     func mainFuncError() {
         message.append("[Error] Function main type or parameter error.")
     }
     func notCallable(name: String) {
         message.append("[Error] Calling non-function symbol \"\(name)\"")
+    }
+    func controlConditionError(flow: String, type: String) {
+        message.append(#"[Error] \#(flow) condition error, expected "bool", received "\#(type)""#)
     }
     
     func show() {

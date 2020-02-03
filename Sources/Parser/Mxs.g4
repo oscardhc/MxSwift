@@ -40,9 +40,9 @@ expression
     | (This | BoolLiteral | IntLiteral | StringLiteral | NullLiteral)               #literalExpr
     | op='(' expression ')'                                                         #paraExpr
     | expression op='.' (Identifier | This | functionExpression)                    #memberExpr
-    | New ty=(Bool | Int | String | Void | Identifier) ('[' expression ']')+  emptySet*     #newExpr
     | array=expression op='[' idx=expression ']'                                    #arrayExpr
     | functionExpression                                                            #funcExpr
+    | New ty=(Bool | Int | String | Void | Identifier) ('[' expression ']')+  emptySet*     #newExpr
     | expression op=(SelfAdd | SelfSub)                                             #sufExpr
     | op=(SelfAdd | SelfSub | Add | Sub | Negation | Bitwise) expression            #unaryExpr
     | New Identifier ('(' ')')?                                                     #instExpr
@@ -73,10 +73,10 @@ Return          : 'return';
 New             : 'new';
 Class           : 'class';
 This            : 'this';
-BoolLiteral     : 'true' | 'false';
-IntLiteral      : [1-9][0-9]* | '0';
 StringLiteral   : '"' (~["\\\n\r] | '\\' ["n\\])* '"';
+BoolLiteral     : 'true' | 'false';
 NullLiteral     : 'null';
+IntLiteral      : [1-9][0-9]* | '0';
 
 Assign      : '=';
 Mul         : '*';

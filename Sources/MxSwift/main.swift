@@ -3,7 +3,6 @@ import Foundation
 import Antlr4
 import Parser
 
-
 func compile(useFileStream: Bool) throws {
     
     let builtin = ANTLRInputStream(
@@ -35,8 +34,8 @@ class s {
     
     let lexer: MxsLexer
     if useFileStream {
-        let testName = "basic"
-        let testNo = "71"
+        let testName = "class"
+        let testNo = "8"
         let sourceFilePath = "/Users/oscar/Documents/Classes/1920_Spring/Compiler/Compiler-2020/local-judge/testcase/sema/\(testName)-package/\(testName)-\(testNo).mx"
         let input = try ANTLRFileStream(sourceFilePath, String.Encoding.utf8)
         print(input.toString())
@@ -79,7 +78,6 @@ class s {
     
 //    ASTPrinter().visit(node: prog)
     
-//    print(builder.current.scopeName, ":", builder.current.table)
     print("Compilation exited normally.")
     
 }

@@ -46,11 +46,24 @@ extension Array where Element == String {
             return false
         }
         for i in 0..<lhs.count {
-            if lhs[i] != rhs[i] {
+            if lhs[i] !== rhs[i] {
                 return false
             }
         }
         return true
+    }
+    static func != (lhs: Array, rhs: Array) -> Bool {
+        return !(lhs == rhs)
+    }
+}
+
+extension Type {
+    static func === (lhs: Type, rhs: Type) -> Bool {
+//        print("=== CMP", lhs, rhs, !lhs.isBuiltinType(), rhs == null, (rhs == null && !lhs.isBuiltinType()))
+        return lhs == rhs || (rhs == null && !lhs.isBuiltinType())
+    }
+    static func !== (lhs: Type, rhs: Type) -> Bool {
+        return !(lhs === rhs)
     }
 }
 
