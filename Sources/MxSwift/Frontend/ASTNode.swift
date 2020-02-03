@@ -263,6 +263,13 @@ class SuffixE: Expression {
 class PrefixE: Expression {
     var expression: Expression!
     var op: UnaryOperator!
+    override var lValue: Bool {
+        if [.doubleAdd, .doubleSub].contains(op) {
+            return expression.lValue
+        } else {
+            return false;
+        }
+    }
     init(scope: Scope, expression: Expression, op: UnaryOperator) {
         super.init(scope: scope)
         self.expression = expression

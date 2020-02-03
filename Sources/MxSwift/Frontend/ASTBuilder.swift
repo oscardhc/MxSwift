@@ -45,14 +45,14 @@ class ASTBuilder: MxsBaseVisitor<ASTNode> {
         let id = ctx.Identifier(0)!.getText(), type = ctx.type(0)!.getText()
         
         let _s = current.newSubscope(withName: id, withType: .FUNCTION)
-        current.newSymbol(name: id, value: Symbol(_type: type, _subScope: _s))
+        current.newSymbol(name: id, value: Symbol(_type: type, _bel: current, _subScope: _s))
         scopes.append(_s)
         
         let node = FunctionDecl(id: id, scope: current, type: type, parameters: [], statements: [])
         
         for i in 1..<ctx.type().count {
             let pid = ctx.Identifier(i)!.getText(), ptype = ctx.type(i)!.getText()
-            current.newSymbol(name: pid, value: Symbol(_type: ptype))
+            current.newSymbol(name: pid, value: Symbol(_type: ptype, _bel: current))
             node.parameters.append(VariableDecl(id: [pid], scope: current, type: ptype))
         }
         
@@ -71,14 +71,14 @@ class ASTBuilder: MxsBaseVisitor<ASTNode> {
         let id = ctx.Identifier(0)!.getText()
         
         let _s = current.newSubscope(withName: id, withType: .FUNCTION)
-        current.newSymbol(name: id, value: Symbol(_type: id, _subScope: _s))
+        current.newSymbol(name: id, value: Symbol(_type: id, _bel: current, _subScope: _s))
         scopes.append(_s)
         
         let node = FunctionDecl(id: id, scope: current, type: id, parameters: [], statements: [])
         
         for i in 0..<ctx.type().count {
             let pid = ctx.Identifier(i + 1)!.getText(), ptype = ctx.type(i)!.getText()
-            current.newSymbol(name: pid, value: Symbol(_type: ptype))
+            current.newSymbol(name: pid, value: Symbol(_type: ptype, _bel: current))
             node.parameters.append(VariableDecl(id: [pid], scope: current, type: ptype))
         }
         
@@ -95,7 +95,7 @@ class ASTBuilder: MxsBaseVisitor<ASTNode> {
         let id = preOperation ? "string" : ctx.Identifier()!.getText()
         
         let _s = current.newSubscope(withName: id, withType: .CLASS)
-        current.newSymbol(name: id, value: Symbol(_type: "class", _subScope: _s))
+        current.newSymbol(name: id, value: Symbol(_type: "class", _bel: current, _subScope: _s))
         scopes.append(_s)
         
         let node = ClassDecl(id: id, scope: current)
@@ -105,7 +105,7 @@ class ASTBuilder: MxsBaseVisitor<ASTNode> {
         ctx.initialDeclaration().forEach{node.initial.append(visit($0) as! FunctionDecl)}
         if ctx.initialDeclaration().count == 0 {
             let _s = current.newSubscope(withName: id, withType: .FUNCTION)
-            current.newSymbol(name: id, value: Symbol(_type: id, _subScope: _s))
+            current.newSymbol(name: id, value: Symbol(_type: id, _bel: current, _subScope: _s))
             scopes.append(_s)
             let _node = FunctionDecl(id: id, scope: current, type: id, parameters: [], statements: [])
             scopes.popLast()!.correspondingNode = _node
@@ -120,12 +120,12 @@ class ASTBuilder: MxsBaseVisitor<ASTNode> {
     override func visitVariableDeclaration(_ ctx: MxsParser.VariableDeclarationContext) -> ASTNode? {
         let type = ctx.type()!.getText(), node = VariableDecl(scope: current, type: type)
         if let expr = ctx.expression(0) {
-            current.newSymbol(name: ctx.Identifier(0)!.getText(), value: Symbol(_type: type))
             node.id.append(ctx.Identifier(0)!.getText())
             node.expressions.append(visit(expr) as? Expression)
+            current.newSymbol(name: ctx.Identifier(0)!.getText(), value: Symbol(_type: type, _bel: current))
         } else {
             for id in ctx.Identifier() {
-                current.newSymbol(name: id.getText(), value: Symbol(_type: type))
+                current.newSymbol(name: id.getText(), value: Symbol(_type: type, _bel: current))
                 node.id.append(id.getText())
             }
         }
@@ -134,10 +134,13 @@ class ASTBuilder: MxsBaseVisitor<ASTNode> {
     
     override func visitIdExpr(_ ctx: MxsParser.IdExprContext) -> ASTNode? {
         let id = ctx.Identifier()!.getText()
-        if current.find(name: id) == nil {
+        var sc = current
+        if let _s = current.find(name: id) {
+            sc = _s.belongsTo
+        } else {
             error.notDeclared(id: id, scopeName: current.scopeName)
         }
-        return VariableE(id: id, scope: current)
+        return VariableE(id: id, scope: sc)
     }
     
     override func visitLiteralExpr(_ ctx: MxsParser.LiteralExprContext) -> ASTNode? {

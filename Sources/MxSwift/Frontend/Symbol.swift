@@ -10,10 +10,12 @@ import Foundation
 struct Symbol {
     
     var type: String!
+    var belongsTo: Scope!
     var subScope: Scope?
     
-    init(_type: String, _subScope: Scope? = nil) {
+    init(_type: String, _bel: Scope, _subScope: Scope? = nil) {
         type = _type
+        belongsTo = _bel
         subScope = _subScope
     }
     

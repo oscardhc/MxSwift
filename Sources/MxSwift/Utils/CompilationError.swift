@@ -53,8 +53,11 @@ class CompilationError: Error {
     func returnTypeError(name: String, expected: String, recieved: String) {
         message.append("[Error] Return type error in function \"\(name)\", expected \(expected), recieved \(recieved).")
     }
-    func mainTypeError() {
-        message.append("[Error] Function main must have return type \"int\".")
+    func mainFuncError() {
+        message.append("[Error] Function main type or parameter error.")
+    }
+    func notCallable(name: String) {
+        message.append("[Error] Calling non-function symbol \"\(name)\"")
     }
     
     func show() {

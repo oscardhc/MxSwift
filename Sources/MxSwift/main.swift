@@ -6,10 +6,6 @@ import Parser
 
 func compile(useFileStream: Bool) throws {
     
-//    let sourceFilePath = FileManager.default.currentDirectoryPath + "/program.cpp"
-    let testName = "basic"
-    let testNo = "16"
-    
     let builtin = ANTLRInputStream(
 """
 void print(string str) {}
@@ -39,8 +35,11 @@ class s {
     
     let lexer: MxsLexer
     if useFileStream {
-        let sourceFilePath = "/Users/oscar/Documents/Classes/1920_Spring/Compiler/Compiler-2020/dataset/sema/\(testName)-package/\(testName)-\(testNo).mx"
+        let testName = "basic"
+        let testNo = "71"
+        let sourceFilePath = "/Users/oscar/Documents/Classes/1920_Spring/Compiler/Compiler-2020/local-judge/testcase/sema/\(testName)-package/\(testName)-\(testNo).mx"
         let input = try ANTLRFileStream(sourceFilePath, String.Encoding.utf8)
+        print(input.toString())
         lexer = MxsLexer(input)
     } else {
         var source = ""
@@ -86,7 +85,7 @@ class s {
 }
 
 do {
-    try compile(useFileStream: false)
+    try compile(useFileStream: true)
 } catch let e as CompilationError {
     e.show()
     exit(-1)

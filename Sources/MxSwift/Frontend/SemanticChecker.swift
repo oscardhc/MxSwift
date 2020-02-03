@@ -39,8 +39,8 @@ class SemanticChecker: ASTBaseVisitor {
 
     override func visit(node: FunctionDecl) {
         super.visit(node: node)
-        if node.id == "main" && node.type != int {
-            error.mainTypeError()
+        if node.id == "main" && (node.type != int || node.parameters.count > 0) {
+            error.mainFuncError()
         }
     }
 
@@ -77,7 +77,8 @@ class SemanticChecker: ASTBaseVisitor {
                     error.returnTypeError(name: c.id, expected: c.type, recieved: void)
                 }
             } else {
-                if c.type != node.expression?.type {
+                if c.type != node.expression!.type {
+                    print(node.expression!.description)
                     error.returnTypeError(name: c.id, expected: c.type, recieved: node.expression!.type)
                 }
             }
@@ -146,15 +147,11 @@ class SemanticChecker: ASTBaseVisitor {
             node.type = int
             node.method.id = builtinSize
         } else if let sym = node.scope.find(name: c, check: {(str) in return str == "class"}) {
-            if sym.type == "class" {
-                if let m = sym.subScope!.table[node.method.id] {
-                    node.type = m.type
-                    node.method.scope = sym.subScope!
-                } else {
-                    error.noSuchMember(name: node.method.id, c: c)
-                }
+            if let m = sym.subScope!.table[node.method.id] {
+                node.type = m.type
+                node.method.scope = sym.subScope!
             } else {
-                error.notInClass(key: node.method.id)
+                error.noSuchMember(name: node.method.id, c: c)
             }
         } else {
             error.notInClass(key: node.method.id)
@@ -164,11 +161,11 @@ class SemanticChecker: ASTBaseVisitor {
 
     override func visit(node: PropertyAccessE) {
         super.visit(node: node)
-        if let c = node.scope.currentScope(type: .CLASS) {
-            if let t = c.table[node.property] {
+        if let c = node.scope.find(name: node.toAccess.type!, check: {(str) in return str == "class"}) {
+            if let t = c.subScope!.table[node.property] {
                 node.type = t.type
             } else {
-                error.noSuchMember(name: node.property, c: c.scopeName)
+                error.noSuchMember(name: node.property, c: c.subScope!.scopeName)
             }
         } else {
             error.notInClass(key: node.property)
@@ -189,15 +186,19 @@ class SemanticChecker: ASTBaseVisitor {
         if node.id == builtinSize {
             node.type = int
         } else if let t = node.scope.find(name: node.id) {
-            node.type = t.type
-            let scp = t.subScope!
-            let decl = (scp.scopeType == .CLASS ? scp.table[node.id]!.subScope!.correspondingNode! : scp.correspondingNode!) as! FunctionDecl
-            var exp: [Type] = [], rec: [Type] = []
-            decl.parameters.forEach{exp.append($0.type)}
-            node.arguments.forEach{rec.append($0.type)}
-            if exp != rec {
-                error.argumentError(name: node.id, expected: exp, recieved: rec)
+            if let scp = t.subScope {
+                let decl = (scp.scopeType == .CLASS ? scp.table[node.id]!.subScope!.correspondingNode! : scp.correspondingNode!) as! FunctionDecl
+                var exp: [Type] = [], rec: [Type] = []
+                decl.parameters.forEach{exp.append($0.type)}
+                node.arguments.forEach{rec.append($0.type)}
+                node.type = decl.type
+                if exp != rec {
+                    error.argumentError(name: node.id, expected: exp, recieved: rec)
+                }
+            } else {
+                error.notCallable(name: node.id)
             }
+            
         } else {
             error.notDeclared(id: node.id, scopeName: node.scope.scopeName)
         }
@@ -223,11 +224,11 @@ class SemanticChecker: ASTBaseVisitor {
         let unaryError = {error.unaryOperatorError(op: node.op, type1: node.expression.type)}
         super.visit(node: node)
         switch node.op {
-//        case .doubleAdd, .doubleSub:
-//            if !node.expression.lValue {
-//                error.notAssignable(id: node.expression.description)
-//            }
-//            fallthrough
+        case .doubleAdd, .doubleSub:
+            if !node.expression.lValue {
+                error.notAssignable(id: node.expression.description)
+            }
+            fallthrough
         case .doubleAdd, .doubleSub, .add, .sub, .bitwise:
             if node.expression.type == int {
                 node.type = int
@@ -270,7 +271,7 @@ class SemanticChecker: ASTBaseVisitor {
                 node.type = node.lhs.type
             } else {binaryError()}
         case .eq, .neq, .gt, .geq, .lt, .leq:
-            if node.lhs.type == node.rhs.type && [int, string, bool].contains(node.lhs.type) {
+            if node.lhs.type == node.rhs.type && [int, string, bool, null].contains(node.lhs.type) {
                 node.type = bool
             } else {binaryError()}
         case .logAnd, .logOr:
