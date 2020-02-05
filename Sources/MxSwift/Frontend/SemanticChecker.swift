@@ -50,6 +50,9 @@ class SemanticChecker: ASTBaseVisitor {
         if node.id == "main" && (node.type != int || node.parameters.count > 0) {
             error.mainFuncError()
         }
+        if node.hasReturn == false && node.type != void && node.id != "main" {
+            error.noReturn(name: node.id)
+        }
     }
 
     override func visit(node: ClassDecl) {
@@ -89,6 +92,7 @@ class SemanticChecker: ASTBaseVisitor {
         super.visit(node: node)
         if let _c = node.scope.currentScope(type: .FUNCTION) {
             let c = _c.correspondingNode as! FunctionDecl
+            c.hasReturn = true
             if node.expression == nil {
                 if c.type != void {
                     error.returnTypeError(name: c.id, expected: c.type, received: void)
@@ -211,10 +215,14 @@ class SemanticChecker: ASTBaseVisitor {
         } else if let t = node.scope.find(name: node.id, check: {[.CLASS, .FUNCTION].contains($0.subScope?.scopeType)}) {
             if let scp = t.subScope {
                 let decl = (scp.scopeType == .CLASS ? scp.table[node.id]!.subScope!.correspondingNode! : scp.correspondingNode!) as! FunctionDecl
+                if scp.scopeType == .CLASS {
+                    node.scope = scp
+                }
                 var exp: [Type] = [], rec: [Type] = []
                 decl.parameters.forEach{exp.append($0.type)}
                 node.arguments.forEach{rec.append($0.type)}
                 node.type = decl.type
+//                print("CALL", node.id, node.scope.scopeName)
                 if exp != rec {
                     error.argumentError(name: node.id, expected: exp, received: rec)
                 }

@@ -9,6 +9,13 @@
 /* Begin PBXBuildFile section */
 		555C57ED23E6B3BA00D9192A /* SemanticChecker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 555C57EC23E6B3BA00D9192A /* SemanticChecker.swift */; };
 		555C57EF23E7314900D9192A /* ErrorListener.swift in Sources */ = {isa = PBXBuildFile; fileRef = 555C57EE23E7314900D9192A /* ErrorListener.swift */; };
+		55D1C0CA23EA962C0057E80A /* IRValue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55D1C0C923EA962C0057E80A /* IRValue.swift */; };
+		55D1C0CC23EAE30E0057E80A /* IRBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55D1C0CB23EAE30E0057E80A /* IRBuilder.swift */; };
+		55D1C0CE23EAE4B20057E80A /* IRType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55D1C0CD23EAE4B20057E80A /* IRType.swift */; };
+		55D1C0D023EAE5830057E80A /* IRInst.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55D1C0CF23EAE5830057E80A /* IRInst.swift */; };
+		55D1C0D223EB10510057E80A /* IRBasicBlock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55D1C0D123EB10510057E80A /* IRBasicBlock.swift */; };
+		55D1C0D423EB118C0057E80A /* IRFunction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55D1C0D323EB118C0057E80A /* IRFunction.swift */; };
+		55D1C0D623EB17700057E80A /* List.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55D1C0D523EB17700057E80A /* List.swift */; };
 		55EEB69423E41ABC00E9FE2C /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55EEB69323E41ABC00E9FE2C /* Utils.swift */; };
 		55EEB69723E4225D00E9FE2C /* MxsBaseVisitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55EEB69523E4225D00E9FE2C /* MxsBaseVisitor.swift */; };
 		55EEB69823E4225D00E9FE2C /* MxsVisitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55EEB69623E4225D00E9FE2C /* MxsVisitor.swift */; };
@@ -212,6 +219,13 @@
 		555C57EC23E6B3BA00D9192A /* SemanticChecker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SemanticChecker.swift; sourceTree = "<group>"; };
 		555C57EE23E7314900D9192A /* ErrorListener.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorListener.swift; sourceTree = "<group>"; };
 		55ACD0CE23E309EC0087376F /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
+		55D1C0C923EA962C0057E80A /* IRValue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IRValue.swift; sourceTree = "<group>"; };
+		55D1C0CB23EAE30E0057E80A /* IRBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IRBuilder.swift; sourceTree = "<group>"; };
+		55D1C0CD23EAE4B20057E80A /* IRType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IRType.swift; sourceTree = "<group>"; };
+		55D1C0CF23EAE5830057E80A /* IRInst.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IRInst.swift; sourceTree = "<group>"; };
+		55D1C0D123EB10510057E80A /* IRBasicBlock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IRBasicBlock.swift; sourceTree = "<group>"; };
+		55D1C0D323EB118C0057E80A /* IRFunction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IRFunction.swift; sourceTree = "<group>"; };
+		55D1C0D523EB17700057E80A /* List.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = List.swift; sourceTree = "<group>"; };
 		55EEB69323E41ABC00E9FE2C /* Utils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utils.swift; sourceTree = "<group>"; };
 		55EEB69523E4225D00E9FE2C /* MxsBaseVisitor.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MxsBaseVisitor.swift; sourceTree = "<group>"; };
 		55EEB69623E4225D00E9FE2C /* MxsVisitor.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MxsVisitor.swift; sourceTree = "<group>"; };
@@ -421,10 +435,24 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		55D1C0C823EA96100057E80A /* IR */ = {
+			isa = PBXGroup;
+			children = (
+				55D1C0C923EA962C0057E80A /* IRValue.swift */,
+				55D1C0CF23EAE5830057E80A /* IRInst.swift */,
+				55D1C0D123EB10510057E80A /* IRBasicBlock.swift */,
+				55D1C0D323EB118C0057E80A /* IRFunction.swift */,
+				55D1C0CD23EAE4B20057E80A /* IRType.swift */,
+				55D1C0CB23EAE30E0057E80A /* IRBuilder.swift */,
+			);
+			path = IR;
+			sourceTree = "<group>";
+		};
 		55EEB69223E41A9F00E9FE2C /* Utils */ = {
 			isa = PBXGroup;
 			children = (
 				55EEB69323E41ABC00E9FE2C /* Utils.swift */,
+				55D1C0D523EB17700057E80A /* List.swift */,
 				OBJ_171 /* CompilationError.swift */,
 			);
 			path = Utils;
@@ -529,6 +557,7 @@
 		OBJ_169 /* MxSwift */ = {
 			isa = PBXGroup;
 			children = (
+				55D1C0C823EA96100057E80A /* IR */,
 				55EEB69223E41A9F00E9FE2C /* Utils */,
 				OBJ_170 /* Frontend */,
 				OBJ_177 /* main.swift */,
@@ -1006,17 +1035,24 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 0;
 			files = (
+				55D1C0CE23EAE4B20057E80A /* IRType.swift in Sources */,
 				OBJ_359 /* CompilationError.swift in Sources */,
 				555C57EF23E7314900D9192A /* ErrorListener.swift in Sources */,
+				55D1C0D423EB118C0057E80A /* IRFunction.swift in Sources */,
 				55EEB69423E41ABC00E9FE2C /* Utils.swift in Sources */,
 				55EEB69A23E4311B00E9FE2C /* ASTNode.swift in Sources */,
 				OBJ_362 /* Scope.swift in Sources */,
+				55D1C0D023EAE5830057E80A /* IRInst.swift in Sources */,
 				55EEB69E23E55D5500E9FE2C /* ASTPrinter.swift in Sources */,
+				55D1C0D223EB10510057E80A /* IRBasicBlock.swift in Sources */,
 				OBJ_363 /* Symbol.swift in Sources */,
+				55D1C0CC23EAE30E0057E80A /* IRBuilder.swift in Sources */,
 				55EEB6A023E562A700E9FE2C /* ASTVisitor.swift in Sources */,
 				55EEB69C23E4919D00E9FE2C /* ASTBuilder.swift in Sources */,
 				OBJ_365 /* main.swift in Sources */,
 				555C57ED23E6B3BA00D9192A /* SemanticChecker.swift in Sources */,
+				55D1C0CA23EA962C0057E80A /* IRValue.swift in Sources */,
+				55D1C0D623EB17700057E80A /* List.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

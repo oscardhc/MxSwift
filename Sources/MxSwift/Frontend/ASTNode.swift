@@ -9,6 +9,10 @@ import Foundation
 
 class ASTNode: BaseObject, CustomStringConvertible {
     var scope: Scope!
+    
+    // for visitor use
+    var ret: Any?
+    
     init(scope: Scope) {
         self.scope = scope
     }
@@ -51,6 +55,7 @@ class FunctionDecl: Declaration {
     var type: Type!
     var parameters: [VariableDecl]!
     var statements: [Statement]!
+    var hasReturn = false
     init(id: Type, scope: Scope, type: Type, parameters: [VariableDecl] = [], statements: [Statement] = []) {
         super.init(scope: scope)
         self.id = id

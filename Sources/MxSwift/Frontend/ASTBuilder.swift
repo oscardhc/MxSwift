@@ -194,7 +194,13 @@ class ASTBuilder: MxsBaseVisitor<ASTNode> {
     }
     
     override func visitInstExpr(_ ctx: MxsParser.InstExprContext) -> ASTNode? {
-        return FunctionCallE(id: ctx.Identifier()!.getText(), scope: current, arguments: [])
+        let id = ctx.Identifier()!.getText()
+//        if let sc = current.find(name: id, check: {$0.type == "class"}) {
+//            return FunctionCallE(id: id, scope: sc.subScope!, arguments: [])
+//        } else {
+//            error.notDeclared(id: id, scopeName: current.scopeName)
+            return FunctionCallE(id: id, scope: current, arguments: [])
+//        }
     }
     
     override func visitNewExpr(_ ctx: MxsParser.NewExprContext) -> ASTNode? {

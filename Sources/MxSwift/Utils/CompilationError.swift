@@ -63,7 +63,10 @@ class CompilationError: Error {
         message.append("[Error] Calling non-function symbol \"\(name)\"")
     }
     func controlConditionError(flow: String, type: String) {
-        message.append(#"[Error] \#(flow) condition error, expected "bool", received "\#(type)""#)
+        message.append(#"[Error] \#(flow) condition error, expected "bool", received "\#(type)"."#)
+    }
+    func noReturn(name: String) {
+        message.append(#"[Error] Non-void function \#(name) has no return value."#)
     }
     
     func show() {

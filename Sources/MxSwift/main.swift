@@ -34,8 +34,8 @@ class s {
     
     let lexer: MxsLexer
     if useFileStream {
-        let testName = "class"
-        let testNo = "8"
+        let testName = "custom"
+        let testNo = "1"
         let sourceFilePath = "/Users/oscar/Documents/Classes/1920_Spring/Compiler/Compiler-2020/local-judge/testcase/sema/\(testName)-package/\(testName)-\(testNo).mx"
         let input = try ANTLRFileStream(sourceFilePath, String.Encoding.utf8)
         print(input.toString())
@@ -84,6 +84,7 @@ class s {
 
 do {
     try compile(useFileStream: true)
+//    try compile(useFileStream: false)
 } catch let e as CompilationError {
     e.show()
     exit(-1)
