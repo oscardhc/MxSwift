@@ -126,7 +126,7 @@ class ASTBaseVisitor: ASTVisitor {
     }
     
     func visit(node: MethodAccessE) {
-        node.toAccess?.accept(visitor: self)
+        node.toAccess.accept(visitor: self)
         node.method.accept(visitor: self)
     }
     

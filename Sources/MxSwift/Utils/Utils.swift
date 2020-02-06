@@ -9,16 +9,7 @@ import Foundation
 import Antlr4
 import Parser
 
-//class Utils {
-//
-//    static func dropArray(str: String) -> String {
-//        let idx = str.index(str.endIndex, offsetBy: -2)
-//        return String(str[..<idx])
-//    }
-//
-//}
-
-typealias Type = String
+typealias SType = String
 
 class BaseObject {
     var hashString: String {
@@ -35,7 +26,7 @@ enum BinaryOperator {
 }
 
 let bool = "bool", int = "int", string = "string", void = "void", null = "null"
-let builtinTypes = [bool, int, string, void]
+let builtinTypes: [SType] = [bool, int, string, void]
 let builtinSize = "__size"
 
 var preOperation: Bool = false
@@ -57,12 +48,12 @@ extension Array where Element == String {
     }
 }
 
-extension Type {
-    static func === (lhs: Type, rhs: Type) -> Bool {
+extension SType {
+    static func === (lhs: SType, rhs: SType) -> Bool {
 //        print("=== CMP", lhs, rhs, !lhs.isBuiltinType(), rhs == null, (rhs == null && !lhs.isBuiltinType()))
         return lhs == rhs || (rhs == null && !lhs.isBuiltinType())
     }
-    static func !== (lhs: Type, rhs: Type) -> Bool {
+    static func !== (lhs: SType, rhs: SType) -> Bool {
         return !(lhs === rhs)
     }
 }

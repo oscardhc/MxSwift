@@ -28,11 +28,14 @@ class List<T> {
         return head == nil
     }
     
+    init() {
+        
+    }
     init(from a: [T]) {
         
     }
     
-    func append(a: T) {
+    func append(_ a: T) {
         if let t = tail {
             t.next = Node(value: a)
             tail = t.next
@@ -47,16 +50,16 @@ class List<T> {
         for _ in 0..<index {
             cur = cur.next!
         }
-        if let t = cur.next {
-            t.prev = cur.prev
-            if let q = cur.prev {
-                q.next = t
-            }
-        }
+        remove(node: cur)
     }
     
-    func remove(node: Node<T>) {
-        
+    func remove(node cur: Node<T>) {
+        if let t = cur.next {
+            t.prev = cur.prev
+        }
+        if let q = cur.prev {
+            q.next = cur.next
+        }
     }
     
 }

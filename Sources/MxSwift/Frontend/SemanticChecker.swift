@@ -128,7 +128,7 @@ class SemanticChecker: ASTBaseVisitor {
 
     override func visit(node: VariableE) {
         super.visit(node: node)
-        node.type = node.scope.find(name: node.id)?.type
+        node.type = node.scope.find(name: node.id)!.type
     }
 
     override func visit(node: ThisLiteralE) {
@@ -163,7 +163,7 @@ class SemanticChecker: ASTBaseVisitor {
     override func visit(node: MethodAccessE) {
 //        super.visit(node: node)
         node.toAccess.accept(visitor: self)
-        let c = node.toAccess.type!
+        let c = node.toAccess.type
         if c.hasSuffix("[]") && node.method.id == "size" {
             node.type = int
             node.method.id = builtinSize
@@ -182,7 +182,7 @@ class SemanticChecker: ASTBaseVisitor {
 
     override func visit(node: PropertyAccessE) {
         super.visit(node: node)
-        if let c = node.scope.find(name: node.toAccess.type!, check: {$0.subScope?.scopeType == .CLASS}) {
+        if let c = node.scope.find(name: node.toAccess.type, check: {$0.subScope?.scopeType == .CLASS}) {
             if let t = c.subScope!.table[node.property] {
                 node.type = t.type
             } else {
@@ -218,7 +218,7 @@ class SemanticChecker: ASTBaseVisitor {
                 if scp.scopeType == .CLASS {
                     node.scope = scp
                 }
-                var exp: [Type] = [], rec: [Type] = []
+                var exp: [SType] = [], rec: [SType] = []
                 decl.parameters.forEach{exp.append($0.type)}
                 node.arguments.forEach{rec.append($0.type)}
                 node.type = decl.type
@@ -286,7 +286,7 @@ class SemanticChecker: ASTBaseVisitor {
     override func visit(node: BinaryE) {
         let binaryError = {error.binaryOperatorError(op: node.op, type1: node.lhs.type, type2: node.rhs.type)}
         super.visit(node: node)
-        switch node.op! {
+        switch node.op {
         case .assign:
             if node.lhs.lValue == false {
                 error.notAssignable(id: node.lhs.description)
