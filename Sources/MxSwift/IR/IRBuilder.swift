@@ -10,7 +10,7 @@ import Foundation
 class IRBuilder: ASTBaseVisitor {
     
     var module = Module()
-    var namedValue = [String: Value]()
+//    var namedValue = [String: Value]()
     var currentBlock = BasicBlock(name: "", type: Type(), curfunc: nil)
     
     private func getType(type: String) -> Type {
@@ -36,7 +36,10 @@ class IRBuilder: ASTBaseVisitor {
     override func visit(node: VariableDecl) {
         super.visit(node: node)
         for id in node.id {
-//            node.scope.find(name: id)?.value = 
+            var sym = node.scope.find(name: id)!
+            let ret = AllocaInst(name: id, forType: getType(type: node.type))
+            sym.value = ret
+            currentBlock.inst.append(ret)
         }
     }
 
@@ -49,14 +52,14 @@ class IRBuilder: ASTBaseVisitor {
                            type: FunctionT(ret: getType(type: node.type), par: parType),
                            module: module)
         
-        namedValue.removeAll()
         node.parameters.forEach {
-            let par = Parameter(name: $0.id[0], type: getType(type: $0.type))
+            let par = Value(name: $0.id[0], type: getType(type: $0.type))
             ret.parameters.append(par)
-            namedValue[$0.id[0]] = par
+            var sym = $0.scope.find(name: $0.id[0])!
+            sym.value = par
         }
         
-        ret.blocks.append(BasicBlock(name: node.id, type: LabelType(), curfunc: ret))
+        ret.blocks.append(BasicBlock(name: "", type: LabelType(), curfunc: ret))
         currentBlock = ret.blocks.last
         
         node.statements.forEach {
@@ -116,7 +119,14 @@ class IRBuilder: ASTBaseVisitor {
 
     override func visit(node: VariableE) {
         super.visit(node: node)
-        node.ret = namedValue[node.id]
+        let v = node.scope.find(name: node.id)!.value!
+        if v is AllocaInst {
+            let ret = LoadInst(name: "", alloc: v as! AllocaInst)
+            node.ret = ret
+            currentBlock.inst.append(ret)
+        } else {
+            node.ret = v
+        }
     }
 
     override func visit(node: ThisLiteralE) {
@@ -153,6 +163,12 @@ class IRBuilder: ASTBaseVisitor {
 
     override func visit(node: FunctionCallE) {
         super.visit(node: node)
+        let f = node.scope.find(name: node.id)!.subScope!.correspondingNode!.ret as! Function
+        var arg = [Value]()
+        node.arguments.forEach{arg.append($0.ret!)}
+        let ret = CallInst(name: "", type: getType(type: node.type), function: f, arguments: arg)
+        currentBlock.inst.append(ret)
+        node.ret = ret
     }
 
     override func visit(node: SuffixE) {

@@ -7,10 +7,10 @@
 
 import Foundation
 
-struct Symbol {
+class Symbol {
     
-    var type: String!
-    var belongsTo: Scope!
+    var type: String
+    var belongsTo: Scope
     var subScope: Scope?
     var value: Value?
     

@@ -7,7 +7,18 @@
 
 import Foundation
     
-var nameCount = 0
+class UnnamedCounter {
+    var count = -1
+    var tik: String {
+        count += 1
+        return "\(count)"
+    }
+    func reset() {
+        count = -1
+    }
+}
+
+let counter = UnnamedCounter()
 
 class Value: HashableObject, CustomStringConvertible {
     
@@ -22,15 +33,13 @@ class Value: HashableObject, CustomStringConvertible {
     private var _name: String
     var name: String {
         if _name == "" {
-            _name = "\(nameCount)"
-            nameCount += 1
+            _name = counter.tik
         }
         return _name
     }
     
-    var description: String {
-        return "\(type) %\(name)"
-    }
+    var description: String {return "\(type) %\(name)"}
+    var toPrint: String {return "NOTHING"}
     
     func accept(visitor: IRVisitor) {}
 }

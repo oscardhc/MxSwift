@@ -81,6 +81,14 @@ class List<T: CustomStringConvertible>: CustomStringConvertible {
             cur = cur!.next
         }
     }
+    func joined(with sep: String = ", ", method: ((T) -> String) = {return "\($0)"}) -> String {
+        var ret = method(head!.value), cur = head?.next
+        while cur != nil {
+            ret += (sep + method(cur!.value))
+            cur = cur!.next
+        }
+        return ret
+    }
     
     subscript(idx: Int) -> T {
         var cur = head

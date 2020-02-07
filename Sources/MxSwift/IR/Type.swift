@@ -8,23 +8,18 @@
 import Foundation
 
 class Type: CustomStringConvertible {
-    
-    init() {
-    }
+    init() {}
     var description: String {return "???"}
-    
+    var align: Int {return 1}
+    var withAlign: String {return description + ", align \(align)"}
 }
 
 class LabelType: Type {
-    
 }
 
 class FunctionT: Type {
-    
     var retType: Type
     var parType: [Type]
-    
-//    override var description: String {return super.description + "<\(parType) -> \(retType)>"}
     override var description: String {return "\(retType)"}
     
     init(ret: Type, par: [Type]) {
@@ -32,11 +27,9 @@ class FunctionT: Type {
         self.parType = par
         super.init()
     }
-    
 }
 
 class IntT: Type {
-    
     enum BitWidth {
         case bool, char, int
     }
@@ -53,12 +46,12 @@ class IntT: Type {
         }
     }
     override var description: String {return "i\(bit)"}
+    override var align: Int {return width == .int ? 4 : 1}
     
     init(width: BitWidth) {
         self.width = width
         super.init()
     }
-    
 }
 
 class PointerT: Type {
@@ -70,6 +63,7 @@ class PointerT: Type {
         super.init()
     }
     override var description: String {return "\(baseType)*"}
+    override var align: Int {return 8}
     
 }
 
@@ -78,7 +72,6 @@ class ClassT: Type {
 }
 
 class ArrayT: Type {
-    
     var elementType: Type
     var count: Int
     
@@ -87,5 +80,4 @@ class ArrayT: Type {
         self.count = count
         super.init()
     }
-    
 }

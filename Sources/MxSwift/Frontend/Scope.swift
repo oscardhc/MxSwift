@@ -30,7 +30,7 @@ class Scope: HashableObject {
     func find(name: String, check: ((Symbol) -> Bool) = {_ in true}) -> Symbol? {return nil;}
     func printScope() {
         print(hashString, "-", scopeName, "(\(scopeType))", ":")
-        table.forEach{print("        ", $0, $1.type!, $1.subScope?.hashString ?? "nil")}
+        table.forEach{print("        ", $0, $1.type, $1.subScope?.hashString ?? "nil")}
     }
     func currentScope(type: ScopeType) -> Scope? {return nil;}
 //    func currentFunction() -> Symbol? {return nil;}

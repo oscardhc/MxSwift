@@ -22,18 +22,15 @@ class Global: Const {
     
 }
 
-class Parameter: Value {
-    
-}
-
 class Function: Global {
     
     var blocks = List<BasicBlock>()
-    var parameters = List<Parameter>()
+    var parameters = List<Value>()
     
     override func accept(visitor: IRVisitor) {visitor.visit(v: self)}
     
-    override var description: String {return "\(type) @\(name)(\(parameters))"}
+    override var toPrint: String {return "define \(type) @\(name)(\(parameters))"}
+    override var description: String {return "\(type) @\(name)"}
     
 }
 
