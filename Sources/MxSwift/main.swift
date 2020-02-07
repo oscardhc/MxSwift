@@ -76,6 +76,13 @@ class s {
         throw error
     }
     
+    let ir = IRBuilder()
+    ir.visit(node: prog)
+    
+    let pr = IRPrinter()
+    pr.visit(v: ir.module)
+    print(pr.str)
+    
 //    ASTPrinter().visit(node: prog)
     
     print("Compilation exited normally.")

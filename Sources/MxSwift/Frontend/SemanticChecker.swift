@@ -218,7 +218,7 @@ class SemanticChecker: ASTBaseVisitor {
                 if scp.scopeType == .CLASS {
                     node.scope = scp
                 }
-                var exp: [SType] = [], rec: [SType] = []
+                var exp: [String] = [], rec: [String] = []
                 decl.parameters.forEach{exp.append($0.type)}
                 node.arguments.forEach{rec.append($0.type)}
                 node.type = decl.type

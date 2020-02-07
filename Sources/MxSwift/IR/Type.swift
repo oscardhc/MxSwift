@@ -7,11 +7,15 @@
 
 import Foundation
 
-class Type {
+class Type: CustomStringConvertible {
     
-    var description: String {
-        return "Not implemented."
+    init() {
     }
+    var description: String {return "???"}
+    
+}
+
+class LabelType: Type {
     
 }
 
@@ -19,6 +23,9 @@ class FunctionT: Type {
     
     var retType: Type
     var parType: [Type]
+    
+//    override var description: String {return super.description + "<\(parType) -> \(retType)>"}
+    override var description: String {return "\(retType)"}
     
     init(ret: Type, par: [Type]) {
         self.retType = ret
@@ -45,6 +52,7 @@ class IntT: Type {
             return 32
         }
     }
+    override var description: String {return "i\(bit)"}
     
     init(width: BitWidth) {
         self.width = width
@@ -61,6 +69,7 @@ class PointerT: Type {
         self.baseType = base
         super.init()
     }
+    override var description: String {return "\(baseType)*"}
     
 }
 

@@ -7,7 +7,7 @@
 
 import Foundation
 
-class ASTNode: BaseObject, CustomStringConvertible {
+class ASTNode: HashableObject, CustomStringConvertible {
     var scope: Scope!
     
     // for visitor use
@@ -16,10 +16,10 @@ class ASTNode: BaseObject, CustomStringConvertible {
     init(scope: Scope) {
         self.scope = scope
     }
-    var custom: SType {
+    var custom: String {
         return ""
     }
-    var description: SType {
+    var description: String {
         return "\(hashString) \(scope.scopeName)::\(type(of: self)) \t \(custom)"
     }
     func accept(visitor: ASTVisitor) {}
@@ -39,31 +39,31 @@ class Declaration: ASTNode {
 }
 class VariableDecl: Declaration {
     var id: [String]
-    var type: SType
+    var type: String
     var expressions: [Expression?]!
-    init(id: [String] = [], scope: Scope, type: SType, expressions: [Expression?] = []) {
+    init(id: [String] = [], scope: Scope, type: String, expressions: [Expression?] = []) {
         self.id = id
         self.type = type
         self.expressions = expressions
         super.init(scope: scope)
     }
-    override var custom: SType {return "\(type) \(id)"}
+    override var custom: String {return "\(type) \(id)"}
     override func accept(visitor: ASTVisitor) { visitor.visit(node: self) }
 }
 class FunctionDecl: Declaration {
     var id: String
-    var type: SType
+    var type: String
     var parameters: [VariableDecl]
     var statements: [Statement]
     var hasReturn = false
-    init(id: String, scope: Scope, type: SType, parameters: [VariableDecl] = [], statements: [Statement] = []) {
+    init(id: String, scope: Scope, type: String, parameters: [VariableDecl] = [], statements: [Statement] = []) {
         self.id = id
         self.type = type
         self.parameters = parameters
         self.statements = statements
         super.init(scope: scope)
     }
-    override var custom: SType {return "\(type) \(id)"}
+    override var custom: String {return "\(type) \(id)"}
     override func accept(visitor: ASTVisitor) { visitor.visit(node: self) }
 }
 class ClassDecl: Declaration {
@@ -163,14 +163,14 @@ class ExpressionS: Statement {
 }
 
 class Expression: ASTNode {
-    var type: SType
+    var type: String
     var lValue: Bool {
         return false
     }
     override var custom: String {
         return "(\(type))"
     }
-    init(scope: Scope, type: SType = "*") {
+    init(scope: Scope, type: String = "*") {
         self.type = type
         super.init(scope: scope)
     }
@@ -283,10 +283,10 @@ class PrefixE: Expression {
     override func accept(visitor: ASTVisitor) { visitor.visit(node: self) }
 }
 class NewE: Expression {
-    var baseType: SType
+    var baseType: String
     var expressions: [Expression]
     var empty: Int
-    init(scope: Scope, baseType: SType!, expressions: [Expression], empty: Int) {
+    init(scope: Scope, baseType: String!, expressions: [Expression], empty: Int) {
         self.baseType = baseType
         self.expressions = expressions
         self.empty = empty
@@ -303,7 +303,7 @@ class BinaryE: Expression {
         self.op = op
         super.init(scope: scope)
     }
-    override var custom: SType {return "\(op)"}
+    override var custom: String {return "\(op)"}
     override func accept(visitor: ASTVisitor) { visitor.visit(node: self) }
 }
 

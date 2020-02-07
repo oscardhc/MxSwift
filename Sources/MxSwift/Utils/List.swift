@@ -7,7 +7,7 @@
 
 import Foundation
 
-class List<T> {
+class List<T: CustomStringConvertible>: CustomStringConvertible {
     
     class Node<T> {
         
@@ -24,24 +24,33 @@ class List<T> {
     private var head: Node<T>? = nil
     private var tail: Node<T>? = nil
     
+    var count = 0
     var isEmpty: Bool {
         return head == nil
     }
     
-    init() {
-        
-    }
-    init(from a: [T]) {
-        
-    }
+    var first: T {return head!.value}
+    var last: T {return tail!.value}
+    
+    init() {}
     
     func append(_ a: T) {
+        count += 1
         if let t = tail {
             t.next = Node(value: a)
             tail = t.next
         } else {
             head = Node(value: a)
             tail = head
+        }
+    }
+    func remove(node cur: Node<T>) {
+        count -= 1
+        if let t = cur.next {
+            t.prev = cur.prev
+        }
+        if let q = cur.prev {
+            q.next = cur.next
         }
     }
     
@@ -53,13 +62,32 @@ class List<T> {
         remove(node: cur)
     }
     
-    func remove(node cur: Node<T>) {
-        if let t = cur.next {
-            t.prev = cur.prev
+    var description: String {
+        var ret = "", cur = head
+        while cur != nil {
+            ret += "\(cur!.value)"
+            cur = cur!.next
+            if cur != nil {
+                ret += ", "
+            }
         }
-        if let q = cur.prev {
-            q.next = cur.next
+        return ret
+    }
+    
+    func forEach(_ f: ((T) -> Void)) {
+        var cur = head
+        while cur != nil {
+            f(cur!.value)
+            cur = cur!.next
         }
+    }
+    
+    subscript(idx: Int) -> T {
+        var cur = head
+        for _ in 0..<idx {
+            cur = cur!.next
+        }
+        return cur!.value
     }
     
 }

@@ -15,7 +15,7 @@ enum ScopeType {
     case LOOP
 }
 
-class Scope: BaseObject {
+class Scope: HashableObject {
     
     var scopeType: ScopeType
     var scopeName = ""

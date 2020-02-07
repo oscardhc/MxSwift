@@ -12,4 +12,6 @@ class Module {
     var functions = List<Function>()
     var globalVar = List<Global>()
     
+    func accept(visitor: IRVisitor) {visitor.visit(v: self)}
+    
 }

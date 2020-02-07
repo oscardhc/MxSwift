@@ -9,11 +9,12 @@ import Foundation
 import Antlr4
 import Parser
 
-typealias SType = String
-
-class BaseObject {
+class HashableObject {
     var hashString: String {
         return String(String(UInt(bitPattern: ObjectIdentifier(self))).suffix(4))
+    }
+    var thisType: String {
+        return "\(type(of: self))"
     }
 }
 
@@ -26,13 +27,13 @@ enum BinaryOperator {
 }
 
 let bool = "bool", int = "int", string = "string", void = "void", null = "null"
-let builtinTypes: [SType] = [bool, int, string, void]
+let builtinTypes: [String] = [bool, int, string, void]
 let builtinSize = "__size"
 
 var preOperation: Bool = false
 
 extension Array where Element == String {
-    static func == (lhs: Array, rhs: Array) -> Bool {
+    static func === (lhs: Array<String>, rhs: Array<String>) -> Bool {
         if lhs.count != rhs.count {
             return false
         }
@@ -43,17 +44,17 @@ extension Array where Element == String {
         }
         return true
     }
-    static func != (lhs: Array, rhs: Array) -> Bool {
-        return !(lhs == rhs)
+    static func !== (lhs: Array<String>, rhs: Array<String>) -> Bool {
+        return !(lhs === rhs)
     }
 }
 
-extension SType {
-    static func === (lhs: SType, rhs: SType) -> Bool {
+extension String {
+    static func === (lhs: String, rhs: String) -> Bool {
 //        print("=== CMP", lhs, rhs, !lhs.isBuiltinType(), rhs == null, (rhs == null && !lhs.isBuiltinType()))
         return lhs == rhs || (rhs == null && !lhs.isBuiltinType())
     }
-    static func !== (lhs: SType, rhs: SType) -> Bool {
+    static func !== (lhs: String, rhs: String) -> Bool {
         return !(lhs === rhs)
     }
 }

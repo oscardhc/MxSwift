@@ -10,8 +10,10 @@ import Foundation
 class IRBuilder: ASTBaseVisitor {
     
     var module = Module()
+    var namedValue = [String: Value]()
+    var currentBlock = BasicBlock(name: "", type: Type(), curfunc: nil)
     
-    private func getType(type: SType) -> Type {
+    private func getType(type: String) -> Type {
         switch type {
         case int:
             return IntT(width: .int)
@@ -33,15 +35,38 @@ class IRBuilder: ASTBaseVisitor {
 
     override func visit(node: VariableDecl) {
         super.visit(node: node)
+        for id in node.id {
+//            node.scope.find(name: id)?.value = 
+        }
     }
 
     override func visit(node: FunctionDecl) {
-        super.visit(node: node)
-        let retType = getType(type: node.type)
+//        super.visit(node: node)
         var parType = [Type]()
         node.parameters.forEach{parType.append(getType(type: $0.type))}
-        let type = FunctionT(ret: retType, par: parType)
-        node.ret = Function(name: node.id, type: type, module: module)
+        
+        let ret = Function(name: node.id,
+                           type: FunctionT(ret: getType(type: node.type), par: parType),
+                           module: module)
+        
+        namedValue.removeAll()
+        node.parameters.forEach {
+            let par = Parameter(name: $0.id[0], type: getType(type: $0.type))
+            ret.parameters.append(par)
+            namedValue[$0.id[0]] = par
+        }
+        
+        ret.blocks.append(BasicBlock(name: node.id, type: LabelType(), curfunc: ret))
+        currentBlock = ret.blocks.last
+        
+        node.statements.forEach {
+            $0.accept(visitor: self)
+        }
+        
+//        currentBlock.inst.append()
+        
+        node.ret = ret
+        module.functions.append(ret)
     }
 
     override func visit(node: ClassDecl) {
@@ -70,6 +95,10 @@ class IRBuilder: ASTBaseVisitor {
 
     override func visit(node: ReturnS) {
         super.visit(node: node)
+        if let e = node.expression {
+            node.ret = ReturnInst(name: "", type: getType(type: e.type), val: e.ret!)
+            currentBlock.inst.append(node.ret as! Inst)
+        }
     }
 
     override func visit(node: BreakS) {
@@ -87,6 +116,7 @@ class IRBuilder: ASTBaseVisitor {
 
     override func visit(node: VariableE) {
         super.visit(node: node)
+        node.ret = namedValue[node.id]
     }
 
     override func visit(node: ThisLiteralE) {
@@ -137,16 +167,32 @@ class IRBuilder: ASTBaseVisitor {
         super.visit(node: node)
     }
 
+//    case add, sub, mul, div, mod, gt, lt, geq, leq, eq, neq, bitAnd, bitOr, bitXor, logAnd, logOr, lShift, rShift, assign
+    
+    private let opMap: [BinaryOperator: Inst.OP] = [.add: .add, .sub: .sub, .mul: .mul, .div: .sdiv, .mod: .srem, .bitAnd: .and, .bitOr: .or, .bitXor: .xor, .lShift: .shl, .rShift: .ashr]
+    
+    private let cmpMap: [BinaryOperator: CompareInst.CMP] = [.lt: .slt, .leq: .sle, .gt: .sgt, .geq: .sge]
+    
     override func visit(node: BinaryE) {
         super.visit(node: node)
-        node.ret = BinaryInst(name: "binaryE", type: node.lhs.ret!.type, operation: {
-            switch node.op {
-            case .add:
-                return .add
-            default:
-                return .add
+        switch node.op {
+        case .add, .sub, .mul, .div, .mod, .bitAnd, .bitOr, .bitXor, .lShift, .rShift:
+            node.ret = BinaryInst(name: "", type: node.lhs.ret!.type, operation: opMap[node.op]!, lhs: node.lhs.ret!, rhs: node.rhs.ret!)
+        case .assign:
+            0
+        case .eq, .neq:
+            switch node.type {
+            case int:
+                node.ret = CompareInst(name: "", type: IntT(width: .bool), operation: .icmp, lhs: node.lhs.ret!, rhs: node.rhs.ret!, cmp: cmpMap[node.op]!)
+            default: //string
+                0
             }
-        }(), lhs: node.lhs.ret!, rhs: node.rhs.ret!)
+        case .lt, .gt, .leq, .geq, .logOr, .logAnd:
+            node.ret = CompareInst(name: "", type: IntT(width: .bool), operation: .icmp, lhs: node.lhs.ret!, rhs: node.rhs.ret!, cmp: cmpMap[node.op]!)
+        default:
+            node.ret = Value(name: "", type: Type())
+        }
+        currentBlock.inst.append(node.ret as! Inst)
     }
 
 }
