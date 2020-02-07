@@ -9,19 +9,14 @@ import Foundation
 
 class ASTNode: HashableObject, CustomStringConvertible {
     var scope: Scope!
-    
-    // for visitor use
     var ret: Value?
     
     init(scope: Scope) {
         self.scope = scope
     }
-    var custom: String {
-        return ""
-    }
-    var description: String {
-        return "\(hashString) \(scope.scopeName)::\(type(of: self)) \t \(custom)"
-    }
+    
+    var custom: String {return ""}
+    var description: String {return "\(hashString) \(scope.scopeName)::\(type(of: self)) \t \(custom)"}
     func accept(visitor: ASTVisitor) {}
 }
 
@@ -164,7 +159,8 @@ class ExpressionS: Statement {
 
 class Expression: ASTNode {
     var type: String
-    var lValue: Bool {
+    var willBeAssigned = false
+    var lValuable: Bool {
         return false
     }
     override var custom: String {
@@ -177,7 +173,7 @@ class Expression: ASTNode {
 }
 class VariableE: Expression {
     var id: String
-    override var lValue: Bool {
+    override var lValuable: Bool {
         return true
     }
     init(id: String, scope: Scope) {
@@ -221,7 +217,7 @@ class MethodAccessE: Expression {
 class PropertyAccessE: Expression {
     var toAccess: Expression
     var property: String
-    override var lValue: Bool {
+    override var lValuable: Bool {
         return true
     }
     init(scope: Scope, toAccess: Expression, property: String) {
@@ -234,7 +230,7 @@ class PropertyAccessE: Expression {
 class ArrayE: Expression {
     var array: Expression
     var index: Expression
-    override var lValue: Bool {
+    override var lValuable: Bool {
         return true
     }
     init(scope: Scope, array: Expression, index: Expression) {
@@ -268,9 +264,9 @@ class SuffixE: Expression {
 class PrefixE: Expression {
     var expression: Expression
     var op: UnaryOperator
-    override var lValue: Bool {
+    override var lValuable: Bool {
         if [.doubleAdd, .doubleSub].contains(op) {
-            return expression.lValue
+            return expression.lValuable
         } else {
             return false;
         }

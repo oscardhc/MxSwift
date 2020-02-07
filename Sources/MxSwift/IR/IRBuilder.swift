@@ -184,9 +184,7 @@ class IRBuilder: ASTBaseVisitor {
     }
 
 //    case add, sub, mul, div, mod, gt, lt, geq, leq, eq, neq, bitAnd, bitOr, bitXor, logAnd, logOr, lShift, rShift, assign
-    
     private let opMap: [BinaryOperator: Inst.OP] = [.add: .add, .sub: .sub, .mul: .mul, .div: .sdiv, .mod: .srem, .bitAnd: .and, .bitOr: .or, .bitXor: .xor, .lShift: .shl, .rShift: .ashr]
-    
     private let cmpMap: [BinaryOperator: CompareInst.CMP] = [.lt: .slt, .leq: .sle, .gt: .sgt, .geq: .sge]
     
     override func visit(node: BinaryE) {
@@ -196,6 +194,15 @@ class IRBuilder: ASTBaseVisitor {
             node.ret = BinaryInst(name: "", type: node.lhs.ret!.type, operation: opMap[node.op]!, lhs: node.lhs.ret!, rhs: node.rhs.ret!)
         case .assign:
             0
+////            let v = node.scope.find(name: node.lhs)!.value!
+//            if v is AllocaInst {
+//                let ret = LoadInst(name: "", alloc: v as! AllocaInst)
+//                node.ret = ret
+//                currentBlock.inst.append(ret)
+//            } else {
+//                node.ret = v
+//            }
+//            node.ret = StoreInst(name: <#T##String#>, alloc: <#T##Value#>, val: <#T##Value#>)
         case .eq, .neq:
             switch node.type {
             case int:

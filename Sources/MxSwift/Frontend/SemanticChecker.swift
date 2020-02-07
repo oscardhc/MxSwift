@@ -222,7 +222,6 @@ class SemanticChecker: ASTBaseVisitor {
                 decl.parameters.forEach{exp.append($0.type)}
                 node.arguments.forEach{rec.append($0.type)}
                 node.type = decl.type
-//                print("CALL", node.id, node.scope.scopeName)
                 if exp != rec {
                     error.argumentError(name: node.id, expected: exp, received: rec)
                 }
@@ -241,7 +240,7 @@ class SemanticChecker: ASTBaseVisitor {
         case .doubleAdd, .doubleSub:
             if node.expression.type == int {
                 node.type = int
-                if !node.expression.lValue {
+                if !node.expression.lValuable {
                     error.notAssignable(id: node.expression.description)
                 }
             } else {unaryError()}
@@ -255,7 +254,7 @@ class SemanticChecker: ASTBaseVisitor {
         super.visit(node: node)
         switch node.op {
         case .doubleAdd, .doubleSub:
-            if !node.expression.lValue {
+            if !node.expression.lValuable {
                 error.notAssignable(id: node.expression.description)
             }
             fallthrough
@@ -274,7 +273,6 @@ class SemanticChecker: ASTBaseVisitor {
 
     override func visit(node: NewE) {
         super.visit(node: node)
-//        print(">>>>>>", node.baseType, node.scope.find(name: node.ty))
         if node.baseType.isBuiltinType() || node.scope.find(name: node.baseType) != nil {
             node.expressions.forEach{if $0.type != int {error.indexError(name: $0.description, type: $0.type)}}
             
@@ -284,11 +282,14 @@ class SemanticChecker: ASTBaseVisitor {
     }
     
     override func visit(node: BinaryE) {
-        let binaryError = {error.binaryOperatorError(op: node.op, type1: node.lhs.type, type2: node.rhs.type)}
+        if node.op == .assign {
+            node.willBeAssigned = true
+        }
         super.visit(node: node)
+        let binaryError = {error.binaryOperatorError(op: node.op, type1: node.lhs.type, type2: node.rhs.type)}
         switch node.op {
         case .assign:
-            if node.lhs.lValue == false {
+            if node.lhs.lValuable == false {
                 error.notAssignable(id: node.lhs.description)
             } else if node.lhs.type == node.rhs.type || (node.rhs.type == null && (node.lhs.type.hasSuffix("[]") || !node.lhs.type.isBuiltinType())) {
 //                node.type =
