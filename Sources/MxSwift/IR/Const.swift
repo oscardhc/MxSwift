@@ -33,6 +33,11 @@ class Function: Global {
     override var toPrint: String {return "define \(type) \(name)(\(parameters))"}
     override var description: String {return "\(type) \(name)"}
     
+    func newBlock(withName: String) -> BasicBlock {
+        blocks.append(BasicBlock(name: withName, type: LabelType(), curfunc: self))
+        return blocks.last
+    }
+    
 }
 
 class GlobalVariable: Global {

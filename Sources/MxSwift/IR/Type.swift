@@ -9,12 +9,13 @@ import Foundation
 
 class Type: CustomStringConvertible {
     init() {}
-    var description: String {return "???"}
+    var description: String {"???"}
     var align: Int {return 1}
     var withAlign: String {return description + ", align \(align)"}
 }
 
 class LabelType: Type {
+    override var description: String {"label"}
 }
 
 class FunctionT: Type {
@@ -48,7 +49,7 @@ class IntT: Type {
     override var description: String {return "i\(bit)"}
     override var align: Int {return width == .int ? 4 : 1}
     
-    init(width: BitWidth) {
+    init(_ width: BitWidth) {
         self.width = width
         super.init()
     }

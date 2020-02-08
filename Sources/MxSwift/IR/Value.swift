@@ -25,11 +25,6 @@ class Value: HashableObject, CustomStringConvertible {
     var users = List<User>()
     var type: Type
     var prefix: String {return "%"}
-
-    init(name: String, type: Type) {
-        self._name = name
-        self.type = type
-    }
     
     var _name: String
     var basename: String {
@@ -39,10 +34,15 @@ class Value: HashableObject, CustomStringConvertible {
         return _name
     }
     var name: String {return prefix + basename}
-    
     var description: String {return "\(type) \(name)"}
     var toPrint: String {return "NOTHING"}
     
+    init(name: String, type: Type) {
+        self._name = name
+        self.type = type
+    }
+    
+    var isAddress: Bool {return self is AllocaInst}
     func accept(visitor: IRVisitor) {}
 }
 
@@ -66,14 +66,9 @@ class BasicBlock: Value {
     
     var inst = List<Inst>()
     var functions = List<Function>()
-    var currentFunction: Function?
-    override var prefix: String {return ""}
+    var currentFunction: Function
     
-    override var description: String {
-        return super.description + "\n>>>" + inst.description + "<<<"
-    }
-    
-    init(name: String, type: Type, curfunc: Function?) {
+    init(name: String, type: Type, curfunc: Function) {
         self.currentFunction = curfunc
         super.init(name: name, type: type)
     }
@@ -83,13 +78,6 @@ class BasicBlock: Value {
         return i
     }
     
-    func create(_ f: (() -> Inst)) -> Inst {
-        let i = f()
-        inst.append(i)
-        return i
-    }
-    
-//    override var name: String {return }
     override func accept(visitor: IRVisitor) {visitor.visit(v: self)}
     
 }

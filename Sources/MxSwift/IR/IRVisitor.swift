@@ -12,6 +12,7 @@ protocol IRVisitor {
     func visit(v: Module)
     func visit(v: Function)
     func visit(v: BasicBlock)
+    func visit(v: BrInst)
     func visit(v: GEPInst)
     func visit(v: LoadInst)
     func visit(v: StoreInst)
@@ -51,7 +52,7 @@ class IRPrinter: IRVisitor {
         indent += 1
         v.blocks.forEach {
             indent -= 1
-            print("\($0.name):")
+            print("\($0.basename):")
             indent += 1
             $0.accept(visitor: self)
         }
@@ -63,8 +64,11 @@ class IRPrinter: IRVisitor {
             $0.accept(visitor: self)
         }
     }
+    func visit(v: BrInst) {
+        print(v.toPrint)
+    }
     func visit(v: GEPInst) {
-        
+        print(v.toPrint)
     }
     func visit(v: LoadInst) {
         print(v.toPrint)
