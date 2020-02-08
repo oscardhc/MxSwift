@@ -10,7 +10,6 @@ import Foundation
 class IRBuilder: ASTBaseVisitor {
     
     var module = Module()
-//    var namedValue = [String: Value]()
     var currentBlock = BasicBlock(name: "", type: Type(), curfunc: nil)
     
     private func getType(type: String) -> Type {
@@ -66,8 +65,6 @@ class IRBuilder: ASTBaseVisitor {
             $0.accept(visitor: self)
         }
         
-//        currentBlock.inst.append()
-        
         node.ret = ret
         module.functions.append(ret)
     }
@@ -99,7 +96,8 @@ class IRBuilder: ASTBaseVisitor {
     override func visit(node: ReturnS) {
         super.visit(node: node)
         if let e = node.expression {
-            node.ret = ReturnInst(name: "", type: getType(type: e.type), val: e.ret!)
+            let ret = e.ret! is AllocaInst ? currentBlock.create(LoadInst(name: "", alloc: e.ret!)) : e.ret!
+            node.ret = ReturnInst(name: "", type: getType(type: e.type), val: ret)
             currentBlock.inst.append(node.ret as! Inst)
         }
     }
@@ -120,13 +118,14 @@ class IRBuilder: ASTBaseVisitor {
     override func visit(node: VariableE) {
         super.visit(node: node)
         let v = node.scope.find(name: node.id)!.value!
-        if v is AllocaInst {
-            let ret = LoadInst(name: "", alloc: v as! AllocaInst)
-            node.ret = ret
-            currentBlock.inst.append(ret)
-        } else {
-            node.ret = v
-        }
+//        if v is AllocaInst {
+//            let ret = LoadInst(name: "", alloc: v as! AllocaInst)
+//            node.ret = ret
+//            currentBlock.inst.append(ret)
+//        } else {
+//            node.ret = v
+//        }
+        node.ret = v
     }
 
     override func visit(node: ThisLiteralE) {
@@ -135,10 +134,12 @@ class IRBuilder: ASTBaseVisitor {
 
     override func visit(node: BoolLiteralE) {
         super.visit(node: node)
+        node.ret = Instant(name: "never", type: IntT(width: .bool), value: node.value ? 1 : 0)
     }
 
     override func visit(node: IntLiteralE) {
         super.visit(node: node)
+        node.ret = Instant(name: "never", type: IntT(width: .int), value: node.value)
     }
 
     override func visit(node: StringLiteralE) {
@@ -165,7 +166,9 @@ class IRBuilder: ASTBaseVisitor {
         super.visit(node: node)
         let f = node.scope.find(name: node.id)!.subScope!.correspondingNode!.ret as! Function
         var arg = [Value]()
-        node.arguments.forEach{arg.append($0.ret!)}
+        node.arguments.forEach{
+            arg.append($0.ret is AllocaInst ? currentBlock.create(LoadInst(name: "", alloc: $0.ret!)) : $0.ret!)
+        }
         let ret = CallInst(name: "", type: getType(type: node.type), function: f, arguments: arg)
         currentBlock.inst.append(ret)
         node.ret = ret
@@ -188,34 +191,32 @@ class IRBuilder: ASTBaseVisitor {
     private let cmpMap: [BinaryOperator: CompareInst.CMP] = [.lt: .slt, .leq: .sle, .gt: .sgt, .geq: .sge]
     
     override func visit(node: BinaryE) {
-        super.visit(node: node)
-        switch node.op {
-        case .add, .sub, .mul, .div, .mod, .bitAnd, .bitOr, .bitXor, .lShift, .rShift:
-            node.ret = BinaryInst(name: "", type: node.lhs.ret!.type, operation: opMap[node.op]!, lhs: node.lhs.ret!, rhs: node.rhs.ret!)
-        case .assign:
-            0
-////            let v = node.scope.find(name: node.lhs)!.value!
-//            if v is AllocaInst {
-//                let ret = LoadInst(name: "", alloc: v as! AllocaInst)
-//                node.ret = ret
-//                currentBlock.inst.append(ret)
-//            } else {
-//                node.ret = v
-//            }
-//            node.ret = StoreInst(name: <#T##String#>, alloc: <#T##Value#>, val: <#T##Value#>)
-        case .eq, .neq:
-            switch node.type {
-            case int:
-                node.ret = CompareInst(name: "", type: IntT(width: .bool), operation: .icmp, lhs: node.lhs.ret!, rhs: node.rhs.ret!, cmp: cmpMap[node.op]!)
-            default: //string
-                0
+        if node.op == .assign {
+            super.visit(node: node)
+            let lhs = node.lhs.ret!
+            let rhs = node.rhs.ret! is AllocaInst ? currentBlock.create(LoadInst(name: "", alloc: node.rhs.ret!)) : node.rhs.ret!
+//            print("!!!!!", lhs, rhs)
+            node.ret = currentBlock.create(StoreInst(name: "", alloc: lhs, val: rhs))
+        } else {
+            super.visit(node: node)
+            let lhs = node.lhs.ret! is AllocaInst ? currentBlock.create(LoadInst(name: "", alloc: node.lhs.ret!)) : node.lhs.ret!
+            let rhs = node.rhs.ret! is AllocaInst ? currentBlock.create(LoadInst(name: "", alloc: node.rhs.ret!)) : node.rhs.ret!
+            switch node.op {
+            case .add, .sub, .mul, .div, .mod, .bitAnd, .bitOr, .bitXor, .lShift, .rShift:
+                node.ret = currentBlock.create(BinaryInst(name: "", type: lhs.type, operation: opMap[node.op]!, lhs: lhs, rhs: rhs))
+            case .eq, .neq, .lt, .gt, .leq, .geq:
+                switch node.type {
+                case int:
+                    node.ret = CompareInst(name: "", type: IntT(width: .bool), operation: .icmp, lhs: lhs, rhs: rhs, cmp: cmpMap[node.op]!)
+                default: //string
+                    0
+                }
+            case .logOr, .logAnd:
+                node.ret = CompareInst(name: "", type: IntT(width: .bool), operation: .icmp, lhs: lhs, rhs: rhs, cmp: cmpMap[node.op]!)
+            default:
+                node.ret = Value(name: "", type: Type())
             }
-        case .lt, .gt, .leq, .geq, .logOr, .logAnd:
-            node.ret = CompareInst(name: "", type: IntT(width: .bool), operation: .icmp, lhs: node.lhs.ret!, rhs: node.rhs.ret!, cmp: cmpMap[node.op]!)
-        default:
-            node.ret = Value(name: "", type: Type())
         }
-        currentBlock.inst.append(node.ret as! Inst)
     }
 
 }

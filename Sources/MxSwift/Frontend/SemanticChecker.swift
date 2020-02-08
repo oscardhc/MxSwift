@@ -282,9 +282,6 @@ class SemanticChecker: ASTBaseVisitor {
     }
     
     override func visit(node: BinaryE) {
-        if node.op == .assign {
-            node.willBeAssigned = true
-        }
         super.visit(node: node)
         let binaryError = {error.binaryOperatorError(op: node.op, type1: node.lhs.type, type2: node.rhs.type)}
         switch node.op {

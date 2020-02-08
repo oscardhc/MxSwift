@@ -14,6 +14,7 @@ class Const: User {
 class Global: Const {
     
     var currentModule: Module?
+    override var prefix: String {return "@"}
     
     init(name: String, type: Type, module: Module?) {
         self.currentModule = module
@@ -29,8 +30,8 @@ class Function: Global {
     
     override func accept(visitor: IRVisitor) {visitor.visit(v: self)}
     
-    override var toPrint: String {return "define \(type) @\(name)(\(parameters))"}
-    override var description: String {return "\(type) @\(name)"}
+    override var toPrint: String {return "define \(type) \(name)(\(parameters))"}
+    override var description: String {return "\(type) \(name)"}
     
 }
 

@@ -12,6 +12,7 @@ protocol IRVisitor {
     func visit(v: Module)
     func visit(v: Function)
     func visit(v: BasicBlock)
+    func visit(v: GEPInst)
     func visit(v: LoadInst)
     func visit(v: StoreInst)
     func visit(v: CallInst)
@@ -61,6 +62,9 @@ class IRPrinter: IRVisitor {
         v.inst.forEach {
             $0.accept(visitor: self)
         }
+    }
+    func visit(v: GEPInst) {
+        
     }
     func visit(v: LoadInst) {
         print(v.toPrint)

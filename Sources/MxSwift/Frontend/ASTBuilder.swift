@@ -147,11 +147,11 @@ class ASTBuilder: MxsBaseVisitor<ASTNode> {
         if ctx.This() != nil {
             return ThisLiteralE(scope: current)
         } else if ctx.BoolLiteral() != nil {
-            return BoolLiteralE(scope: current)
+            return BoolLiteralE(scope: current).setValue(value: ctx.getText() == "true" ? true: false)
         } else if ctx.IntLiteral() != nil {
-            return IntLiteralE(scope: current)
+            return IntLiteralE(scope: current).setValue(value: Int(ctx.getText())!)
         } else if ctx.StringLiteral() != nil {
-            return StringLiteralE(scope: current)
+            return StringLiteralE(scope: current).setValue(value: ctx.getText())
         } else {
             return NullLiteralE(scope: current)
         }

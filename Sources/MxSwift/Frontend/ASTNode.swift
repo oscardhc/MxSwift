@@ -159,7 +159,6 @@ class ExpressionS: Statement {
 
 class Expression: ASTNode {
     var type: String
-    var willBeAssigned = false
     var lValuable: Bool {
         return false
     }
@@ -188,16 +187,19 @@ class ThisLiteralE: Expression {
 }
 class BoolLiteralE: Expression {
     var value = true
+    func setValue(value: Bool) -> BoolLiteralE {self.value = value; return self}
     override var custom: String {return "\(value)"}
     override func accept(visitor: ASTVisitor) { visitor.visit(node: self) }
 }
 class IntLiteralE: Expression {
     var value = 0;
+    func setValue(value: Int) -> IntLiteralE {self.value = value; return self}
     override var custom: String {return "\(value)"}
     override func accept(visitor: ASTVisitor) { visitor.visit(node: self) }
 }
 class StringLiteralE: Expression {
     var value = "";
+    func setValue(value: String) -> StringLiteralE {self.value = value; return self}
     override var custom: String {return "\(value)"}
     override func accept(visitor: ASTVisitor) { visitor.visit(node: self) }
 }
