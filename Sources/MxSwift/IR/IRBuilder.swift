@@ -10,7 +10,9 @@ import Foundation
 class IRBuilder: ASTBaseVisitor {
     
     var module = Module()
-    var currentBlock = BasicBlock(name: "", type: Type(), curfunc: Function(name: "", type: Type(), module: nil))
+    var currentBlock: BasicBlock!
+    var continueToBlock: BasicBlock!
+    var breakToBlock: BasicBlock!
     
     private func getType(type: String) -> Type {
         switch type {
@@ -50,16 +52,16 @@ class IRBuilder: ASTBaseVisitor {
                            type: FunctionT(ret: getType(type: node.type), par: parType),
                            module: module)
         
+        
+        currentBlock = ret.newBlock(withName: "")
+        
         node.parameters.forEach {
             let par = Value(name: $0.id[0], type: getType(type: $0.type))
             ret.parameters.append(par)
-            let sym = $0.scope.find(name: $0.id[0])!
-            sym.value = par
+            let alc = currentBlock.create(AllocaInst(name: "", forType: par.type))
+            $0.scope.find(name: $0.id[0])!.value = alc
+            _ = currentBlock.create(StoreInst(name: "", alloc: alc, val: par))
         }
-        
-//        ret.blocks.append(BasicBlock(name: "", type: LabelType(), curfunc: ret))
-//        currentBlock = ret.blocks.last
-        currentBlock = ret.newBlock(withName: "")
         
         node.statements.forEach {
             $0.accept(visitor: self)
@@ -85,48 +87,94 @@ class IRBuilder: ASTBaseVisitor {
 //        super.visit(node: node)
         node.condition.accept(visitor: self)
         let cond = node.condition.ret!.isAddress ? currentBlock.create(LoadInst(name: "", alloc: node.condition.ret!)) : node.condition.ret!
+        let accept = currentBlock.currentFunction.newBlock(withName: "")
+        let reject = currentBlock.currentFunction.newBlock(withName: "")
+        let merge = currentBlock.currentFunction.newBlock(withName: "")
+        _ = currentBlock.create(BrInst(name: "", condition: cond, accept: accept, reject: reject))
         
-        let tBlock = currentBlock.currentFunction.newBlock(withName: "")
-        let fBlock = currentBlock.currentFunction.newBlock(withName: "")
-        let mBlock = currentBlock.currentFunction.newBlock(withName: "")
-        
-        let branch = currentBlock.create(BrInst(name: "", con: cond, acc: tBlock, rej: fBlock))
-        
-        currentBlock = tBlock
+        currentBlock = accept
         node.accept!.accept(visitor: self)
-        _ = currentBlock.create(BrInst(name: "", des: mBlock))
+        _ = currentBlock.create(BrInst(name: "", des: merge))
         
-        currentBlock = fBlock
-        node.reject!.accept(visitor: self)
-        _ = currentBlock.create(BrInst(name: "", des: mBlock))
+        currentBlock = reject
+        node.reject?.accept(visitor: self)
+        _ = currentBlock.create(BrInst(name: "", des: merge))
         
-        currentBlock = mBlock
-        
+        currentBlock = merge
     }
 
     override func visit(node: WhileS) {
-        super.visit(node: node)
+//        super.visit(node: node)
+        let judge = currentBlock.currentFunction.newBlock(withName: "")
+        let accept = currentBlock.currentFunction.newBlock(withName: "")
+        let merge = currentBlock.currentFunction.newBlock(withName: "")
+        _ = currentBlock.create(BrInst(name: "", des: judge))
+        currentBlock = judge
+        node.condition.accept(visitor: self)
+        let cond = node.condition.ret!.isAddress ? currentBlock.create(LoadInst(name: "", alloc: node.condition.ret!)) : node.condition.ret!
+        _ = currentBlock.create(BrInst(name: "", condition: cond, accept: accept, reject: merge))
+        
+        currentBlock = accept
+        breakToBlock = merge
+        continueToBlock = judge
+        node.accept!.accept(visitor: self)
+        _ = currentBlock.create(BrInst(name: "", des: judge))
+        
+        currentBlock = merge
     }
 
     override func visit(node: ForS) {
-        super.visit(node: node)
+//        super.visit(node: node)
+        node.initial?.accept(visitor: self)
+        
+        let accept = currentBlock.currentFunction.newBlock(withName: "")
+        let merge = currentBlock.currentFunction.newBlock(withName: "")
+        
+        if let c = node.condition {
+            let judge = currentBlock.currentFunction.newBlock(withName: "")
+            _ = currentBlock.create(BrInst(name: "", des: judge))
+            currentBlock = judge
+            c.accept(visitor: self)
+            let cond = c.ret!.isAddress ? currentBlock.create(LoadInst(name: "", alloc: c.ret!)) : c.ret!
+            _ = currentBlock.create(BrInst(name: "", condition: cond, accept: accept, reject: merge))
+            
+            currentBlock = accept
+            breakToBlock = merge
+            continueToBlock = judge
+            node.accept?.accept(visitor: self)
+            node.increment?.accept(visitor: self)
+            _ = currentBlock.create(BrInst(name: "", des: judge))
+        } else {
+            let cond = Instant(name: "", type: IntT(.bool), value: 1)
+            _ = currentBlock.create(BrInst(name: "", condition: cond, accept: accept, reject: merge))
+            
+            currentBlock = accept
+            breakToBlock = merge
+            continueToBlock = accept
+            node.accept?.accept(visitor: self)
+            node.increment?.accept(visitor: self)
+            _ = currentBlock.create(BrInst(name: "", des: accept))
+        }
+        
+        currentBlock = merge
     }
 
     override func visit(node: ReturnS) {
         super.visit(node: node)
         if let e = node.expression {
             let ret = e.ret!.isAddress ? currentBlock.create(LoadInst(name: "", alloc: e.ret!)) : e.ret!
-            node.ret = ReturnInst(name: "", type: getType(type: e.type), val: ret)
-            currentBlock.inst.append(node.ret as! Inst)
+            node.ret = currentBlock.create(ReturnInst(name: "", type: getType(type: e.type), val: ret))
         }
     }
 
     override func visit(node: BreakS) {
         super.visit(node: node)
+        currentBlock.create(BrInst(name: "", des: breakToBlock))
     }
 
     override func visit(node: ContinueS) {
         super.visit(node: node)
+        currentBlock.create(BrInst(name: "", des: continueToBlock))
     }
 
     override func visit(node: ExpressionS) {
@@ -181,9 +229,7 @@ class IRBuilder: ASTBaseVisitor {
         node.arguments.forEach{
             arg.append($0.ret!.isAddress ? currentBlock.create(LoadInst(name: "", alloc: $0.ret!)) : $0.ret!)
         }
-        let ret = CallInst(name: "", type: getType(type: node.type), function: f, arguments: arg)
-        currentBlock.inst.append(ret)
-        node.ret = ret
+        node.ret = currentBlock.create(CallInst(name: "", type: getType(type: node.type), function: f, arguments: arg))
     }
 
     override func visit(node: SuffixE) {
@@ -200,14 +246,13 @@ class IRBuilder: ASTBaseVisitor {
 
 //    case add, sub, mul, div, mod, gt, lt, geq, leq, eq, neq, bitAnd, bitOr, bitXor, logAnd, logOr, lShift, rShift, assign
     private let opMap: [BinaryOperator: Inst.OP] = [.add: .add, .sub: .sub, .mul: .mul, .div: .sdiv, .mod: .srem, .bitAnd: .and, .bitOr: .or, .bitXor: .xor, .lShift: .shl, .rShift: .ashr]
-    private let cmpMap: [BinaryOperator: CompareInst.CMP] = [.lt: .slt, .leq: .sle, .gt: .sgt, .geq: .sge]
+    private let cmpMap: [BinaryOperator: CompareInst.CMP] = [.eq: .eq, .neq: .ne, .lt: .slt, .leq: .sle, .gt: .sgt, .geq: .sge]
     
     override func visit(node: BinaryE) {
         if node.op == .assign {
             super.visit(node: node)
             let lhs = node.lhs.ret!
             let rhs = node.rhs.ret!.isAddress ? currentBlock.create(LoadInst(name: "", alloc: node.rhs.ret!)) : node.rhs.ret!
-//            print("!!!!!", lhs, rhs)
             node.ret = currentBlock.create(StoreInst(name: "", alloc: lhs, val: rhs))
         } else {
             super.visit(node: node)

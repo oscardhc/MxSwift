@@ -25,6 +25,36 @@ protocol IRVisitor {
 
 let stdPrint = print
 
+class IRNumberer: IRVisitor {
+    
+    func visit(v: Module) {
+        v.functions.forEach {
+            $0.accept(visitor: self)
+        }
+    }
+    func visit(v: Function) {
+        counter.reset()
+        v.blocks.forEach {
+            $0.initName()
+            $0.accept(visitor: self)
+        }
+    }
+    func visit(v: BasicBlock) {
+        v.inst.forEach {
+            $0.accept(visitor: self)
+        }
+    }
+    func visit(v: BrInst) {v.initName()}
+    func visit(v: GEPInst) {v.initName()}
+    func visit(v: LoadInst) {v.initName()}
+    func visit(v: StoreInst) {v.initName()}
+    func visit(v: CallInst) {v.initName()}
+    func visit(v: AllocaInst) {v.initName()}
+    func visit(v: ReturnInst) {v.initName()}
+    func visit(v: BinaryInst) {v.initName()}
+    
+}
+
 class IRPrinter: IRVisitor {
     
     var str = ""
@@ -40,14 +70,12 @@ class IRPrinter: IRVisitor {
         }
         str += "\n"
     }
-    
     func visit(v: Module) {
         v.functions.forEach {
             $0.accept(visitor: self)
         }
     }
     func visit(v: Function) {
-        counter.reset()
         print(v.toPrint, "#0", "{")
         indent += 1
         v.blocks.forEach {

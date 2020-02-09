@@ -25,12 +25,13 @@ class BrInst: Inst {
         super.init(name: name, type: Type(), operation: .br)
         operands.append(des)
     }
-    init(name: String, con: Value, acc: Value, rej: Value) {
+    init(name: String, condition: Value, accept: Value, reject: Value) {
         super.init(name: name, type: Type(), operation: .br)
-        operands.append(con)
-        operands.append(acc)
-        operands.append(rej)
+        operands.append(condition)
+        operands.append(accept)
+        operands.append(reject)
     }
+    override func initName() {}
     override var toPrint: String {"\(operation) " + operands.joined()}
     override func accept(visitor: IRVisitor) {visitor.visit(v: self)}
 }
@@ -54,6 +55,7 @@ class ReturnInst: Inst {
         super.init(name: name, type: type, operation: .ret)
         operands.append(val)
     }
+    override func initName() {}
     override var toPrint: String {"\(operation) \(operands[0])"}
     override func accept(visitor: IRVisitor) {visitor.visit(v: self)}
 }
@@ -71,6 +73,7 @@ class StoreInst: Inst {
         operands.append(val)
         operands.append(alloc)
     }
+    override func initName() {}
     override var toPrint: String {"\(operation) " + operands.joined() + ", align \((operands[1].type as! PointerT).baseType.align)"}
     override func accept(visitor: IRVisitor) {visitor.visit(v: self)}
 }

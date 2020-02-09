@@ -79,6 +79,7 @@ class s {
     let ir = IRBuilder()
     ir.visit(node: prog)
     
+    IRNumberer().visit(v: ir.module)
     let pr = IRPrinter()
     pr.visit(v: ir.module)
     print(pr.str)

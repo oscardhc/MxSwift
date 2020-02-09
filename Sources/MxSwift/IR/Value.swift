@@ -26,23 +26,22 @@ class Value: HashableObject, CustomStringConvertible {
     var type: Type
     var prefix: String {return "%"}
     
-    var _name: String
-    var basename: String {
-        if _name == "" {
-            _name = counter.tik
-        }
-        return _name
-    }
+    var originName: String
+    var basename = "*"
+    func initName() {basename = originName == "" ? counter.tik : originName}
+    
     var name: String {return prefix + basename}
     var description: String {return "\(type) \(name)"}
     var toPrint: String {return "NOTHING"}
     
     init(name: String, type: Type) {
-        self._name = name
+        self.originName = name
+        self.basename = name
         self.type = type
     }
     
-    var isAddress: Bool {return self is AllocaInst}
+    var isAddress: Bool {self is AllocaInst}
+    var isTerminate: Bool {self is BrInst || self is ReturnInst}
     func accept(visitor: IRVisitor) {}
 }
 
@@ -67,6 +66,7 @@ class BasicBlock: Value {
     var inst = List<Inst>()
     var functions = List<Function>()
     var currentFunction: Function
+    var terminated = false
     
     init(name: String, type: Type, curfunc: Function) {
         self.currentFunction = curfunc
