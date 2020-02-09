@@ -50,6 +50,16 @@ open class MxsVisitor<T>: ParseTreeVisitor<T> {
 	}
 
 	/**
+	 * Visit a parse tree produced by {@link MxsParser#singleVarDeclaration}.
+	- Parameters:
+	  - ctx: the parse tree
+	- returns: the visitor result
+	 */
+	open func visitSingleVarDeclaration(_ ctx: MxsParser.SingleVarDeclarationContext) -> T {
+	 	fatalError(#function + " must be overridden")
+	}
+
+	/**
 	 * Visit a parse tree produced by {@link MxsParser#variableDeclaration}.
 	- Parameters:
 	  - ctx: the parse tree

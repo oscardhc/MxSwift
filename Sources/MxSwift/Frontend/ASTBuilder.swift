@@ -53,7 +53,7 @@ class ASTBuilder: MxsBaseVisitor<ASTNode> {
         for i in 1..<ctx.type().count {
             let pid = ctx.Identifier(i)!.getText(), ptype = ctx.type(i)!.getText()
             current.newSymbol(name: pid, value: Symbol(_type: ptype, _bel: current))
-            node.parameters.append(VariableDecl(id: [pid], scope: current, type: ptype))
+            node.parameters.append(VariableDecl(scope: current, type: ptype, variable: [(pid, nil)]))
         }
         
         for stmt in ctx.sentence() {
@@ -79,7 +79,7 @@ class ASTBuilder: MxsBaseVisitor<ASTNode> {
         for i in 0..<ctx.type().count {
             let pid = ctx.Identifier(i + 1)!.getText(), ptype = ctx.type(i)!.getText()
             current.newSymbol(name: pid, value: Symbol(_type: ptype, _bel: current))
-            node.parameters.append(VariableDecl(id: [pid], scope: current, type: ptype))
+            node.parameters.append(VariableDecl(scope: current, type: ptype, variable: [(pid, nil)]))
         }
         
         for stmt in ctx.sentence() {
@@ -119,16 +119,20 @@ class ASTBuilder: MxsBaseVisitor<ASTNode> {
     
     override func visitVariableDeclaration(_ ctx: MxsParser.VariableDeclarationContext) -> ASTNode? {
         let type = ctx.type()!.getText(), node = VariableDecl(scope: current, type: type)
-        if let expr = ctx.expression(0) {
-            node.id.append(ctx.Identifier(0)!.getText())
-            node.expressions.append(visit(expr) as? Expression)
-            current.newSymbol(name: ctx.Identifier(0)!.getText(), value: Symbol(_type: type, _bel: current))
-        } else {
-            for id in ctx.Identifier() {
-                current.newSymbol(name: id.getText(), value: Symbol(_type: type, _bel: current))
-                node.id.append(id.getText())
-            }
+        for sing in ctx.singleVarDeclaration() {
+            node.variable.append((sing.Identifier()!.getText(), sing.expression() != nil ? visit(sing.expression()!) as? Expression : nil))
+            current.newSymbol(name: sing.Identifier()!.getText(), value: Symbol(_type: type, _bel: current))
         }
+//        if let expr = ctx.expression(0) {
+//            node.id.append(ctx.Identifier(0)!.getText())
+//            node.expressions.append(visit(expr) as? Expression)
+//            current.newSymbol(name: ctx.Identifier(0)!.getText(), value: Symbol(_type: type, _bel: current))
+//        } else {
+//            for id in ctx.Identifier() {
+//                current.newSymbol(name: id.getText(), value: Symbol(_type: type, _bel: current))
+//                node.id.append(id.getText())
+//            }
+//        }
         return node
     }
     

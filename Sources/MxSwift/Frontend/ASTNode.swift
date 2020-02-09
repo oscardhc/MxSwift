@@ -33,16 +33,18 @@ class Declaration: ASTNode {
     
 }
 class VariableDecl: Declaration {
-    var id: [String]
+//    var id: [String]
     var type: String
-    var expressions: [Expression?]!
-    init(id: [String] = [], scope: Scope, type: String, expressions: [Expression?] = []) {
-        self.id = id
+//    var expressions: [Expression?]
+    var variable: [(String, Expression?)]
+    init(scope: Scope, type: String, variable: [(String, Expression?)] = []) {
+//        self.id = id
         self.type = type
-        self.expressions = expressions
+//        self.expressions = expressions
+        self.variable = variable
         super.init(scope: scope)
     }
-    override var custom: String {return "\(type) \(id)"}
+    override var custom: String {return "\(type) \(variable)"}
     override func accept(visitor: ASTVisitor) { visitor.visit(node: self) }
 }
 class FunctionDecl: Declaration {
@@ -131,7 +133,7 @@ class ForS: Statement {
         self.accept = accept
         super.init(scope: scope)
     }
-    override var custom: String {return "\(initial?.hashString) | \(condition?.hashString) | \(increment?.hashString)"}
+    override var custom: String {return "\(initial?.hashString ?? "") | \(condition?.hashString ?? "") | \(increment?.hashString ?? "")"}
     override func accept(visitor: ASTVisitor) { visitor.visit(node: self) }
 }
 class ReturnS: Statement {

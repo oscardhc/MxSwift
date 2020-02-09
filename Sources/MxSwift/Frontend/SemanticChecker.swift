@@ -30,14 +30,20 @@ class SemanticChecker: ASTBaseVisitor {
         let baseType = node.type.dropAllArray()
         if baseType.isBuiltinType() || node.scope.find(name: baseType) != nil {
             if baseType == void {
-                error.typeError(name: node.id.description, type: baseType)
+                error.typeError(name: node.variable.description, type: baseType)
             }
-            if node.expressions.count > 0 {
-                if node.type === node.expressions[0]!.type || (node.expressions[0]!.type == null && (node.type.hasSuffix("[]") || !node.type.isBuiltinType())) {
-                    
-                } else {
-                    error.binaryOperatorError(op: .assign, type1: node.type, type2: node.expressions[0]!.type)
-//                    print(node.id)
+//            if node.expressions.count > 0 {
+//                if node.type === node.expressions[0]!.type || (node.expressions[0]!.type == null && (node.type.hasSuffix("[]") || !node.type.isBuiltinType())) {
+//
+//                } else {
+//                    error.binaryOperatorError(op: .assign, type1: node.type, type2: node.expressions[0]!.type)
+//                }
+//            }
+            node.variable.forEach {
+                if let e = $0.1 {
+                    if node.type === e.type || (e.type == null && (node.type.hasSuffix("[]") || !node.type.isBuiltinType())) {
+                        
+                    } else {error.binaryOperatorError(op: .assign, type1: node.type, type2: e.type)}
                 }
             }
         } else {
@@ -253,12 +259,10 @@ class SemanticChecker: ASTBaseVisitor {
         let unaryError = {error.unaryOperatorError(op: node.op, type1: node.expression.type)}
         super.visit(node: node)
         switch node.op {
-        case .doubleAdd, .doubleSub:
-            if !node.expression.lValuable {
+        case .doubleAdd, .doubleSub, .add, .sub, .bitwise:
+            if [.doubleAdd, .doubleSub].contains(node.op) && !node.expression.lValuable {
                 error.notAssignable(id: node.expression.description)
             }
-            fallthrough
-        case .doubleAdd, .doubleSub, .add, .sub, .bitwise:
             if node.expression.type == int {
                 node.type = int
             } else {unaryError()}
@@ -266,8 +270,6 @@ class SemanticChecker: ASTBaseVisitor {
             if node.expression.type == bool {
                 node.type = bool
             } else {unaryError()}
-        default:
-            error.unaryOperatorError(op: node.op, type1: node.expression.type)
         }
     }
 

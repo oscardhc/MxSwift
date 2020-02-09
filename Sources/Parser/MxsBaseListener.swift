@@ -67,6 +67,19 @@ open class MxsBaseListener: MxsListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	open func enterSingleVarDeclaration(_ ctx: MxsParser.SingleVarDeclarationContext) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	open func exitSingleVarDeclaration(_ ctx: MxsParser.SingleVarDeclarationContext) { }
+
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	open func enterVariableDeclaration(_ ctx: MxsParser.VariableDeclarationContext) { }
 	/**
 	 * {@inheritDoc}

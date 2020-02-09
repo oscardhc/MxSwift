@@ -44,6 +44,13 @@ open class MxsBaseVisitor<T>: AbstractParseTreeVisitor<T> {
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
+	open func visitSingleVarDeclaration(_ ctx: MxsParser.SingleVarDeclarationContext) -> T? { return visitChildren(ctx) }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation returns the result of calling
+	 * {@link #visitChildren} on {@code ctx}.</p>
+	 */
 	open func visitVariableDeclaration(_ ctx: MxsParser.VariableDeclarationContext) -> T? { return visitChildren(ctx) }
 	/**
 	 * {@inheritDoc}

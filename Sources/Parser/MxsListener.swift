@@ -55,6 +55,18 @@ public protocol MxsListener: ParseTreeListener {
 	 */
 	func exitInitialDeclaration(_ ctx: MxsParser.InitialDeclarationContext)
 	/**
+	 * Enter a parse tree produced by {@link MxsParser#singleVarDeclaration}.
+	 - Parameters:
+	   - ctx: the parse tree
+	 */
+	func enterSingleVarDeclaration(_ ctx: MxsParser.SingleVarDeclarationContext)
+	/**
+	 * Exit a parse tree produced by {@link MxsParser#singleVarDeclaration}.
+	 - Parameters:
+	   - ctx: the parse tree
+	 */
+	func exitSingleVarDeclaration(_ ctx: MxsParser.SingleVarDeclarationContext)
+	/**
 	 * Enter a parse tree produced by {@link MxsParser#variableDeclaration}.
 	 - Parameters:
 	   - ctx: the parse tree

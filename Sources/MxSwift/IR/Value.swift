@@ -73,8 +73,13 @@ class BasicBlock: Value {
         super.init(name: name, type: type)
     }
     
-    func create(_ i: Inst) -> Inst {
-        inst.append(i)
+    @discardableResult func create(_ i: Inst) -> Inst {
+        if terminated == false {
+            inst.append(i)
+            if i.isTerminate {
+                terminated = true
+            }
+        }
         return i
     }
     

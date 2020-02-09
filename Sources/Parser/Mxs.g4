@@ -9,7 +9,8 @@ functionDeclaration: type Identifier '(' ((type Identifier ',')* type Identifier
 
 initialDeclaration: Identifier '(' ((type Identifier ',')* type Identifier)? ')' '{' sentence* '}';
 
-variableDeclaration: type (Identifier ('=' expression)? ',')* Identifier ('=' expression)? ';';
+singleVarDeclaration: Identifier ('=' expression)?;
+variableDeclaration: type (singleVarDeclaration ',')* singleVarDeclaration ';';
 
 classDeclaration
     : Class Identifier '{' (variableDeclaration | functionDeclaration | initialDeclaration)* '}' ';'

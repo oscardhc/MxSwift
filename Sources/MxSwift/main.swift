@@ -46,21 +46,16 @@ class s {
             source += str
             source += "\n"
         }
-//        print(source)
         let input = ANTLRInputStream(source)
         lexer = MxsLexer(input)
     }
-    
-//    lexer = MxsLexer(input)
     
     lexer.addErrorListener(listener)
     
     let tokens = CommonTokenStream(lexer)
     let parser = try MxsParser(tokens)
-//    parser.removeErrorListeners()
     parser.addErrorListener(listener)
     
-//    parser.setErrorHandler(BailErrorStrategy())
     let tree = try parser.declarations()
     if listener.count > 0 {
         throw error
@@ -75,6 +70,7 @@ class s {
     if error.message.count > 0 {
         throw error
     }
+//    return
     
     let ir = IRBuilder()
     ir.visit(node: prog)
@@ -83,8 +79,6 @@ class s {
     let pr = IRPrinter()
     pr.visit(v: ir.module)
     print(pr.str)
-    
-//    ASTPrinter().visit(node: prog)
     
     print("Compilation exited normally.")
     
