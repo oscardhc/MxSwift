@@ -7,6 +7,8 @@ func compile(useFileStream: Bool) throws {
     
     let builtin = ANTLRInputStream(
 """
+void putchar(int x) {}
+
 void print(string str) {}
 void println(string str) {}
 void printInt(int n) {}
@@ -35,7 +37,7 @@ class s {
     let lexer: MxsLexer
     if useFileStream {
         let testName = "custom"
-        let testNo = "1"
+        let testNo = "2"
         let sourceFilePath = "/Users/oscar/Documents/Classes/1920_Spring/Compiler/Compiler-2020/local-judge/testcase/sema/\(testName)-package/\(testName)-\(testNo).mx"
         let input = try ANTLRFileStream(sourceFilePath, String.Encoding.utf8)
         print(input.toString())
@@ -78,7 +80,12 @@ class s {
     IRNumberer().visit(v: ir.module)
     let pr = IRPrinter()
     pr.visit(v: ir.module)
-    print(pr.str)
+    
+    let handle = FileHandle(forWritingAtPath: "/Users/oscar/Documents/Classes/1920_Spring/Compiler/tmp/out.ll")!
+//    print(pr.str)
+    handle.truncateFile(atOffset: 0)
+    handle.write(pr.str.data(using: .utf8)!)
+//    try handle.close()
     
     print("Compilation exited normally.")
     

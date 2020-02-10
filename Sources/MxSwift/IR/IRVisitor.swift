@@ -12,6 +12,7 @@ protocol IRVisitor {
     func visit(v: Module)
     func visit(v: Function)
     func visit(v: BasicBlock)
+    func visit(v: CastInst)
     func visit(v: BrInst)
     func visit(v: GEPInst)
     func visit(v: LoadInst)
@@ -34,6 +35,7 @@ class IRNumberer: IRVisitor {
     }
     func visit(v: Function) {
         counter.reset()
+        v.operands.forEach {$0.initName()}
         v.blocks.forEach {
             $0.initName()
             $0.accept(visitor: self)
@@ -44,6 +46,7 @@ class IRNumberer: IRVisitor {
             $0.accept(visitor: self)
         }
     }
+    func visit(v: CastInst) {v.initName()}
     func visit(v: BrInst) {v.initName()}
     func visit(v: GEPInst) {v.initName()}
     func visit(v: LoadInst) {v.initName()}
@@ -60,7 +63,7 @@ class IRPrinter: IRVisitor {
     var str = ""
     var indent = 0
     
-    func print(_ items: Any...) {
+    func print(_ items: Any..., end: String = "\n") {
         for _ in 0..<indent {
             str += "\t"
         }
@@ -68,7 +71,7 @@ class IRPrinter: IRVisitor {
             str += "\(it)"
             str += " "
         }
-        str += "\n"
+        str += end
     }
     func visit(v: Module) {
         v.functions.forEach {
@@ -76,21 +79,26 @@ class IRPrinter: IRVisitor {
         }
     }
     func visit(v: Function) {
-        print(v.toPrint, "#0", "{")
-        indent += 1
-        v.blocks.forEach {
-            indent -= 1
-            print("\($0.basename):")
+        print(v.toPrint)
+        if v.blocks.count > 0 {
             indent += 1
-            $0.accept(visitor: self)
+            v.blocks.forEach {
+                indent -= 1
+                print("\($0.basename):")
+                indent += 1
+                $0.accept(visitor: self)
+            }
+            indent -= 1
+            print("}")
         }
-        indent -= 1
-        print("}")
     }
     func visit(v: BasicBlock) {
         v.inst.forEach {
             $0.accept(visitor: self)
         }
+    }
+    func visit(v: CastInst) {
+        print(v.toPrint)
     }
     func visit(v: BrInst) {
         print(v.toPrint)

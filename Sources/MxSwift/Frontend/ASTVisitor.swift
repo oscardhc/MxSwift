@@ -46,7 +46,6 @@ class ASTBaseVisitor: ASTVisitor {
     }
     
     func visit(node: VariableDecl) {
-//        node.expressions.forEach{$0?.accept(visitor: self)}
         node.variable.forEach{$0.1?.accept(visitor: self)}
     }
     

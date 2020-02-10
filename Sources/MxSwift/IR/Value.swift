@@ -36,11 +36,11 @@ class Value: HashableObject, CustomStringConvertible {
     
     init(name: String, type: Type) {
         self.originName = name
-        self.basename = name
+        self.basename = self.originName
         self.type = type
     }
     
-    var isAddress: Bool {self is AllocaInst}
+    var isAddress: Bool {self is AllocaInst || self is GEPInst}
     var isTerminate: Bool {self is BrInst || self is ReturnInst}
     func accept(visitor: IRVisitor) {}
 }
@@ -51,13 +51,22 @@ class Instant: Value {
         self.value = value
         super.init(name: name, type: type)
     }
+    override func initName() {}
     override var name: String {return "\(value)"}
     override var description: String {return "\(type) \(value)"}
+}
+class VoidInstant: Value {
+    override func initName() {}
+    override var description: String {"void"}
 }
 
 class User: Value {
     
     var operands = List<Value>()
+    func added(operand: Value) -> Self {
+        operands.append(operand)
+        return self
+    }
     
 }
 
@@ -70,17 +79,16 @@ class BasicBlock: Value {
     
     init(name: String, type: Type, curfunc: Function) {
         self.currentFunction = curfunc
-        super.init(name: name, type: type)
+        super.init(name: "", type: type)
     }
     
-    @discardableResult func create(_ i: Inst) -> Inst {
+    func create(_ i: Inst) {
         if terminated == false {
             inst.append(i)
             if i.isTerminate {
                 terminated = true
             }
         }
-        return i
     }
     
     override func accept(visitor: IRVisitor) {visitor.visit(v: self)}

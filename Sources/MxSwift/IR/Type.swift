@@ -11,6 +11,7 @@ class Type: CustomStringConvertible {
     init() {}
     var description: String {"???"}
     var align: Int {return 1}
+    var bit: Int {0}
     var withAlign: String {return description + ", align \(align)"}
 }
 
@@ -21,7 +22,7 @@ class LabelType: Type {
 class FunctionT: Type {
     var retType: Type
     var parType: [Type]
-    override var description: String {return "\(retType)"}
+    override var description: String {"\(retType)"}
     
     init(ret: Type, par: [Type]) {
         self.retType = ret
@@ -30,13 +31,17 @@ class FunctionT: Type {
     }
 }
 
+class VoidT: Type {
+    override var description: String {"void"}
+}
+
 class IntT: Type {
     enum BitWidth {
-        case bool, char, int
+        case bool, char, int, long
     }
     
     var width: BitWidth
-    var bit: Int {
+    override var bit: Int {
         switch width {
         case .bool:
             return 1
@@ -44,6 +49,8 @@ class IntT: Type {
             return 8
         case .int:
             return 32
+        default:
+            return 64
         }
     }
     override var description: String {return "i\(bit)"}
@@ -63,13 +70,23 @@ class PointerT: Type {
         self.baseType = base
         super.init()
     }
-    override var description: String {return "\(baseType)*"}
-    override var align: Int {return 8}
+    override var description: String {"\(baseType)*"}
+    override var align: Int {8}
     
 }
 
 class ClassT: Type {
+    let properties: [Type]
+    override var bit: Int {
+        var r = 0
+        self.properties.forEach {r += $0.bit}
+        return r
+    }
     
+    init(prop: [Type] = []) {
+        self.properties = prop
+        super.init()
+    }
 }
 
 class ArrayT: Type {

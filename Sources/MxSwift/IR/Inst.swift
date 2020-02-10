@@ -9,24 +9,39 @@ import Foundation
 
 class Inst: User {
     enum OP {
-        case add, sub, mul, sdiv, srem, shl, ashr, and, or, xor, icmp, ret, alloca, call, load, store, getelementptr, br
+        case add, sub, mul, sdiv, srem, shl, ashr, and, or, xor, icmp, ret, alloca, call, load, store, getelementptr, br, bitcast
     }
     let operation: OP
-    var currentBlock: BasicBlock?
+    var currentBlock: BasicBlock
     
-    init(name: String, type: Type, operation: OP) {
+    init(name: String, type: Type, operation: OP, in block: BasicBlock) {
         self.operation = operation
+        self.currentBlock = block
         super.init(name: name, type: type)
+        currentBlock.create(self)
     }
+    
+//    @discardableResult func addedTo(block: BasicBlock) -> Self {
+//        block.create(self)
+//        return self
+//    }
 }
 
+class CastInst: Inst {
+    init (name: String, val: Value, toType: Type, in block: BasicBlock) {
+        super.init(name: name, type: toType, operation: .bitcast, in: block)
+        self.operands.append(val)
+    }
+    override var toPrint: String {"\(name) = \(operation) \(operands[0]) to \(type)"}
+    override func accept(visitor: IRVisitor) {visitor.visit(v: self)}
+}
 class BrInst: Inst {
-    init(name: String, des: Value) {
-        super.init(name: name, type: Type(), operation: .br)
+    @discardableResult init(name: String, des: Value, in block: BasicBlock) {
+        super.init(name: name, type: Type(), operation: .br, in: block)
         operands.append(des)
     }
-    init(name: String, condition: Value, accept: Value, reject: Value) {
-        super.init(name: name, type: Type(), operation: .br)
+    @discardableResult init(name: String, condition: Value, accept: Value, reject: Value, in block: BasicBlock) {
+        super.init(name: name, type: Type(), operation: .br, in: block)
         operands.append(condition)
         operands.append(accept)
         operands.append(reject)
@@ -36,23 +51,19 @@ class BrInst: Inst {
     override func accept(visitor: IRVisitor) {visitor.visit(v: self)}
 }
 class GEPInst: Inst {
-    let needZero: Bool, isConst: Bool, index: Int
-    init(name: String, type: Type, base: Value, needZero: Bool, isConst: Bool, val: Value?, index: Int) {
+    let needZero: Bool
+    init(name: String, type: Type, base: Value, needZero: Bool, val: Value, in block: BasicBlock) {
         self.needZero = needZero
-        self.isConst = isConst
-        self.index = index
-        super.init(name: name, type: type, operation: .getelementptr)
+        super.init(name: name, type: type, operation: .getelementptr, in: block)
         operands.append(base)
-        if isConst {
-            operands.append(val!)
-        }
+        operands.append(val)
     }
-    override var toPrint: String {"\(name) = \(operation) \(type), \(operands[0]), \(needZero ? "i32 0, " : "")\(isConst ? "i32 \(index)" : "\(operands[1])")"}
+    override var toPrint: String {"\(name) = \(operation) \((type as! PointerT).baseType), \(operands[0]), \(operands[1])"}
     override func accept(visitor: IRVisitor) {visitor.visit(v: self)}
 }
 class ReturnInst: Inst {
-    init(name: String, type: Type, val: Value) {
-        super.init(name: name, type: type, operation: .ret)
+    init(name: String, val: Value, in block: BasicBlock) {
+        super.init(name: name, type: VoidT(), operation: .ret, in: block)
         operands.append(val)
     }
     override func initName() {}
@@ -60,16 +71,16 @@ class ReturnInst: Inst {
     override func accept(visitor: IRVisitor) {visitor.visit(v: self)}
 }
 class LoadInst: Inst {
-    init(name: String, alloc: Value) {
-        super.init(name: name, type: (alloc.type as! PointerT).baseType, operation: .load)
+    init(name: String, alloc: Value, in block: BasicBlock) {
+        super.init(name: name, type: (alloc.type as! PointerT).baseType, operation: .load, in: block)
         operands.append(alloc)
     }
     override var toPrint: String {"\(name) = \(operation) \(type), \(operands[0]), align \((operands[0].type as! PointerT).baseType.align)"}
     override func accept(visitor: IRVisitor) {visitor.visit(v: self)}
 }
 class StoreInst: Inst {
-    init(name: String, alloc: Value, val: Value) {
-        super.init(name: name, type: Type(), operation: .store)
+    @discardableResult init(name: String, alloc: Value, val: Value, in block: BasicBlock) {
+        super.init(name: name, type: Type(), operation: .store, in: block)
         operands.append(val)
         operands.append(alloc)
     }
@@ -79,17 +90,17 @@ class StoreInst: Inst {
 }
 class CallInst: Inst {
     var function: Function
-    init(name: String, type: Type, function: Function, arguments: [Value]) {
+    init(name: String, function: Function, arguments: [Value] = [], in block: BasicBlock) {
         self.function = function
-        super.init(name: name, type: type, operation: .call)
+        super.init(name: name, type: function.type, operation: .call, in: block)
         arguments.forEach {self.operands.append($0)}
     }
     override var toPrint: String {"\(name) = \(operation) \(type) \(function.name)(\(operands))"}
     override func accept(visitor: IRVisitor) {visitor.visit(v: self)}
 }
 class AllocaInst: Inst {
-    init(name: String, forType: Type) {
-        super.init(name: name, type: PointerT(base: forType), operation: .alloca)
+    init(name: String, forType: Type, in block: BasicBlock) {
+        super.init(name: name, type: PointerT(base: forType), operation: .alloca, in: block)
     }
     override var toPrint: String {"\(name) = \(operation) \((type as! PointerT).baseType.withAlign)"}
     override func accept(visitor: IRVisitor) {visitor.visit(v: self)}
@@ -98,8 +109,8 @@ class UnaryInst: Inst {
     
 }
 class BinaryInst: Inst {
-    init(name: String, type: Type, operation: Inst.OP, lhs: Value, rhs: Value) {
-        super.init(name: name, type: type, operation: operation)
+    init(name: String, type: Type, operation: Inst.OP, lhs: Value, rhs: Value, in block: BasicBlock) {
+        super.init(name: name, type: type, operation: operation, in: block)
         operands.append(lhs)
         operands.append(rhs)
     }
@@ -112,9 +123,9 @@ class CompareInst: BinaryInst {
         case eq, ne, sgt, sge, slt, sle
     }
     let cmp: CMP
-    init(name: String, operation: Inst.OP, lhs: Value, rhs: Value, cmp: CMP) {
+    init(name: String, operation: Inst.OP, lhs: Value, rhs: Value, cmp: CMP, in block: BasicBlock) {
         self.cmp = cmp
-        super.init(name: name, type: IntT(.bool), operation: operation, lhs: lhs, rhs: rhs)
+        super.init(name: name, type: IntT(.bool), operation: operation, lhs: lhs, rhs: rhs, in: block)
     }
     override var toPrint: String {return "\(name) = \(operation) \(cmp) \(operands[0].type) " + operands.joined() {"\($0.name)"}}
     override func accept(visitor: IRVisitor) {visitor.visit(v: self)}

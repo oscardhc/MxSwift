@@ -12,6 +12,13 @@ class Module {
     var functions = List<Function>()
     var globalVar = List<Global>()
     
+    var builtinDeclarations = ""
+    
     func accept(visitor: IRVisitor) {visitor.visit(v: self)}
+    
+    func added(f: Function) -> Function {
+        self.functions.append(f)
+        return f
+    }
     
 }

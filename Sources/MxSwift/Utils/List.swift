@@ -63,15 +63,7 @@ class List<T: CustomStringConvertible>: CustomStringConvertible {
     }
     
     var description: String {
-        var ret = "", cur = head
-        while cur != nil {
-            ret += "\(cur!.value)"
-            cur = cur!.next
-            if cur != nil {
-                ret += ", "
-            }
-        }
-        return ret
+        return joined()
     }
     
     func forEach(_ f: ((T) -> Void)) {
@@ -82,6 +74,9 @@ class List<T: CustomStringConvertible>: CustomStringConvertible {
         }
     }
     func joined(with sep: String = ", ", method: ((T) -> String) = {return "\($0)"}) -> String {
+        if head == nil {
+            return ""
+        }
         var ret = method(head!.value), cur = head?.next
         while cur != nil {
             ret += (sep + method(cur!.value))
