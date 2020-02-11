@@ -45,7 +45,7 @@ class Value: HashableObject, CustomStringConvertible {
     func accept(visitor: IRVisitor) {}
 }
 
-class Instant: Value {
+class IntInstant: Value {
     var value: Int
     init(name: String, type: Type, value: Int) {
         self.value = value
@@ -58,6 +58,11 @@ class Instant: Value {
 class VoidInstant: Value {
     override func initName() {}
     override var description: String {"void"}
+}
+class NullInstant: Value {
+    override func initName() {}
+    override var name: String {"null"}
+//    override var description: String {"null"}
 }
 
 class User: Value {

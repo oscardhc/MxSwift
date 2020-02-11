@@ -3,13 +3,8 @@ import PackageDescription
 
 var targets:[Target] = [
     .target(name: "Antlr4"),
-    .target(name: "Parser", dependencies: [
-        .target(name: "Antlr4"),
-    ]),
-    .target(name: "MxSwift", dependencies: [
-        .target(name: "Antlr4"),
-        .target(name: "Parser")
-    ]),
+    .target(name: "Parser", dependencies: ["Antlr4"]),
+    .target(name: "MxSwift", dependencies: ["Antlr4", "Parser"]),
 ]
 
 var products: [Product] = [

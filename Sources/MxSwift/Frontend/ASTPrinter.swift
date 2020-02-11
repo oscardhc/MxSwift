@@ -14,17 +14,17 @@ class ASTPrinter: ASTBaseVisitor {
         print(node)
     }
     
-    override func visit(node: VariableDecl) {
+    override func visit(node: VariableD) {
         super.visit(node: node)
         print(node)
     }
     
-    override func visit(node: FunctionDecl) {
+    override func visit(node: FunctionD) {
         super.visit(node: node)
         print(node)
     }
     
-    override func visit(node: ClassDecl) {
+    override func visit(node: ClassD) {
         super.visit(node: node)
         print(node)
     }

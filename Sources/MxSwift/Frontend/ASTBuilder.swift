@@ -48,12 +48,12 @@ class ASTBuilder: MxsBaseVisitor<ASTNode> {
         current.newSymbol(name: id, value: Symbol(_type: type, _bel: current, _subScope: _s))
         scopes.append(_s)
         
-        let node = FunctionDecl(id: id, scope: current, type: type, parameters: [], statements: [])
+        let node = FunctionD(id: id, scope: current, type: type, parameters: [], statements: [])
         
         for i in 1..<ctx.type().count {
             let pid = ctx.Identifier(i)!.getText(), ptype = ctx.type(i)!.getText()
             current.newSymbol(name: pid, value: Symbol(_type: ptype, _bel: current))
-            node.parameters.append(VariableDecl(scope: current, type: ptype, variable: [(pid, nil)]))
+            node.parameters.append(VariableD(scope: current, type: ptype, variable: [(pid, nil)]))
         }
         
         for stmt in ctx.sentence() {
@@ -74,12 +74,12 @@ class ASTBuilder: MxsBaseVisitor<ASTNode> {
         current.newSymbol(name: id, value: Symbol(_type: id, _bel: current, _subScope: _s))
         scopes.append(_s)
         
-        let node = FunctionDecl(id: id, scope: current, type: id, parameters: [], statements: [])
+        let node = FunctionD(id: id, scope: current, type: id, parameters: [], statements: [])
         
         for i in 0..<ctx.type().count {
             let pid = ctx.Identifier(i + 1)!.getText(), ptype = ctx.type(i)!.getText()
             current.newSymbol(name: pid, value: Symbol(_type: ptype, _bel: current))
-            node.parameters.append(VariableDecl(scope: current, type: ptype, variable: [(pid, nil)]))
+            node.parameters.append(VariableD(scope: current, type: ptype, variable: [(pid, nil)]))
         }
         
         for stmt in ctx.sentence() {
@@ -98,16 +98,16 @@ class ASTBuilder: MxsBaseVisitor<ASTNode> {
         current.newSymbol(name: id, value: Symbol(_type: "class", _bel: current, _subScope: _s))
         scopes.append(_s)
         
-        let node = ClassDecl(id: id, scope: current)
+        let node = ClassD(id: id, scope: current)
 
-        ctx.variableDeclaration().forEach{node.properties.append(visit($0) as! VariableDecl)}
-        ctx.functionDeclaration().forEach{node.methods.append(visit($0) as! FunctionDecl)}
-        ctx.initialDeclaration().forEach{node.initial.append(visit($0) as! FunctionDecl)}
+        ctx.variableDeclaration().forEach{node.properties.append(visit($0) as! VariableD)}
+        ctx.functionDeclaration().forEach{node.methods.append(visit($0) as! FunctionD)}
+        ctx.initialDeclaration().forEach{node.initial.append(visit($0) as! FunctionD)}
         if ctx.initialDeclaration().count == 0 {
             let _s = current.newSubscope(withName: id, withType: .FUNCTION)
             current.newSymbol(name: id, value: Symbol(_type: id, _bel: current, _subScope: _s))
             scopes.append(_s)
-            let _node = FunctionDecl(id: id, scope: current, type: id, parameters: [], statements: [])
+            let _node = FunctionD(id: id, scope: current, type: id, parameters: [], statements: [])
             scopes.popLast()!.correspondingNode = _node
             node.initial.append(_node)
         }
@@ -118,7 +118,7 @@ class ASTBuilder: MxsBaseVisitor<ASTNode> {
     }
     
     override func visitVariableDeclaration(_ ctx: MxsParser.VariableDeclarationContext) -> ASTNode? {
-        let type = ctx.type()!.getText(), node = VariableDecl(scope: current, type: type)
+        let type = ctx.type()!.getText(), node = VariableD(scope: current, type: type)
         for sing in ctx.singleVarDeclaration() {
             node.variable.append((sing.Identifier()!.getText(), sing.expression() != nil ? visit(sing.expression()!) as? Expression : nil))
             current.newSymbol(name: sing.Identifier()!.getText(), value: Symbol(_type: type, _bel: current))

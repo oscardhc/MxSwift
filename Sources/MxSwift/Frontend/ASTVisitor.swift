@@ -10,9 +10,9 @@ import Foundation
 protocol ASTVisitor {
     
     func visit(node: Program)
-    func visit(node: VariableDecl)
-    func visit(node: FunctionDecl)
-    func visit(node: ClassDecl)
+    func visit(node: VariableD)
+    func visit(node: FunctionD)
+    func visit(node: ClassD)
     func visit(node: DeclarationS)
     func visit(node: CodeblockS)
     func visit(node: IfS)
@@ -45,16 +45,16 @@ class ASTBaseVisitor: ASTVisitor {
         node.declarations.forEach{$0.accept(visitor: self)}
     }
     
-    func visit(node: VariableDecl) {
+    func visit(node: VariableD) {
         node.variable.forEach{$0.1?.accept(visitor: self)}
     }
     
-    func visit(node: FunctionDecl) {
+    func visit(node: FunctionD) {
         node.parameters.forEach{$0.accept(visitor: self)}
         node.statements.forEach{$0.accept(visitor: self)}
     }
     
-    func visit(node: ClassDecl) {
+    func visit(node: ClassD) {
         node.properties.forEach{$0.accept(visitor: self)}
         node.methods.forEach{$0.accept(visitor: self)}
     }

@@ -10,16 +10,17 @@ import Foundation
 class Type: CustomStringConvertible {
     init() {}
     var description: String {"???"}
-    var align: Int {return 1}
+    var align: Int {1}
     var bit: Int {0}
-    var withAlign: String {return description + ", align \(align)"}
+    var withAlign: String {description + ", align \(align)"}
+    var getBase: Type {(self as! IRPointer).baseType}
 }
 
-class LabelType: Type {
+class IRLabel: Type {
     override var description: String {"label"}
 }
 
-class FunctionT: Type {
+class IRFunction: Type {
     var retType: Type
     var parType: [Type]
     override var description: String {"\(retType)"}
@@ -31,14 +32,19 @@ class FunctionT: Type {
     }
 }
 
-class VoidT: Type {
+class IRVoid: Type {
     override var description: String {"void"}
 }
 
-class IntT: Type {
+class IRInt: Type {
     enum BitWidth {
         case bool, char, int, long
     }
+    
+    static let bool = IRInt(.bool)
+    static let char = IRInt(.char)
+    static let int = IRInt(.int)
+    static let long = IRInt(.long)
     
     var width: BitWidth
     override var bit: Int {
@@ -56,13 +62,13 @@ class IntT: Type {
     override var description: String {return "i\(bit)"}
     override var align: Int {return width == .int ? 4 : 1}
     
-    init(_ width: BitWidth) {
+    private init(_ width: BitWidth) {
         self.width = width
         super.init()
     }
 }
 
-class PointerT: Type {
+class IRPointer: Type {
     
     var baseType: Type
     
@@ -75,21 +81,25 @@ class PointerT: Type {
     
 }
 
-class ClassT: Type {
-    let properties: [Type]
-    override var bit: Int {
-        var r = 0
-        self.properties.forEach {r += $0.bit}
-        return r
-    }
-    
-    init(prop: [Type] = []) {
-        self.properties = prop
+class IRClass: Type {
+//    let properties: [Type]
+//    override var bit: Int {
+//        var r = 0
+//        self.properties.forEach {r += $0.bit}
+//        return r
+//    }
+//    init(prop: [Type] = []) {
+//        self.properties = prop
+//        super.init()
+//    }
+    var name: String
+    init(name: String) {
+        self.name = name
         super.init()
     }
 }
 
-class ArrayT: Type {
+class IRArray: Type {
     var elementType: Type
     var count: Int
     

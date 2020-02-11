@@ -32,7 +32,7 @@ class Program: ASTNode {
 class Declaration: ASTNode {
     
 }
-class VariableDecl: Declaration {
+class VariableD: Declaration {
 //    var id: [String]
     var type: String
 //    var expressions: [Expression?]
@@ -47,13 +47,13 @@ class VariableDecl: Declaration {
     override var custom: String {return "\(type) \(variable)"}
     override func accept(visitor: ASTVisitor) { visitor.visit(node: self) }
 }
-class FunctionDecl: Declaration {
+class FunctionD: Declaration {
     var id: String
     var type: String
-    var parameters: [VariableDecl]
+    var parameters: [VariableD]
     var statements: [Statement]
     var hasReturn = false
-    init(id: String, scope: Scope, type: String, parameters: [VariableDecl] = [], statements: [Statement] = []) {
+    init(id: String, scope: Scope, type: String, parameters: [VariableD] = [], statements: [Statement] = []) {
         self.id = id
         self.type = type
         self.parameters = parameters
@@ -63,12 +63,12 @@ class FunctionDecl: Declaration {
     override var custom: String {return "\(type) \(id)"}
     override func accept(visitor: ASTVisitor) { visitor.visit(node: self) }
 }
-class ClassDecl: Declaration {
+class ClassD: Declaration {
     var id: String
-    var properties: [VariableDecl]
-    var methods: [FunctionDecl]
-    var initial: [FunctionDecl]
-    init(id: String, scope: Scope, properties: [VariableDecl] = [], methods: [FunctionDecl] = [], initial: [FunctionDecl] = []) {
+    var properties: [VariableD]
+    var methods: [FunctionD]
+    var initial: [FunctionD]
+    init(id: String, scope: Scope, properties: [VariableD] = [], methods: [FunctionD] = [], initial: [FunctionD] = []) {
         self.id = id
         self.properties = properties
         self.methods = methods

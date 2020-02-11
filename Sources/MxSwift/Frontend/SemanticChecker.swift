@@ -17,7 +17,7 @@ class SemanticChecker: ASTBaseVisitor {
     override func visit(node: Program) {
         super.visit(node: node)
         var hasMain = false
-        for decl in node.declarations where decl is FunctionDecl && (decl as! FunctionDecl).id == "main" {
+        for decl in node.declarations where decl is FunctionD && (decl as! FunctionD).id == "main" {
             hasMain = true
         }
         if !hasMain {
@@ -25,7 +25,7 @@ class SemanticChecker: ASTBaseVisitor {
         }
     }
 
-    override func visit(node: VariableDecl) {
+    override func visit(node: VariableD) {
         super.visit(node: node)
         let baseType = node.type.dropAllArray()
         if baseType.isBuiltinType() || node.scope.find(name: baseType) != nil {
@@ -51,7 +51,7 @@ class SemanticChecker: ASTBaseVisitor {
         }
     }
 
-    override func visit(node: FunctionDecl) {
+    override func visit(node: FunctionD) {
         super.visit(node: node)
         if node.id == "main" && (node.type != int || node.parameters.count > 0) {
             error.mainFuncError()
@@ -61,7 +61,7 @@ class SemanticChecker: ASTBaseVisitor {
         }
     }
 
-    override func visit(node: ClassDecl) {
+    override func visit(node: ClassD) {
         super.visit(node: node)
     }
 
@@ -97,7 +97,7 @@ class SemanticChecker: ASTBaseVisitor {
     override func visit(node: ReturnS) {
         super.visit(node: node)
         if let _c = node.scope.currentScope(type: .FUNCTION) {
-            let c = _c.correspondingNode as! FunctionDecl
+            let c = _c.correspondingNode as! FunctionD
             c.hasReturn = true
             if node.expression == nil {
                 if c.type != void {
@@ -220,7 +220,7 @@ class SemanticChecker: ASTBaseVisitor {
             node.type = int
         } else if let t = node.scope.find(name: node.id, check: {[.CLASS, .FUNCTION].contains($0.subScope?.scopeType)}) {
             if let scp = t.subScope {
-                let decl = (scp.scopeType == .CLASS ? scp.table[node.id]!.subScope!.correspondingNode! : scp.correspondingNode!) as! FunctionDecl
+                let decl = (scp.scopeType == .CLASS ? scp.table[node.id]!.subScope!.correspondingNode! : scp.correspondingNode!) as! FunctionD
                 if scp.scopeType == .CLASS {
                     node.scope = scp
                 }

@@ -42,8 +42,23 @@ class Function: Global {
     }
     
     func newBlock(withName: String) -> BasicBlock {
-        blocks.append(BasicBlock(name: withName, type: LabelType(), curfunc: self))
+        blocks.append(BasicBlock(name: withName, type: IRLabel(), curfunc: self))
         return blocks.last
+    }
+    
+}
+
+class Class: Global {
+    
+    var subTypes = [(String, Type)]()
+    func added(subType: (String, Type)) -> Self {
+        self.subTypes.append(subType)
+        return self
+    }
+    
+    override init(name: String, type: Type, module: Module) {
+        super.init(name: name, type: type, module: module)
+        _ = module.added(c: self)
     }
     
 }

@@ -11,6 +11,7 @@ class Module {
     
     var functions = List<Function>()
     var globalVar = List<Global>()
+    var classes = List<Class>()
     
     var builtinDeclarations = ""
     
@@ -20,5 +21,8 @@ class Module {
         self.functions.append(f)
         return f
     }
-    
+    func added(c: Class) -> Class {
+        self.classes.append(c)
+        return c
+    }
 }
