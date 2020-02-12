@@ -10,9 +10,9 @@ import Foundation
 class Type: CustomStringConvertible {
     init() {}
     var description: String {"???"}
-    var align: Int {1}
     var bit: Int {0}
-    var withAlign: String {description + ", align \(align)"}
+    var space: Int {Int(ceil(Double(bit) / 8))}
+    var withAlign: String {description + ", align \(space)"}
     var getBase: Type {(self as! IRPointer).baseType}
 }
 
@@ -60,7 +60,7 @@ class IRInt: Type {
         }
     }
     override var description: String {return "i\(bit)"}
-    override var align: Int {return width == .int ? 4 : 1}
+    override var space: Int {return width == .int ? 4 : 1}
     
     private init(_ width: BitWidth) {
         self.width = width
@@ -76,8 +76,9 @@ class IRPointer: Type {
         self.baseType = base
         super.init()
     }
+    override var bit: Int {8}
     override var description: String {"\(baseType)*"}
-    override var align: Int {8}
+    override var space: Int {8}
     
 }
 
@@ -97,6 +98,7 @@ class IRClass: Type {
         self.name = name
         super.init()
     }
+    override var description: String {"%\(name)"}
 }
 
 class IRArray: Type {

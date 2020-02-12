@@ -32,7 +32,7 @@ class Value: HashableObject, CustomStringConvertible {
     
     var name: String {return prefix + basename}
     var description: String {return "\(type) \(name)"}
-    var toPrint: String {return "NOTHING"}
+    var toPrint: String {return "??????????????"}
     
     init(name: String, type: Type) {
         self.originName = name
@@ -43,6 +43,10 @@ class Value: HashableObject, CustomStringConvertible {
     var isAddress: Bool {self is AllocaInst || self is GEPInst}
     var isTerminate: Bool {self is BrInst || self is ReturnInst}
     func accept(visitor: IRVisitor) {}
+    
+    func loadIfAddress(block: BasicBlock) -> Value {
+        self.isAddress ? LoadInst(name: "", alloc: self, in: block) : self
+    }
 }
 
 class IntInstant: Value {
@@ -69,7 +73,11 @@ class User: Value {
     
     var operands = List<Value>()
     func added(operand: Value) -> Self {
-        operands.append(operand)
+        operands.pushBack(operand)
+        return self
+    }
+    func inserted(operand: Value) -> Self {
+        operands.pushFront(operand)
         return self
     }
     
@@ -89,7 +97,7 @@ class BasicBlock: Value {
     
     func create(_ i: Inst) {
         if terminated == false {
-            inst.append(i)
+            inst.pushBack(i)
             if i.isTerminate {
                 terminated = true
             }

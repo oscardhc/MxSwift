@@ -32,13 +32,6 @@ class SemanticChecker: ASTBaseVisitor {
             if baseType == void {
                 error.typeError(name: node.variable.description, type: baseType)
             }
-//            if node.expressions.count > 0 {
-//                if node.type === node.expressions[0]!.type || (node.expressions[0]!.type == null && (node.type.hasSuffix("[]") || !node.type.isBuiltinType())) {
-//
-//                } else {
-//                    error.binaryOperatorError(op: .assign, type1: node.type, type2: node.expressions[0]!.type)
-//                }
-//            }
             node.variable.forEach {
                 if let e = $0.1 {
                     if node.type === e.type || (e.type == null && (node.type.hasSuffix("[]") || !node.type.isBuiltinType())) {
@@ -134,7 +127,8 @@ class SemanticChecker: ASTBaseVisitor {
 
     override func visit(node: VariableE) {
         super.visit(node: node)
-        node.type = node.scope.find(name: node.id)!.type
+        let sym = node.scope.find(name: node.id)!
+        node.type = sym.type
     }
 
     override func visit(node: ThisLiteralE) {
@@ -176,6 +170,8 @@ class SemanticChecker: ASTBaseVisitor {
         } else if let sym = node.scope.find(name: c, check: {$0.subScope?.scopeType == .CLASS}) {
             if let m = sym.subScope!.table[node.method.id] {
                 node.type = m.type
+                node.scope = sym.subScope!
+                node.method.needThis = false
                 node.method.scope = sym.subScope!
             } else {
                 error.noSuchMember(name: node.method.id, c: c)
@@ -190,6 +186,7 @@ class SemanticChecker: ASTBaseVisitor {
         super.visit(node: node)
         if let c = node.scope.find(name: node.toAccess.type, check: {$0.subScope?.scopeType == .CLASS}) {
             if let t = c.subScope!.table[node.property] {
+                node.scope = c.subScope!
                 node.type = t.type
             } else {
                 error.noSuchMember(name: node.property, c: c.subScope!.scopeName)

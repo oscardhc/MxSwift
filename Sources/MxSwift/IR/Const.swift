@@ -42,7 +42,7 @@ class Function: Global {
     }
     
     func newBlock(withName: String) -> BasicBlock {
-        blocks.append(BasicBlock(name: withName, type: IRLabel(), curfunc: self))
+        blocks.pushBack(BasicBlock(name: withName, type: IRLabel(), curfunc: self))
         return blocks.last
     }
     
@@ -50,9 +50,11 @@ class Function: Global {
 
 class Class: Global {
     
-    var subTypes = [(String, Type)]()
+    var subNames = List<String>()
+    var subTypes = List<Type>()
     func added(subType: (String, Type)) -> Self {
-        self.subTypes.append(subType)
+        self.subNames.pushBack(subType.0)
+        self.subTypes.pushBack(subType.1)
         return self
     }
     
@@ -60,6 +62,19 @@ class Class: Global {
         super.init(name: name, type: type, module: module)
         _ = module.added(c: self)
     }
+    
+    var getSize: Int {
+        var size = 0.0
+        subTypes.forEach {
+//            size +=
+            let space = Double($0.space)
+            size = ceil(size / space) * space + space
+        }
+        return Int(size)
+    }
+    
+    override var toPrint: String {"\(type) = type {\(subTypes.joined())}"}
+    override func accept(visitor: IRVisitor) {visitor.visit(v: self)}
     
 }
 

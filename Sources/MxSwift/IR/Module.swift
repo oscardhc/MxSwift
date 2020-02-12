@@ -18,11 +18,11 @@ class Module {
     func accept(visitor: IRVisitor) {visitor.visit(v: self)}
     
     func added(f: Function) -> Function {
-        self.functions.append(f)
+        self.functions.pushBack(f)
         return f
     }
     func added(c: Class) -> Class {
-        self.classes.append(c)
+        self.classes.pushBack(c)
         return c
     }
 }

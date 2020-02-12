@@ -18,6 +18,14 @@ class List<T: CustomStringConvertible>: CustomStringConvertible {
         init(value: T) {
             self.value = value
         }
+        func setNext(next: Node<T>) -> Self {
+            self.next = next
+            return self
+        }
+        func setPrev(prev: Node<T>) -> Self {
+            self.prev = prev
+            return self
+        }
         
     }
     
@@ -34,16 +42,27 @@ class List<T: CustomStringConvertible>: CustomStringConvertible {
     
     init() {}
     
-    func append(_ a: T) {
+    func pushBack(_ a: T) {
         count += 1
         if let t = tail {
-            t.next = Node(value: a)
+            t.next = Node(value: a).setPrev(prev: t)
             tail = t.next
         } else {
             head = Node(value: a)
             tail = head
         }
     }
+    func pushFront(_ a: T) {
+        count += 1
+        if let t = head {
+            t.prev = Node(value: a).setNext(next: t)
+            head = t.prev
+        } else {
+            head = Node(value: a)
+            tail = head
+        }
+    }
+    
     func remove(node cur: Node<T>) {
         count -= 1
         if let t = cur.next {

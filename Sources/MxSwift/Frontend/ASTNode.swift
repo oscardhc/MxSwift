@@ -247,6 +247,7 @@ class ArrayE: Expression {
 class FunctionCallE: Expression {
     var id: String
     var arguments: [Expression]
+    var needThis = true
     init(id: String, scope: Scope, arguments: [Expression]) {
         self.id = id
         self.arguments = arguments
