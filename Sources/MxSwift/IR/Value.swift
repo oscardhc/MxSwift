@@ -22,7 +22,8 @@ let counter = UnnamedCounter()
 
 class Value: HashableObject, CustomStringConvertible {
     
-    var users = [User]()
+    var users = List<User>()
+    
     var type: Type
     var prefix: String {return "%"}
     
@@ -33,8 +34,6 @@ class Value: HashableObject, CustomStringConvertible {
     var name: String {return prefix + basename}
     var description: String {return "\(type) \(name)"}
     var toPrint: String {return "??????????????"}
-    
-    var nodeInUser: List<Value>.Node?
     
     init(name: String, type: Type) {
         self.originName = name
@@ -51,17 +50,30 @@ class Value: HashableObject, CustomStringConvertible {
     }
 }
 
-
+//class Use {
+//
+//    let usee: Value
+//    let user: User
+//
+//    init(usee: Value, user: User) {
+//        self.usee = usee
+//        self.user = user
+//    }
+//
+//}
 
 class User: Value {
     
-    var operands = [Value]()
-    func added(operand: Value) -> Self {
-        operands.append(operand)
+    var operands = List<Value>()
+    
+    @discardableResult func added(operand: Value) -> Self {
+        _ = operands.append(operand)
+        _ = operand.users.append(self)
         return self
     }
-    func inserted(operand: Value) -> Self {
-        operands.insert(operand, at: 0)
+    @discardableResult func inserted(operand: Value) -> Self {
+        _ = operands.insert(operand, at: 0)
+        _ = operand.users.insert(self, at: 0)
         return self
     }
     

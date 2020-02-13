@@ -106,7 +106,7 @@ class GlobalVariable: Global {
         _ = module.add(self)
     }
     
-    override var toPrint: String {"\(name) = global \(value), align \(value.type.withAlign)"}
+    override var toPrint: String {"\(name) = global \(value), align \(value.type.space)"}
     override func accept(visitor: IRVisitor) {visitor.visit(v: self)}
     
 }

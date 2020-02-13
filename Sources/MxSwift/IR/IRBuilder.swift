@@ -15,7 +15,9 @@ class IRBuilder: ASTBaseVisitor {
     var continueToBlock: BasicBlock!
     var breakToBlock: BasicBlock!
     var conditionCounter = UnnamedCounter()
+    
     var globalInit = true
+    var globalFunc: Function!
     
     let pointerSize = 8
     
@@ -65,16 +67,34 @@ class IRBuilder: ASTBaseVisitor {
     }
     
     override func visit(node: Program) {
-        let globalFunc = Function(name: "global_init", type: getType(type: void), module: module)
+        
+        // step 1: make all functions "callable" by adding a empty Function node
+        for _d in node.declarations {
+            if let f = _d as? FunctionD {
+                f.ret = Function(name: f.id, type: getType(type: f.type), module: module)
+            }
+            if let c = _d as? ClassD {
+                c.ret = Class(name: c.id, type: IRClass(name: c.id), module: module)
+                c.initial.forEach {
+                    $0.ret = Function(name: $0.id, type: getType(type: void), module: module)
+                }
+                c.methods.forEach {
+                    $0.ret = Function(name: $0.id, type: getType(type: $0.type), module: module)
+                }
+            }
+        }
+        
+        // step 2: global variable declarations
+        globalFunc = Function(name: "global_init", type: getType(type: void), module: module)
         curBlock = BasicBlock(curfunc: globalFunc)
         for i in node.declarations where i is VariableD {
             i.accept(visitor: self)
         }
+        ReturnInst(name: "", val: IntConst(name: "", type: IRInt.int, value: 0), in: curBlock)
         globalInit = false
-        for _f in node.declarations where _f is FunctionD {
-            let f = _f as! FunctionD
-            _f.ret = Function(name: f.id, type: getType(type: f.type), module: module)
-        }
+
+        
+        // step 3: others
         for i in node.declarations where !(i is VariableD) {
             i.accept(visitor: self)
         }
@@ -92,7 +112,7 @@ class IRBuilder: ASTBaseVisitor {
     override func visit(node: VariableD) {
         super.visit(node: node)
         let type = getType(type: node.type)
-        if curClass != nil {
+        if curClass != nil && curBlock == nil {
             node.variable.forEach {
                 _ = curClass!.added(subType: ($0.0, type))
             }
@@ -100,10 +120,8 @@ class IRBuilder: ASTBaseVisitor {
             node.variable.forEach {
                 let sym = node.scope.find(name: $0.0)!
                 if globalInit {
-                    print(">>>>>>", curBlock.currentFunction)
                     let e = $0.1?.ret?.loadIfAddress(block: curBlock)
                     if e is Const {
-                        print("??????????")
                         sym.value = GlobalVariable(name: $0.0, value: e as! Const, module: module)
                     } else {
                         var const: Const {
@@ -134,6 +152,10 @@ class IRBuilder: ASTBaseVisitor {
         let ret = node.ret as! Function
         curBlock = BasicBlock(curfunc: ret)
         
+        if node.id == "main" {
+            CallInst(name: "", function: globalFunc, in: curBlock)
+        }
+        
         if curClass != nil {
             _ = ret.added(operand: Value(name: "this", type: IRPointer(base: curClass!.type)))
         }
@@ -153,26 +175,16 @@ class IRBuilder: ASTBaseVisitor {
         if node.type == void || node.hasReturn == false {
             ReturnInst(name: "", val: IntConst(name: "", type: IRInt.int, value: 0), in: curBlock)
         }
+        
+        curBlock = nil
     }
     
     override func visit(node: ClassD) {
         //        super.visit(node: node)
-        
-        curClass = Class(name: node.id, type: IRClass(name: node.id), module: module)
-        node.ret = curClass
-        
-        node.initial.forEach {
-            $0.ret = Function(name: $0.id, type: getType(type: void), module: module)
-        }
-        node.methods.forEach {
-            $0.ret = Function(name: $0.id, type: getType(type: $0.type), module: module)
-        }
-        
-        
+        curClass = node.ret! as! Class
         node.properties.forEach {
             $0.accept(visitor: self)
         }
-        
         node.initial.forEach {
             $0.accept(visitor: self)
         }
@@ -338,7 +350,9 @@ class IRBuilder: ASTBaseVisitor {
         node.toAccess.accept(visitor: self)
         let t = node.toAccess.ret!.loadIfAddress(block: curBlock)
         node.method.accept(visitor: self)
+        print(">", (node.method.ret! as! CallInst).operands.joined(){"\($0.type)"})
         node.ret = (node.method.ret! as! CallInst).inserted(operand: t)
+        print("<", (node.method.ret! as! CallInst).operands.joined(){"\($0.type)"})
     }
     
     private func getMemberAccess(cls: ClassD, base: Value, for property: String) -> GEPInst? {
@@ -427,7 +441,7 @@ class IRBuilder: ASTBaseVisitor {
         
         let perSize = IntConst(name: "",
                                type: IRInt.int,
-                               value: node.empty > 0 ? pointerSize : type.space)
+                               value: node.empty > 0 ? pointerSize : type.getBase.space)
         let num = node.expressions.last!.ret!.loadIfAddress(block: curBlock)
         
         let size = BinaryInst(name: "", type: IRInt.int, operation: .mul, lhs: perSize, rhs: num, in: curBlock)

@@ -70,19 +70,24 @@ class List<T: CustomStringConvertible>: CustomStringConvertible {
         return ret
     }
     func insert(_ a: T, at index: Int) -> Node {
+        if count == 0 {
+            return append(a)
+        }
         count += 1
         let ret = Node(value: a)
-        
         var cur = head!
         for _ in 0..<index {
             cur = cur.next!
         }
         if let t = cur.prev {
-            cur.prev = ret
             t.next = ret
             ret.prev = t
-            ret.next = cur
+        } else {
+            head = ret
+            ret.prev = nil
         }
+        cur.prev = ret
+        ret.next = cur
         
         return ret
     }
