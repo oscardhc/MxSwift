@@ -15,6 +15,7 @@ class IRBuilder: ASTBaseVisitor {
     var continueToBlock: BasicBlock!
     var breakToBlock: BasicBlock!
     var conditionCounter = UnnamedCounter()
+    var globalInit = true
     
     let pointerSize = 8
     
@@ -64,22 +65,28 @@ class IRBuilder: ASTBaseVisitor {
     }
     
     override func visit(node: Program) {
-        node.declarations.forEach {
-            if $0 is FunctionD {
-                let f = $0 as! FunctionD
-                $0.ret = Function(name: f.id, type: getType(type: f.type), module: module)
-            }
+        let globalFunc = Function(name: "global_init", type: getType(type: void), module: module)
+        curBlock = BasicBlock(curfunc: globalFunc)
+        for i in node.declarations where i is VariableD {
+            i.accept(visitor: self)
         }
-        super.visit(node: node)
+        globalInit = false
+        for _f in node.declarations where _f is FunctionD {
+            let f = _f as! FunctionD
+            _f.ret = Function(name: f.id, type: getType(type: f.type), module: module)
+        }
+        for i in node.declarations where !(i is VariableD) {
+            i.accept(visitor: self)
+        }
     }
     
-    private func assign(lhs: Value, rhs: Value) -> Value {
-        if rhs is NullInstant {
+    private func assign(lhs: Value, rhs: Value) {
+        if rhs is NullConst {
             rhs.type = lhs.type.getBase
         }
-        return StoreInst(name: "", alloc: lhs,
-                         val: rhs.isAddress ? LoadInst(name: "", alloc: rhs, in: curBlock) : rhs,
-                         in: curBlock)
+        StoreInst(name: "", alloc: lhs,
+                  val: rhs.isAddress ? LoadInst(name: "", alloc: rhs, in: curBlock) : rhs,
+                  in: curBlock)
     }
     
     override func visit(node: VariableD) {
@@ -92,10 +99,32 @@ class IRBuilder: ASTBaseVisitor {
         } else {
             node.variable.forEach {
                 let sym = node.scope.find(name: $0.0)!
-                let ret = AllocaInst(name: $0.0, forType: type, in: curBlock)
-                sym.value = ret
-                if let e = $0.1 {
-                    _ = assign(lhs: ret, rhs: e.ret!)
+                if globalInit {
+                    print(">>>>>>", curBlock.currentFunction)
+                    let e = $0.1?.ret?.loadIfAddress(block: curBlock)
+                    if e is Const {
+                        print("??????????")
+                        sym.value = GlobalVariable(name: $0.0, value: e as! Const, module: module)
+                    } else {
+                        var const: Const {
+                            switch node.type {
+                            case int:
+                                return IntConst(name: "", type: type, value: 0)
+                            default:
+                                return NullConst(name: "", type: type)
+                            }
+                        }
+                        sym.value = GlobalVariable(name: $0.0, value: const, module: module)
+                        if e != nil {
+                            assign(lhs: sym.value!, rhs: e!)
+                        }
+                    }
+                } else {
+                    let ret = AllocaInst(name: $0.0, forType: type, in: curBlock)
+                    sym.value = ret
+                    if let e = $0.1 {
+                        _ = assign(lhs: ret, rhs: e.ret!)
+                    }
                 }
             }
         }
@@ -103,7 +132,7 @@ class IRBuilder: ASTBaseVisitor {
     
     override func visit(node: FunctionD) {
         let ret = node.ret as! Function
-        curBlock = ret.newBlock(withName: "")
+        curBlock = BasicBlock(curfunc: ret)
         
         if curClass != nil {
             _ = ret.added(operand: Value(name: "this", type: IRPointer(base: curClass!.type)))
@@ -122,7 +151,7 @@ class IRBuilder: ASTBaseVisitor {
         }
         
         if node.type == void || node.hasReturn == false {
-            ReturnInst(name: "", val: IntInstant(name: "", type: IRInt.int, value: 0), in: curBlock)
+            ReturnInst(name: "", val: IntConst(name: "", type: IRInt.int, value: 0), in: curBlock)
         }
     }
     
@@ -144,7 +173,6 @@ class IRBuilder: ASTBaseVisitor {
             $0.accept(visitor: self)
         }
         
-        print(curClass?.subTypes)
         node.initial.forEach {
             $0.accept(visitor: self)
         }
@@ -168,9 +196,9 @@ class IRBuilder: ASTBaseVisitor {
         
         node.condition.accept(visitor: self)
         let cond = node.condition.ret!.isAddress ? LoadInst(name: "IC" + number, alloc: node.condition.ret!, in: curBlock) : node.condition.ret!
-        let accept = curBlock.currentFunction.newBlock(withName: "IA" + number)
-        let reject = curBlock.currentFunction.newBlock(withName: "IR" + number)
-        let merge = curBlock.currentFunction.newBlock(withName: "IM" + number)
+        let accept = BasicBlock(curfunc: curBlock.currentFunction)
+        let reject = BasicBlock(curfunc: curBlock.currentFunction)
+        let merge = BasicBlock(curfunc: curBlock.currentFunction)
         BrInst(name: "", condition: cond, accept: accept, reject: reject, in: curBlock)
         
         curBlock = accept
@@ -188,9 +216,9 @@ class IRBuilder: ASTBaseVisitor {
         //        super.visit(node: node)
         let number = conditionCounter.tik
         
-        let judge = curBlock.currentFunction.newBlock(withName: "WJ" + number)
-        let accept = curBlock.currentFunction.newBlock(withName: "WA" + number)
-        let merge = curBlock.currentFunction.newBlock(withName: "WM" + number)
+        let judge = BasicBlock(curfunc: curBlock.currentFunction)
+        let accept = BasicBlock(curfunc: curBlock.currentFunction)
+        let merge = BasicBlock(curfunc: curBlock.currentFunction)
         BrInst(name: "", des: judge, in: curBlock)
         curBlock = judge
         node.condition.accept(visitor: self)
@@ -211,11 +239,11 @@ class IRBuilder: ASTBaseVisitor {
         node.initial?.accept(visitor: self)
         
         let number = conditionCounter.tik
-        let accept = curBlock.currentFunction.newBlock(withName: "FA" + number)
-        let merge = curBlock.currentFunction.newBlock(withName: "FM" + number)
+        let accept = BasicBlock(curfunc: curBlock.currentFunction)
+        let merge = BasicBlock(curfunc: curBlock.currentFunction)
         
         if let c = node.condition {
-            let judge = curBlock.currentFunction.newBlock(withName: "FJ" + number)
+            let judge = BasicBlock(curfunc: curBlock.currentFunction)
             BrInst(name: "", des: judge, in: curBlock)
             curBlock = judge
             c.accept(visitor: self)
@@ -229,7 +257,7 @@ class IRBuilder: ASTBaseVisitor {
             node.increment?.accept(visitor: self)
             BrInst(name: "", des: judge, in: curBlock)
         } else {
-            let cond = IntInstant(name: "", type: IRInt.bool, value: 1)
+            let cond = IntConst(name: "", type: IRInt.bool, value: 1)
             BrInst(name: "", condition: cond, accept: accept, reject: merge, in: curBlock)
             
             curBlock = accept
@@ -288,12 +316,12 @@ class IRBuilder: ASTBaseVisitor {
     
     override func visit(node: BoolLiteralE) {
         super.visit(node: node)
-        node.ret = IntInstant(name: "never", type: IRInt.bool, value: node.value ? 1 : 0)
+        node.ret = IntConst(name: "never", type: IRInt.bool, value: node.value ? 1 : 0)
     }
     
     override func visit(node: IntLiteralE) {
         super.visit(node: node)
-        node.ret = IntInstant(name: "never", type: IRInt.int, value: node.value)
+        node.ret = IntConst(name: "never", type: IRInt.int, value: node.value)
     }
     
     override func visit(node: StringLiteralE) {
@@ -302,18 +330,15 @@ class IRBuilder: ASTBaseVisitor {
     
     override func visit(node: NullLiteralE) {
         super.visit(node: node)
-        node.ret = NullInstant(name: "", type: Type())
+        node.ret = NullConst(name: "", type: Type())
     }
     
     override func visit(node: MethodAccessE) {
         //        super.visit(node: node)
         node.toAccess.accept(visitor: self)
-        print("member access", node.scope.scopeName, node.method.scope.scopeName, node.method.id)
         let t = node.toAccess.ret!.loadIfAddress(block: curBlock)
         node.method.accept(visitor: self)
-        print((node.method.ret! as! CallInst).operands)
         node.ret = (node.method.ret! as! CallInst).inserted(operand: t)
-        print((node.method.ret! as! CallInst).operands)
     }
     
     private func getMemberAccess(cls: ClassD, base: Value, for property: String) -> GEPInst? {
@@ -325,7 +350,7 @@ class IRBuilder: ASTBaseVisitor {
                                    type: IRPointer(base: getType(type: pro.type)),
                                    base: base,
                                    needZero: true,
-                                   val: IntInstant(name: "", type: IRInt.int, value: count + j),
+                                   val: IntConst(name: "", type: IRInt.int, value: count + j),
                                    in: curBlock)
                 }
                 count += pro.variable.count
@@ -371,7 +396,7 @@ class IRBuilder: ASTBaseVisitor {
                 let size = ((sym!.belongsTo.correspondingNode as! ClassD).ret! as! Class).getSize
                 let call = CallInst(name: "",
                                     function: Builtin.malloc(),
-                                    arguments: [IntInstant(name: "", type: IRInt.long, value: size)],
+                                    arguments: [IntConst(name: "", type: IRInt.long, value: size)],
                                     in: curBlock)
                 let cast = CastInst(name: "", val: call, toType: getType(type: node.id), in: curBlock)
                 arg.insert(cast, at: 0)
@@ -400,9 +425,9 @@ class IRBuilder: ASTBaseVisitor {
         // deal with the last non-zero dim
         let type = getType(type: node.type)
         
-        let perSize = IntInstant(name: "",
-                                 type: IRInt.int,
-                                 value: node.empty > 0 ? pointerSize : type.space)
+        let perSize = IntConst(name: "",
+                               type: IRInt.int,
+                               value: node.empty > 0 ? pointerSize : type.space)
         let num = node.expressions.last!.ret!.loadIfAddress(block: curBlock)
         
         let size = BinaryInst(name: "", type: IRInt.int, operation: .mul, lhs: perSize, rhs: num, in: curBlock)
@@ -423,7 +448,7 @@ class IRBuilder: ASTBaseVisitor {
     override func visit(node: BinaryE) {
         super.visit(node: node)
         if node.op == .assign {
-            node.ret = assign(lhs: node.lhs.ret!, rhs: node.rhs.ret!)
+            assign(lhs: node.lhs.ret!, rhs: node.rhs.ret!)
         } else {
             let lhs = node.lhs.ret!.isAddress ? LoadInst(name: "", alloc: node.lhs.ret!, in: curBlock) : node.lhs.ret!
             let rhs = node.rhs.ret!.isAddress ? LoadInst(name: "", alloc: node.rhs.ret!, in: curBlock) : node.rhs.ret!
@@ -435,12 +460,12 @@ class IRBuilder: ASTBaseVisitor {
                 case int:
                     node.ret = CompareInst(name: "", operation: .icmp, lhs: lhs, rhs: rhs, cmp: cmpMap[node.op]!, in: curBlock)
                 default: //string
-                    0
+                    break
                 }
             case .logOr, .logAnd:
                 node.ret = CompareInst(name: "", operation: .icmp, lhs: lhs, rhs: rhs, cmp: cmpMap[node.op]!, in: curBlock)
             default:
-                0
+                break
                 //                node.ret = currentBlock.create(Value(name: "", type: Type()))
             }
         }

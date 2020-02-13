@@ -22,7 +22,7 @@ let counter = UnnamedCounter()
 
 class Value: HashableObject, CustomStringConvertible {
     
-    var users = List<User>()
+    var users = [User]()
     var type: Type
     var prefix: String {return "%"}
     
@@ -34,13 +34,15 @@ class Value: HashableObject, CustomStringConvertible {
     var description: String {return "\(type) \(name)"}
     var toPrint: String {return "??????????????"}
     
+    var nodeInUser: List<Value>.Node?
+    
     init(name: String, type: Type) {
         self.originName = name
         self.basename = self.originName
         self.type = type
     }
     
-    var isAddress: Bool {self is AllocaInst || self is GEPInst}
+    var isAddress: Bool {self is AllocaInst || self is GEPInst || self is GlobalVariable}
     var isTerminate: Bool {self is BrInst || self is ReturnInst}
     func accept(visitor: IRVisitor) {}
     
@@ -49,35 +51,17 @@ class Value: HashableObject, CustomStringConvertible {
     }
 }
 
-class IntInstant: Value {
-    var value: Int
-    init(name: String, type: Type, value: Int) {
-        self.value = value
-        super.init(name: name, type: type)
-    }
-    override func initName() {}
-    override var name: String {return "\(value)"}
-    override var description: String {return "\(type) \(value)"}
-}
-class VoidInstant: Value {
-    override func initName() {}
-    override var description: String {"void"}
-}
-class NullInstant: Value {
-    override func initName() {}
-    override var name: String {"null"}
-//    override var description: String {"null"}
-}
+
 
 class User: Value {
     
-    var operands = List<Value>()
+    var operands = [Value]()
     func added(operand: Value) -> Self {
-        operands.pushBack(operand)
+        operands.append(operand)
         return self
     }
     func inserted(operand: Value) -> Self {
-        operands.pushFront(operand)
+        operands.insert(operand, at: 0)
         return self
     }
     
@@ -86,22 +70,25 @@ class User: Value {
 class BasicBlock: Value {
     
     var inst = List<Inst>()
-    var functions = List<Function>()
     var currentFunction: Function
     var terminated = false
     
-    init(name: String, type: Type, curfunc: Function) {
+    var nodeInFunction: List<BasicBlock>.Node?
+    
+    init(name: String = "", type: Type = IRLabel(), curfunc: Function) {
         self.currentFunction = curfunc
         super.init(name: "", type: type)
+        nodeInFunction = currentFunction.append(self)
     }
     
-    func create(_ i: Inst) {
+    func added(_ i: Inst) -> List<Inst>.Node? {
         if terminated == false {
-            inst.pushBack(i)
             if i.isTerminate {
                 terminated = true
             }
+            return inst.append(i)
         }
+        return nil
     }
     
     override func accept(visitor: IRVisitor) {visitor.visit(v: self)}

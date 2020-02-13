@@ -11,6 +11,25 @@ class Const: User {
     
 }
 
+class IntConst: Const {
+    var value: Int
+    init(name: String, type: Type, value: Int) {
+        self.value = value
+        super.init(name: name, type: type)
+    }
+    override func initName() {}
+    override var name: String {return "\(value)"}
+    override var description: String {return "\(type) \(value)"}
+}
+class VoidConst: Const {
+    override func initName() {}
+    override var description: String {"void"}
+}
+class NullConst: Const {
+    override func initName() {}
+    override var name: String {"null"}
+}
+
 class Global: Const {
     
     var currentModule: Module
@@ -38,29 +57,28 @@ class Function: Global {
     init(name: String, type: Type, module: Module, attr: String = "ssp uwtable") {
         self.attribute = attr
         super.init(name: name, type: type, module: module)
-        _ = module.added(f: self)
+        module.add(self)
     }
     
-    func newBlock(withName: String) -> BasicBlock {
-        blocks.pushBack(BasicBlock(name: withName, type: IRLabel(), curfunc: self))
-        return blocks.last
+    func append(_ b: BasicBlock) -> List<BasicBlock>.Node {
+        blocks.append(b)
     }
     
 }
 
 class Class: Global {
     
-    var subNames = List<String>()
-    var subTypes = List<Type>()
+    var subNames = [String]()
+    var subTypes = [Type]()
     func added(subType: (String, Type)) -> Self {
-        self.subNames.pushBack(subType.0)
-        self.subTypes.pushBack(subType.1)
+        self.subNames.append(subType.0)
+        self.subTypes.append(subType.1)
         return self
     }
     
     override init(name: String, type: Type, module: Module) {
         super.init(name: name, type: type, module: module)
-        _ = module.added(c: self)
+        _ = module.add(self)
     }
     
     var getSize: Int {
@@ -79,5 +97,16 @@ class Class: Global {
 }
 
 class GlobalVariable: Global {
+    
+    var value: Const
+    
+    init(name: String, value: Const, module: Module) {
+        self.value = value
+        super.init(name: name, type: IRPointer(base: value.type), module: module)
+        _ = module.add(self)
+    }
+    
+    override var toPrint: String {"\(name) = global \(value), align \(value.type.withAlign)"}
+    override func accept(visitor: IRVisitor) {visitor.visit(v: self)}
     
 }

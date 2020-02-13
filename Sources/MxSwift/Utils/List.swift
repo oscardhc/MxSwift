@@ -7,30 +7,45 @@
 
 import Foundation
 
+extension Array where Element: CustomStringConvertible {
+    
+    func joined(with sep: String = ", ", method: ((Element) -> String) = {return "\($0)"}) -> String {
+        if self.count == 0 {
+            return ""
+        }
+        var ret = method(self[0])
+        for i in 1..<self.count {
+            ret += "\(sep)\(self[i])"
+        }
+        return ret
+    }
+    
+}
+
 class List<T: CustomStringConvertible>: CustomStringConvertible {
     
-    class Node<T> {
+    class Node {
         
-        var next: Node<T>?
-        var prev: Node<T>?
+        var next: Node? = nil
+        var prev: Node? = nil
         var value: T
         
         init(value: T) {
             self.value = value
         }
-        func setNext(next: Node<T>) -> Self {
+        func setNext(next: Node) -> Self {
             self.next = next
             return self
         }
-        func setPrev(prev: Node<T>) -> Self {
+        func setPrev(prev: Node) -> Self {
             self.prev = prev
             return self
         }
         
     }
     
-    private var head: Node<T>? = nil
-    private var tail: Node<T>? = nil
+    private var head: Node? = nil
+    private var tail: Node? = nil
     
     var count = 0
     var isEmpty: Bool {
@@ -42,28 +57,37 @@ class List<T: CustomStringConvertible>: CustomStringConvertible {
     
     init() {}
     
-    func pushBack(_ a: T) {
+    func append(_ a: T) -> Node {
         count += 1
+        let ret = Node(value: a)
         if let t = tail {
-            t.next = Node(value: a).setPrev(prev: t)
+            t.next = ret.setPrev(prev: t)
             tail = t.next
         } else {
-            head = Node(value: a)
+            head = ret
             tail = head
         }
+        return ret
     }
-    func pushFront(_ a: T) {
+    func insert(_ a: T, at index: Int) -> Node {
         count += 1
-        if let t = head {
-            t.prev = Node(value: a).setNext(next: t)
-            head = t.prev
-        } else {
-            head = Node(value: a)
-            tail = head
+        let ret = Node(value: a)
+        
+        var cur = head!
+        for _ in 0..<index {
+            cur = cur.next!
         }
+        if let t = cur.prev {
+            cur.prev = ret
+            t.next = ret
+            ret.prev = t
+            ret.next = cur
+        }
+        
+        return ret
     }
     
-    func remove(node cur: Node<T>) {
+    func remove(node cur: Node) {
         count -= 1
         if let t = cur.next {
             t.prev = cur.prev

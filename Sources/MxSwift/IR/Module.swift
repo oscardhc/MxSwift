@@ -9,20 +9,22 @@ import Foundation
 
 class Module {
     
-    var functions = List<Function>()
-    var globalVar = List<Global>()
-    var classes = List<Class>()
+    var functions = [Function]()
+    var globalVar = [GlobalVariable]()
+    var classes = [Class]()
     
     var builtinDeclarations = ""
     
     func accept(visitor: IRVisitor) {visitor.visit(v: self)}
     
-    func added(f: Function) -> Function {
-        self.functions.pushBack(f)
-        return f
+    func add(_ f: Function) {
+        self.functions.append(f)
     }
-    func added(c: Class) -> Class {
-        self.classes.pushBack(c)
-        return c
+    func add(_ c: Class) {
+        self.classes.append(c)
     }
+    func add(_ v: GlobalVariable) {
+        self.globalVar.append(v)
+    }
+    
 }
