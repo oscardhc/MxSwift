@@ -48,7 +48,7 @@ class IRBuilder: ASTBaseVisitor {
         super.init()
         Builtin.addFunc(name: "malloc") {
             Function(name: "malloc", type: .string,
-                     module: module, attr: "allocsize(0)")
+                     module: module)
                 .added(operand: Value(name: "", type: .long))
         }
         Builtin.addFunc(name: "print") {
@@ -73,6 +73,10 @@ class IRBuilder: ASTBaseVisitor {
         }
         Builtin.addFunc(name: "getInt") {
             Function(name: "getInt", type: .int, module: module)
+        }
+        Builtin.addFunc(name: "size") {
+            Function(name: "size", type: .int, module: module)
+                .added(operand: Value(name: "", type: Type.int.pointer))
         }
         addStringBOP(name: "add", type: .string)
         addStringBOP(name: "eq", type: .bool)
@@ -165,7 +169,7 @@ class IRBuilder: ASTBaseVisitor {
                         }
                     }
                 } else {
-                    let ret = AllocaInst(name: $0.0, forType: type, in: curBlock)
+                    let ret = AllocaInst(name: "", forType: type, in: curBlock)
                     sym.value = ret
                     if let e = $0.1 {
                         _ = assign(lhs: ret, rhs: e.ret!, in: curBlock)
@@ -384,9 +388,7 @@ class IRBuilder: ASTBaseVisitor {
         node.toAccess.accept(visitor: self)
         let t = node.toAccess.ret!.loadIfAddress(block: curBlock)
         node.method.accept(visitor: self)
-        print(">", (node.method.ret! as! CallInst).operands.joined(){"\($0.type)"})
         node.ret = (node.method.ret! as! CallInst).inserted(operand: t)
-        print("<", (node.method.ret! as! CallInst).operands.joined(){"\($0.type)"})
     }
     
     private func getMemberAccess(cls: ClassD, base: Value, for property: String) -> GEPInst? {
@@ -501,14 +503,21 @@ class IRBuilder: ASTBaseVisitor {
         let num = node.expressions.last!.ret!.loadIfAddress(block: curBlock)
         
         let size = BinaryInst(name: "", type: .int, operation: .mul, lhs: perSize, rhs: num, in: curBlock)
-        let cast = SExtInst(name: "", val: size, toType: .long, in: curBlock)
+        let real = BinaryInst(name: "", type: .int, operation: .add, lhs: size, rhs: IntC.four(), in: curBlock)
+        let cast = SExtInst(name: "", val: real, toType: .long, in: curBlock)
         
         let call = CallInst(name: "",
                             function: Builtin.functions["malloc"]!,
                             arguments: [cast],
                             in: curBlock)
         
-        node.ret = CastInst(name: "", val: call, toType: type, in: curBlock)
+        let toint = CastInst(name: "", val: call, toType: Type.int.pointer, in: curBlock)
+        
+        _ = StoreInst(name: "", alloc: toint, val: num, in: curBlock)
+        
+        let nbase = GEPInst(name: "", type: Type.int.pointer, base: toint, needZero: false, val: IntC.one(), in: curBlock)
+        
+        node.ret = CastInst(name: "", val: nbase, toType: type, in: curBlock)
     }
     
     //    case add, sub, mul, div, mod, gt, lt, geq, leq, eq, neq, bitAnd, bitOr, bitXor, logAnd, logOr, lShift, rShift, assign

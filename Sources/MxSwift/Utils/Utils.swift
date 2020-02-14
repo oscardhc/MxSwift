@@ -28,7 +28,7 @@ enum BinaryOperator {
 
 let bool = "bool", int = "int", string = "string", void = "void", null = "null"
 let builtinTypes: [String] = [bool, int, string, void]
-let builtinSize = "__size"
+let builtinSize = "size"
 
 var preOperation: Bool = false
 

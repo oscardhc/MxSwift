@@ -19,6 +19,9 @@ class IntC: Const {
     static func one() -> IntC {
         IntC(name: "", type: .int, value: 1)
     }
+    static func four() -> IntC {
+        IntC(name: "", type: .int, value: 4)
+    }
     
     var value: Int
     init(name: String, type: Type, value: Int) {

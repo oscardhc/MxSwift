@@ -166,7 +166,6 @@ class SemanticChecker: ASTBaseVisitor {
         let c = node.toAccess.type
         if c.hasSuffix("[]") && node.method.id == "size" {
             node.type = int
-            node.method.id = builtinSize
         } else if let sym = node.scope.find(name: c, check: {$0.subScope?.scopeType == .CLASS}) {
             if let m = sym.subScope!.table[node.method.id] {
                 node.type = m.type
@@ -213,9 +212,7 @@ class SemanticChecker: ASTBaseVisitor {
         super.visit(node: node)
 //        print(">>>>>>>>", node.id, node.scope.scopeName)
 //        node.scope.printScope()
-        if node.id == builtinSize {
-            node.type = int
-        } else if let t = node.scope.find(name: node.id, check: {[.CLASS, .FUNCTION].contains($0.subScope?.scopeType)}) {
+        if let t = node.scope.find(name: node.id, check: {[.CLASS, .FUNCTION].contains($0.subScope?.scopeType)}) {
             if let scp = t.subScope {
                 let decl = (scp.scopeType == .CLASS ? scp.table[node.id]!.subScope!.correspondingNode! : scp.correspondingNode!) as! FunctionD
                 if scp.scopeType == .CLASS {
@@ -231,6 +228,8 @@ class SemanticChecker: ASTBaseVisitor {
             } else {
                 error.notCallable(name: node.id)
             }
+        } else if node.id == builtinSize {
+            node.type = int
         } else {
             error.notDeclared(id: node.id, scopeName: node.scope.scopeName)
         }
