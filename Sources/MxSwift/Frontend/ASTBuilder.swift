@@ -123,16 +123,6 @@ class ASTBuilder: MxsBaseVisitor<ASTNode> {
             node.variable.append((sing.Identifier()!.getText(), sing.expression() != nil ? visit(sing.expression()!) as? Expression : nil))
             current.newSymbol(name: sing.Identifier()!.getText(), value: Symbol(_type: type, _bel: current))
         }
-//        if let expr = ctx.expression(0) {
-//            node.id.append(ctx.Identifier(0)!.getText())
-//            node.expressions.append(visit(expr) as? Expression)
-//            current.newSymbol(name: ctx.Identifier(0)!.getText(), value: Symbol(_type: type, _bel: current))
-//        } else {
-//            for id in ctx.Identifier() {
-//                current.newSymbol(name: id.getText(), value: Symbol(_type: type, _bel: current))
-//                node.id.append(id.getText())
-//            }
-//        }
         return node
     }
     
@@ -250,11 +240,12 @@ class ASTBuilder: MxsBaseVisitor<ASTNode> {
     
     override func visitForSentence(_ ctx: MxsParser.ForSentenceContext) -> ASTNode? {
         scopes.append(current.newSubscope(withName: "For", withType: .LOOP))
+        let ini = ctx.declSentence() != nil ? visit(ctx.declSentence()!) : (ctx.expressionSentence() != nil ? visit(ctx.expressionSentence()!) : nil)
         let node = ForS(scope: current,
-                        initial: ctx.ini == nil ? nil : visit(ctx.ini!) as? Expression,
+                        initial: ini == nil ? nil : ini as! Statement,
                         condition: ctx.cod == nil ? nil : visit(ctx.cod!) as? Expression,
                         increment: ctx.inc == nil ? nil : visit(ctx.inc!) as? Expression,
-                        accept: visit(ctx.sentence()!) as? Statement)
+                        accept: visit(ctx.body!) as? Statement)
         scopes.popLast()!.correspondingNode = node
         return node
     }

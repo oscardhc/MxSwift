@@ -24,13 +24,13 @@ class IRBuilder: ASTBaseVisitor {
     private func getType(type: String) -> Type {
         switch type {
         case int:
-            return IRInt.int
+            return .int
         case bool:
-            return IRInt.bool
+            return .bool
         case void:
-            return IRInt.int // mark: void not implemented, use i32 instead
+            return .void // mark: void not implemented, use i32 instead
         case string:
-            return IRPointer(base: IRInt.char)
+            return IRPointer(base: .char)
         case let x where x.hasSuffix("[]"):
             return IRPointer(base: getType(type: x.dropArray()))
         default: //  structures...
@@ -43,26 +43,52 @@ class IRBuilder: ASTBaseVisitor {
         static func addFunc(name: String, f: (() -> Function)) {
             functions[name] = f()
         }
-        
-        static func malloc() -> Function {
-            functions["malloc"]!
-        }
-        static func putchar() -> Function {
-            functions["putchar"]!
-        }
     }
     
     override init() {
         super.init()
         Builtin.addFunc(name: "malloc") {
-            Function(name: "malloc", type: IRPointer(base: IRInt.char),
+            Function(name: "malloc", type: IRPointer(base: .char),
                      module: module, attr: "allocsize(0)")
-                .added(operand: Value(name: "", type: IRInt.long))
+                .added(operand: Value(name: "", type: .long))
         }
-        Builtin.addFunc(name: "putchar") {
-            Function(name: "putchar", type: IRInt.int,
-                     module: module, attr: "")
-                .added(operand: Value(name: "", type: IRInt.int))
+        Builtin.addFunc(name: "print") {
+            Function(name: "print", type: .void, module: module)
+                .added(operand: Value(name: "", type: IRPointer(base: .char)))
+        }
+        Builtin.addFunc(name: "println") {
+            Function(name: "println", type: .void, module: module)
+                .added(operand: Value(name: "", type: IRPointer(base: .char)))
+        }
+        Builtin.addFunc(name: "printInt") {
+            Function(name: "printInt", type: .void, module: module)
+                .added(operand: Value(name: "", type: .int))
+        }
+        Builtin.addFunc(name: "printIntln") {
+            Function(name: "printIntln", type: .void, module: module)
+                .added(operand: Value(name: "", type: .int))
+        }
+        Builtin.addFunc(name: "toString") {
+            Function(name: "toString", type: .string, module: module)
+                .added(operand: Value(name: "", type: .int))
+        }
+        Builtin.addFunc(name: "getInt") {
+            Function(name: "getInt", type: .int, module: module)
+        }
+        addStringBOP(name: "add", type: .string)
+        addStringBOP(name: "eq", type: .bool)
+        addStringBOP(name: "neq", type: .bool)
+        addStringBOP(name: "slt", type: .bool)
+        addStringBOP(name: "sgt", type: .bool)
+        addStringBOP(name: "sle", type: .bool)
+        addStringBOP(name: "sge", type: .bool)
+    }
+    
+    private func addStringBOP(name: String, type: Type) {
+        Builtin.addFunc(name: "_str_" + name) {
+            Function(name: "_str_" + name, type: type, module: module)
+                .added(operand: Value(name: "", type: .string))
+                .added(operand: Value(name: "", type: .string))
         }
     }
     
@@ -90,23 +116,25 @@ class IRBuilder: ASTBaseVisitor {
         for i in node.declarations where i is VariableD {
             i.accept(visitor: self)
         }
-        ReturnInst(name: "", val: IntConst(name: "", type: IRInt.int, value: 0), in: curBlock)
         globalInit = false
-
+        
         
         // step 3: others
         for i in node.declarations where !(i is VariableD) {
             i.accept(visitor: self)
         }
+        
+        // return for global init
+        ReturnInst(name: "", val: VoidConst(), in: globalFunc.blocks[0])
     }
     
-    private func assign(lhs: Value, rhs: Value) {
+    private func assign(lhs: Value, rhs: Value, in block: BasicBlock) {
         if rhs is NullConst {
             rhs.type = lhs.type.getBase
         }
         StoreInst(name: "", alloc: lhs,
-                  val: rhs.isAddress ? LoadInst(name: "", alloc: rhs, in: curBlock) : rhs,
-                  in: curBlock)
+                  val: rhs.loadIfAddress(block: block),
+                  in: block)
     }
     
     override func visit(node: VariableD) {
@@ -129,19 +157,19 @@ class IRBuilder: ASTBaseVisitor {
                             case int:
                                 return IntConst(name: "", type: type, value: 0)
                             default:
-                                return NullConst(name: "", type: type)
+                                return NullConst(type: type)
                             }
                         }
                         sym.value = GlobalVariable(name: $0.0, value: const, module: module)
                         if e != nil {
-                            assign(lhs: sym.value!, rhs: e!)
+                            assign(lhs: sym.value!, rhs: e!, in: curBlock)
                         }
                     }
                 } else {
                     let ret = AllocaInst(name: $0.0, forType: type, in: curBlock)
                     sym.value = ret
                     if let e = $0.1 {
-                        _ = assign(lhs: ret, rhs: e.ret!)
+                        _ = assign(lhs: ret, rhs: e.ret!, in: curBlock)
                     }
                 }
             }
@@ -172,9 +200,11 @@ class IRBuilder: ASTBaseVisitor {
             $0.accept(visitor: self)
         }
         
-        if node.type == void || node.hasReturn == false {
-            ReturnInst(name: "", val: IntConst(name: "", type: IRInt.int, value: 0), in: curBlock)
+        if node.hasReturn == false {
+            ReturnInst(name: "", val: VoidConst(), in: curBlock)
         }
+        
+        ret.checkForEmptyBlock()
         
         curBlock = nil
     }
@@ -204,10 +234,9 @@ class IRBuilder: ASTBaseVisitor {
     
     override func visit(node: IfS) {
         //        super.visit(node: node)
-        let number = conditionCounter.tik
         
         node.condition.accept(visitor: self)
-        let cond = node.condition.ret!.isAddress ? LoadInst(name: "IC" + number, alloc: node.condition.ret!, in: curBlock) : node.condition.ret!
+        let cond = node.condition.ret!.loadIfAddress(block: curBlock)
         let accept = BasicBlock(curfunc: curBlock.currentFunction)
         let reject = BasicBlock(curfunc: curBlock.currentFunction)
         let merge = BasicBlock(curfunc: curBlock.currentFunction)
@@ -248,9 +277,9 @@ class IRBuilder: ASTBaseVisitor {
     
     override func visit(node: ForS) {
         //        super.visit(node: node)
+        
         node.initial?.accept(visitor: self)
         
-        let number = conditionCounter.tik
         let accept = BasicBlock(curfunc: curBlock.currentFunction)
         let merge = BasicBlock(curfunc: curBlock.currentFunction)
         
@@ -269,7 +298,7 @@ class IRBuilder: ASTBaseVisitor {
             node.increment?.accept(visitor: self)
             BrInst(name: "", des: judge, in: curBlock)
         } else {
-            let cond = IntConst(name: "", type: IRInt.bool, value: 1)
+            let cond = IntConst(name: "", type: .bool, value: 1)
             BrInst(name: "", condition: cond, accept: accept, reject: merge, in: curBlock)
             
             curBlock = accept
@@ -328,21 +357,27 @@ class IRBuilder: ASTBaseVisitor {
     
     override func visit(node: BoolLiteralE) {
         super.visit(node: node)
-        node.ret = IntConst(name: "never", type: IRInt.bool, value: node.value ? 1 : 0)
+        node.ret = IntConst(name: "never", type: .bool, value: node.value ? 1 : 0)
     }
     
     override func visit(node: IntLiteralE) {
         super.visit(node: node)
-        node.ret = IntConst(name: "never", type: IRInt.int, value: node.value)
+        node.ret = IntConst(name: "never", type: .int, value: node.value)
     }
     
     override func visit(node: StringLiteralE) {
         super.visit(node: node)
+        let cons = StringConst(value: node.value)
+        let globS = GlobalVariable(name: "Array" + node.hashString, value: cons, module: module)
+        let globP = GlobalVariable(name: "Pointer" + node.hashString, value: NullConst(type: .string), module: module)
+        let pos = GEPInst(name: "", type: .string, base: globS, needZero: true, val: IntConst.zero(), in: globalFunc.blocks[0])
+        StoreInst(name: "", alloc: globP, val: pos, in: globalFunc.blocks[0])
+        node.ret = globP
     }
     
     override func visit(node: NullLiteralE) {
         super.visit(node: node)
-        node.ret = NullConst(name: "", type: Type())
+        node.ret = NullConst()
     }
     
     override func visit(node: MethodAccessE) {
@@ -364,7 +399,7 @@ class IRBuilder: ASTBaseVisitor {
                                    type: IRPointer(base: getType(type: pro.type)),
                                    base: base,
                                    needZero: true,
-                                   val: IntConst(name: "", type: IRInt.int, value: count + j),
+                                   val: IntConst(name: "", type: .int, value: count + j),
                                    in: curBlock)
                 }
                 count += pro.variable.count
@@ -392,8 +427,8 @@ class IRBuilder: ASTBaseVisitor {
         super.visit(node: node)
         var f: Function?
         var sym: Symbol?
-        if node.id == "putchar" {
-            f = Builtin.putchar()
+        if Builtin.functions.keys.contains(node.id) {
+            f = Builtin.functions[node.id]!
         } else {
             sym = node.scope.find(name: node.id)!
             f = sym!.subScope!.correspondingNode!.ret as! Function
@@ -409,8 +444,8 @@ class IRBuilder: ASTBaseVisitor {
             if sym!.belongsTo.scopeName == node.id {
                 let size = ((sym!.belongsTo.correspondingNode as! ClassD).ret! as! Class).getSize
                 let call = CallInst(name: "",
-                                    function: Builtin.malloc(),
-                                    arguments: [IntConst(name: "", type: IRInt.long, value: size)],
+                                    function: Builtin.functions["malloc"]!,
+                                    arguments: [IntConst(name: "", type: .long, value: size)],
                                     in: curBlock)
                 let cast = CastInst(name: "", val: call, toType: getType(type: node.id), in: curBlock)
                 arg.insert(cast, at: 0)
@@ -426,12 +461,35 @@ class IRBuilder: ASTBaseVisitor {
         
         node.ret = CallInst(name: "", function: f!, arguments: arg, in: curBlock)
     }
+    
+    private let uopMap: [UnaryOperator: Inst.OP] = [.doubleAdd: .add, .doubleSub: .sub, .sub: .sub, .bitwise: .xor, .negation: .xor]
+    
     override func visit(node: SuffixE) {
         super.visit(node: node)
+        let exp = node.expression.ret!.loadIfAddress(block: curBlock)
+        let inst = IntConst(name: "", type: exp.type, value: 1)
+        node.ret = BinaryInst(name: "", type: exp.type, operation: uopMap[node.op]!, lhs: exp, rhs: inst, in: curBlock)
+        assign(lhs: node.expression.ret!, rhs: node.ret!, in: curBlock)
+        node.ret = exp
     }
     
     override func visit(node: PrefixE) {
         super.visit(node: node)
+        let exp = node.expression.ret!.loadIfAddress(block: curBlock)
+        switch node.op {
+        case .doubleAdd, .doubleSub:
+            let inst = IntConst(name: "", type: exp.type, value: 1)
+            node.ret = BinaryInst(name: "", type: exp.type, operation: uopMap[node.op]!, lhs: exp, rhs: inst, in: curBlock)
+            assign(lhs: node.expression.ret!, rhs: node.ret!, in: curBlock)
+        case .sub:
+            let inst = IntConst(name: "", type: exp.type, value: 0)
+            node.ret = BinaryInst(name: "", type: exp.type, operation: uopMap[node.op]!, lhs: exp, rhs: inst, in: curBlock)
+        case .bitwise, .negation:
+            let inst = IntConst(name: "", type: exp.type, value: -1)
+            node.ret = BinaryInst(name: "", type: exp.type, operation: uopMap[node.op]!, lhs: exp, rhs: inst, in: curBlock)
+        default:
+            node.ret = exp
+        }
     }
     
     override func visit(node: NewE) {
@@ -440,15 +498,15 @@ class IRBuilder: ASTBaseVisitor {
         let type = getType(type: node.type)
         
         let perSize = IntConst(name: "",
-                               type: IRInt.int,
+                               type: .int,
                                value: node.empty > 0 ? pointerSize : type.getBase.space)
         let num = node.expressions.last!.ret!.loadIfAddress(block: curBlock)
         
-        let size = BinaryInst(name: "", type: IRInt.int, operation: .mul, lhs: perSize, rhs: num, in: curBlock)
-        let cast = SExtInst(name: "", val: size, toType: IRInt.long, in: curBlock)
+        let size = BinaryInst(name: "", type: .int, operation: .mul, lhs: perSize, rhs: num, in: curBlock)
+        let cast = SExtInst(name: "", val: size, toType: .long, in: curBlock)
         
         let call = CallInst(name: "",
-                            function: Builtin.malloc(),
+                            function: Builtin.functions["malloc"]!,
                             arguments: [cast],
                             in: curBlock)
         
@@ -456,28 +514,37 @@ class IRBuilder: ASTBaseVisitor {
     }
     
     //    case add, sub, mul, div, mod, gt, lt, geq, leq, eq, neq, bitAnd, bitOr, bitXor, logAnd, logOr, lShift, rShift, assign
-    private let opMap: [BinaryOperator: Inst.OP] = [.add: .add, .sub: .sub, .mul: .mul, .div: .sdiv, .mod: .srem, .bitAnd: .and, .bitOr: .or, .bitXor: .xor, .lShift: .shl, .rShift: .ashr]
+    private let bopMap: [BinaryOperator: Inst.OP] = [.add: .add, .sub: .sub, .mul: .mul, .div: .sdiv, .mod: .srem, .bitAnd: .and, .bitOr: .or, .bitXor: .xor, .lShift: .shl, .rShift: .ashr, .logAnd: .and, .logOr: .or]
     private let cmpMap: [BinaryOperator: CompareInst.CMP] = [.eq: .eq, .neq: .ne, .lt: .slt, .leq: .sle, .gt: .sgt, .geq: .sge]
     
     override func visit(node: BinaryE) {
         super.visit(node: node)
         if node.op == .assign {
-            assign(lhs: node.lhs.ret!, rhs: node.rhs.ret!)
+            assign(lhs: node.lhs.ret!, rhs: node.rhs.ret!, in: curBlock)
         } else {
-            let lhs = node.lhs.ret!.isAddress ? LoadInst(name: "", alloc: node.lhs.ret!, in: curBlock) : node.lhs.ret!
-            let rhs = node.rhs.ret!.isAddress ? LoadInst(name: "", alloc: node.rhs.ret!, in: curBlock) : node.rhs.ret!
+            let lhs = node.lhs.ret!.loadIfAddress(block: curBlock)
+            let rhs = node.rhs.ret!.loadIfAddress(block: curBlock)
             switch node.op {
-            case .add, .sub, .mul, .div, .mod, .bitAnd, .bitOr, .bitXor, .lShift, .rShift:
-                node.ret = BinaryInst(name: "", type: lhs.type, operation: opMap[node.op]!, lhs: lhs, rhs: rhs, in: curBlock)
+            case .add:
+                if node.lhs.type == int {
+                    node.ret = BinaryInst(name: "", type: lhs.type, operation: bopMap[node.op]!, lhs: lhs, rhs: rhs, in: curBlock)
+                } else {
+                    node.ret = CallInst(name: "", function: Builtin.functions["_str_add"]!, in: curBlock)
+                        .added(operand: lhs)
+                        .added(operand: rhs)
+                }
+            case .sub, .mul, .div, .mod, .bitAnd, .bitOr, .bitXor, .lShift, .rShift:
+                node.ret = BinaryInst(name: "", type: lhs.type, operation: bopMap[node.op]!, lhs: lhs, rhs: rhs, in: curBlock)
             case .eq, .neq, .lt, .gt, .leq, .geq:
-                switch node.lhs.type {
-                case int:
+                if node.lhs.type == int {
                     node.ret = CompareInst(name: "", operation: .icmp, lhs: lhs, rhs: rhs, cmp: cmpMap[node.op]!, in: curBlock)
-                default: //string
-                    break
+                } else {
+                    node.ret = CallInst(name: "", function: Builtin.functions["_str_\( cmpMap[node.op]!)"]!, in: curBlock)
+                        .added(operand: lhs)
+                        .added(operand: rhs)
                 }
             case .logOr, .logAnd:
-                node.ret = CompareInst(name: "", operation: .icmp, lhs: lhs, rhs: rhs, cmp: cmpMap[node.op]!, in: curBlock)
+                node.ret = BinaryInst(name: "", type: lhs.type, operation: bopMap[node.op]!, lhs: lhs, rhs: rhs, in: curBlock)
             default:
                 break
                 //                node.ret = currentBlock.create(Value(name: "", type: Type()))

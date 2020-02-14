@@ -10,10 +10,22 @@ import Foundation
 class Type: CustomStringConvertible {
     init() {}
     var description: String {"???"}
-    var bit: Int {0}
+    var bit: Int {1}
     var space: Int {Int(ceil(Double(bit) / 8))}
     var withAlign: String {description + ", align \(space)"}
     var getBase: Type {(self as! IRPointer).baseType}
+    
+    var pointer: IRPointer {
+        IRPointer(base: self)
+    }
+    
+    static let void = IRVoid()
+    static let bool = IRInt(.bool)
+    static let char = IRInt(.char)
+    static let int = IRInt(.int)
+    static let long = IRInt(.long)
+    static let string = IRPointer(base: char)
+    
 }
 
 class IRLabel: Type {
@@ -33,6 +45,7 @@ class IRFunction: Type {
 }
 
 class IRVoid: Type {
+//    static let void = IRVoid()
     override var description: String {"void"}
 }
 
@@ -40,11 +53,6 @@ class IRInt: Type {
     enum BitWidth {
         case bool, char, int, long
     }
-    
-    static let bool = IRInt(.bool)
-    static let char = IRInt(.char)
-    static let int = IRInt(.int)
-    static let long = IRInt(.long)
     
     var width: BitWidth
     override var bit: Int {
@@ -62,7 +70,7 @@ class IRInt: Type {
     override var description: String {return "i\(bit)"}
     override var space: Int {return width == .int ? 4 : 1}
     
-    private init(_ width: BitWidth) {
+    init(_ width: BitWidth) {
         self.width = width
         super.init()
     }
@@ -110,4 +118,7 @@ class IRArray: Type {
         self.count = count
         super.init()
     }
+    
+    override var bit: Int {elementType.bit}
+    override var description: String {"[\(count) x \(elementType)]"}
 }

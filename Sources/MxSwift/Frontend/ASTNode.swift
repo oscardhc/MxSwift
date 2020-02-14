@@ -122,11 +122,11 @@ class WhileS: Statement {
     override func accept(visitor: ASTVisitor) { visitor.visit(node: self) }
 }
 class ForS: Statement {
-    var initial: Expression?
+    var initial: Statement?
     var condition: Expression?
     var increment: Expression?
     var accept: Statement?
-    init(scope: Scope, initial: Expression?, condition: Expression?, increment: Expression?, accept: Statement?) {
+    init(scope: Scope, initial: Statement?, condition: Expression?, increment: Expression?, accept: Statement?) {
         self.initial = initial
         self.condition = condition
         self.increment = increment

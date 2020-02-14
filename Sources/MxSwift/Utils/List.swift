@@ -42,10 +42,19 @@ class List<T: CustomStringConvertible>: CustomStringConvertible {
             return self
         }
         
+        func remove() {
+            if let p = prev {
+                p.next = next
+            }
+            if let n = next {
+                n.prev = prev
+            }
+        }
+        
     }
     
-    private var head: Node? = nil
-    private var tail: Node? = nil
+    var head: Node? = nil
+    var tail: Node? = nil
     
     var count = 0
     var isEmpty: Bool {
@@ -79,6 +88,8 @@ class List<T: CustomStringConvertible>: CustomStringConvertible {
         for _ in 0..<index {
             cur = cur.next!
         }
+        cur.prev = ret
+        ret.next = cur
         if let t = cur.prev {
             t.next = ret
             ret.prev = t
@@ -86,20 +97,13 @@ class List<T: CustomStringConvertible>: CustomStringConvertible {
             head = ret
             ret.prev = nil
         }
-        cur.prev = ret
-        ret.next = cur
         
         return ret
     }
     
     func remove(node cur: Node) {
         count -= 1
-        if let t = cur.next {
-            t.prev = cur.prev
-        }
-        if let q = cur.prev {
-            q.next = cur.next
-        }
+        cur.remove()
     }
     
     func remove(at index: Int) {

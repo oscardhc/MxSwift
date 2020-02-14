@@ -19,7 +19,7 @@ classDeclaration
 declSentence: variableDeclaration;
 ifSentence: If '(' expression ')' sentence (Else sentence)?;
 whileSentence: While '(' expression ')' sentence;
-forSentence: For '(' ini=expression? ';' cod=expression? ';' inc=expression? ')' sentence;
+forSentence: For '(' (expressionSentence | declSentence | ';') cod=expression? ';' inc=expression? ')' body=sentence;
 returnSentence: Return expression? ';';
 breakSentence: Break ';';
 continueSentence: Continue ';';

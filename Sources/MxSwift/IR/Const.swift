@@ -12,6 +12,14 @@ class Const: User {
 }
 
 class IntConst: Const {
+    
+    static func zero() -> IntConst {
+        IntConst(name: "", type: .int, value: 0)
+    }
+    static func one() -> IntConst {
+        IntConst(name: "", type: .int, value: 1)
+    }
+    
     var value: Int
     init(name: String, type: Type, value: Int) {
         self.value = value
@@ -22,12 +30,52 @@ class IntConst: Const {
     override var description: String {return "\(type) \(value)"}
 }
 class VoidConst: Const {
+    init() {
+        super.init(name: "", type: .void)
+    }
     override func initName() {}
     override var description: String {"void"}
 }
 class NullConst: Const {
+    init(type: Type = Type()) {
+        super.init(name: "", type: type)
+    }
     override func initName() {}
     override var name: String {"null"}
+}
+class StringConst: Const {
+    var value: String
+    var length = 0
+    init(value: String) {
+        self.value = ""
+        var flag = false
+        for char in value {
+            if flag == true {
+                switch char {
+                case "n":
+                    self.value += "0A"
+                case "\"":
+                    self.value += "22"
+                default:
+                    self.value += "5C"
+                }
+                flag = false
+            } else if char == "\\" {
+                flag = true
+                self.value += String(char)
+                length += 1
+            } else if char != "\"" {
+                self.value += String(char)
+                length += 1
+            }
+        }
+        self.value += "\\00"
+        length += 1
+        super.init(name: "", type: IRArray(type: .char, count: length))
+    }
+    override var description: String {
+        "\(type) c\"\(value)\""
+    }
 }
 
 class Global: Const {
@@ -62,6 +110,16 @@ class Function: Global {
     
     func append(_ b: BasicBlock) -> List<BasicBlock>.Node {
         blocks.append(b)
+    }
+    
+    func checkForEmptyBlock() {
+        var cur = blocks.head
+        while cur != nil {
+            if cur!.value.inst.count == 0 {
+                cur!.remove()
+            }
+            cur = cur!.next
+        }
     }
     
 }

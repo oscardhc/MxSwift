@@ -100,6 +100,7 @@ class BasicBlock: Value {
             }
             return inst.append(i)
         }
+//        print("WARNING: Inserting into a terminated block!")
         return nil
     }
     

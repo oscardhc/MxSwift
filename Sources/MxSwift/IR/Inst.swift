@@ -101,7 +101,12 @@ class CallInst: Inst {
         super.init(name: name, type: function.type, operation: .call, in: block)
         arguments.forEach {self.added(operand: $0)}
     }
-    override var toPrint: String {"\(name) = \(operation) \(type) \(function.name)(\(operands))"}
+    override func initName() {
+        if !(type is IRVoid) {
+            super.initName()
+        }
+    }
+    override var toPrint: String {"\(type is IRVoid ? "" : "\(name) = ")\(operation) \(type) \(function.name)(\(operands))"}
     override func accept(visitor: IRVisitor) {visitor.visit(v: self)}
 }
 class AllocaInst: Inst {
