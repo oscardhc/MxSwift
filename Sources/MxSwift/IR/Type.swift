@@ -13,26 +13,26 @@ class Type: CustomStringConvertible {
     var bit: Int {1}
     var space: Int {Int(ceil(Double(bit) / 8))}
     var withAlign: String {description + ", align \(space)"}
-    var getBase: Type {(self as! IRPointer).baseType}
+    var getBase: Type {(self as! PointerT).baseType}
     
-    var pointer: IRPointer {
-        IRPointer(base: self)
+    var pointer: PointerT {
+        PointerT(base: self)
     }
     
-    static let void = IRVoid()
-    static let bool = IRInt(.bool)
-    static let char = IRInt(.char)
-    static let int = IRInt(.int)
-    static let long = IRInt(.long)
-    static let string = IRPointer(base: char)
+    static let void = VoidT()
+    static let bool = IntT(.bool)
+    static let char = IntT(.char)
+    static let int = IntT(.int)
+    static let long = IntT(.long)
+    static let string = PointerT(base: char)
     
 }
 
-class IRLabel: Type {
+class LabelT: Type {
     override var description: String {"label"}
 }
 
-class IRFunction: Type {
+class FunctionT: Type {
     var retType: Type
     var parType: [Type]
     override var description: String {"\(retType)"}
@@ -44,12 +44,12 @@ class IRFunction: Type {
     }
 }
 
-class IRVoid: Type {
+class VoidT: Type {
 //    static let void = IRVoid()
     override var description: String {"void"}
 }
 
-class IRInt: Type {
+class IntT: Type {
     enum BitWidth {
         case bool, char, int, long
     }
@@ -76,7 +76,7 @@ class IRInt: Type {
     }
 }
 
-class IRPointer: Type {
+class PointerT: Type {
     
     var baseType: Type
     
@@ -90,7 +90,7 @@ class IRPointer: Type {
     
 }
 
-class IRClass: Type {
+class ClassT: Type {
 //    let properties: [Type]
 //    override var bit: Int {
 //        var r = 0
@@ -109,7 +109,7 @@ class IRClass: Type {
     override var description: String {"%\(name)"}
 }
 
-class IRArray: Type {
+class ArrayT: Type {
     var elementType: Type
     var count: Int
     

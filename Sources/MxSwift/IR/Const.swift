@@ -11,13 +11,13 @@ class Const: User {
     
 }
 
-class IntConst: Const {
+class IntC: Const {
     
-    static func zero() -> IntConst {
-        IntConst(name: "", type: .int, value: 0)
+    static func zero() -> IntC {
+        IntC(name: "", type: .int, value: 0)
     }
-    static func one() -> IntConst {
-        IntConst(name: "", type: .int, value: 1)
+    static func one() -> IntC {
+        IntC(name: "", type: .int, value: 1)
     }
     
     var value: Int
@@ -29,21 +29,21 @@ class IntConst: Const {
     override var name: String {return "\(value)"}
     override var description: String {return "\(type) \(value)"}
 }
-class VoidConst: Const {
+class VoidC: Const {
     init() {
         super.init(name: "", type: .void)
     }
     override func initName() {}
     override var description: String {"void"}
 }
-class NullConst: Const {
+class NullC: Const {
     init(type: Type = Type()) {
         super.init(name: "", type: type)
     }
     override func initName() {}
     override var name: String {"null"}
 }
-class StringConst: Const {
+class StringC: Const {
     var value: String
     var length = 0
     init(value: String) {
@@ -71,7 +71,7 @@ class StringConst: Const {
         }
         self.value += "\\00"
         length += 1
-        super.init(name: "", type: IRArray(type: .char, count: length))
+        super.init(name: "", type: ArrayT(type: .char, count: length))
     }
     override var description: String {
         "\(type) c\"\(value)\""
@@ -160,7 +160,7 @@ class GlobalVariable: Global {
     
     init(name: String, value: Const, module: Module) {
         self.value = value
-        super.init(name: name, type: IRPointer(base: value.type), module: module)
+        super.init(name: name, type: value.type.pointer, module: module)
         _ = module.add(self)
     }
     

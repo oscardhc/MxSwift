@@ -64,12 +64,12 @@ class GEPInst: Inst {
         added(operand: base)
         added(operand: val)
     }
-    override var toPrint: String {"\(name) = \(operation) \((operands[0].type as! IRPointer).baseType), \(operands[0]),\(needZero ? " i32 0," : "") \(operands[1])"}
+    override var toPrint: String {"\(name) = \(operation) \((operands[0].type as! PointerT).baseType), \(operands[0]),\(needZero ? " i32 0," : "") \(operands[1])"}
     override func accept(visitor: IRVisitor) {visitor.visit(v: self)}
 }
 class ReturnInst: Inst {
     @discardableResult init(name: String, val: Value, in block: BasicBlock) {
-        super.init(name: name, type: IRVoid(), operation: .ret, in: block)
+        super.init(name: name, type: VoidT(), operation: .ret, in: block)
         added(operand: val)
     }
     override func initName() {}
@@ -78,10 +78,10 @@ class ReturnInst: Inst {
 }
 class LoadInst: Inst {
     init(name: String, alloc: Value, in block: BasicBlock) {
-        super.init(name: name, type: (alloc.type as! IRPointer).baseType, operation: .load, in: block)
+        super.init(name: name, type: (alloc.type as! PointerT).baseType, operation: .load, in: block)
         added(operand: alloc)
     }
-    override var toPrint: String {"\(name) = \(operation) \(type), \(operands[0]), align \((operands[0].type as! IRPointer).baseType.space)"}
+    override var toPrint: String {"\(name) = \(operation) \(type), \(operands[0]), align \((operands[0].type as! PointerT).baseType.space)"}
     override func accept(visitor: IRVisitor) {visitor.visit(v: self)}
 }
 class StoreInst: Inst {
@@ -91,7 +91,7 @@ class StoreInst: Inst {
         added(operand: alloc)
     }
     override func initName() {}
-    override var toPrint: String {"\(operation) " + operands.joined() + ", align \((operands[1].type as! IRPointer).baseType.space)"}
+    override var toPrint: String {"\(operation) " + operands.joined() + ", align \((operands[1].type as! PointerT).baseType.space)"}
     override func accept(visitor: IRVisitor) {visitor.visit(v: self)}
 }
 class CallInst: Inst {
@@ -102,18 +102,18 @@ class CallInst: Inst {
         arguments.forEach {self.added(operand: $0)}
     }
     override func initName() {
-        if !(type is IRVoid) {
+        if !(type is VoidT) {
             super.initName()
         }
     }
-    override var toPrint: String {"\(type is IRVoid ? "" : "\(name) = ")\(operation) \(type) \(function.name)(\(operands))"}
+    override var toPrint: String {"\(type is VoidT ? "" : "\(name) = ")\(operation) \(type) \(function.name)(\(operands))"}
     override func accept(visitor: IRVisitor) {visitor.visit(v: self)}
 }
 class AllocaInst: Inst {
     init(name: String, forType: Type, in block: BasicBlock) {
-        super.init(name: name, type: IRPointer(base: forType), operation: .alloca, in: block)
+        super.init(name: name, type: forType.pointer, operation: .alloca, in: block)
     }
-    override var toPrint: String {"\(name) = \(operation) \((type as! IRPointer).baseType.withAlign)"}
+    override var toPrint: String {"\(name) = \(operation) \((type as! PointerT).baseType.withAlign)"}
     override func accept(visitor: IRVisitor) {visitor.visit(v: self)}
 }
 class UnaryInst: Inst {
@@ -136,7 +136,7 @@ class CompareInst: BinaryInst {
     let cmp: CMP
     init(name: String, operation: Inst.OP, lhs: Value, rhs: Value, cmp: CMP, in block: BasicBlock) {
         self.cmp = cmp
-        super.init(name: name, type: IRInt.bool, operation: operation, lhs: lhs, rhs: rhs, in: block)
+        super.init(name: name, type: IntT.bool, operation: operation, lhs: lhs, rhs: rhs, in: block)
     }
     override var toPrint: String {return "\(name) = \(operation) \(cmp) \(operands[0].type) " + operands.joined() {"\($0.name)"}}
     override func accept(visitor: IRVisitor) {visitor.visit(v: self)}

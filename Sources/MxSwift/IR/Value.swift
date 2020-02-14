@@ -50,18 +50,6 @@ class Value: HashableObject, CustomStringConvertible {
     }
 }
 
-//class Use {
-//
-//    let usee: Value
-//    let user: User
-//
-//    init(usee: Value, user: User) {
-//        self.usee = usee
-//        self.user = user
-//    }
-//
-//}
-
 class User: Value {
     
     var operands = List<Value>()
@@ -87,7 +75,7 @@ class BasicBlock: Value {
     
     var nodeInFunction: List<BasicBlock>.Node?
     
-    init(name: String = "", type: Type = IRLabel(), curfunc: Function) {
+    init(name: String = "", type: Type = LabelT(), curfunc: Function) {
         self.currentFunction = curfunc
         super.init(name: "", type: type)
         nodeInFunction = currentFunction.append(self)
