@@ -116,12 +116,10 @@ class Function: Global {
     }
     
     func checkForEmptyBlock() {
-        var cur = blocks.head
-        while cur != nil {
-            if cur!.value.inst.count == 0 {
-                cur!.remove()
+        for blk in blocks {
+            if blk.inst.count == 0 {
+                blk.nodeInFunction?.remove()
             }
-            cur = cur!.next
         }
     }
     

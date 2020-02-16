@@ -37,11 +37,11 @@ class s {
     let lexer: MxsLexer
     if useFileStream {
         let testName = "custom"
-        let testNo = "5"
+        let testNo = "1"
         let sourceFilePath = "/Users/oscar/Documents/Classes/1920_Spring/Compiler/Compiler-2020/local-judge/testcase/sema/\(testName)-package/\(testName)-\(testNo).mx"
 //        let sourceFilePath = "/Users/oscar/Documents/Classes/1920_Spring/Compiler/Compiler-2020/local-judge/testcase/codegen/\(testName).mx"
         let input = try ANTLRFileStream(sourceFilePath, String.Encoding.utf8)
-        print(input.toString())
+//        print(input.toString())
         lexer = MxsLexer(input)
     } else {
         var source = ""
@@ -73,7 +73,6 @@ class s {
     if error.message.count > 0 {
         throw error
     }
-//    return
     
     let ir = IRBuilder()
     ir.visit(node: prog)
@@ -87,6 +86,13 @@ class s {
     handle.truncateFile(atOffset: 0)
     handle.write(pr.str.data(using: .utf8)!)
 //    try handle.close()
+    
+    MemToReg().visit(v: ir.module)
+    
+    IRNumberer().visit(v: ir.module)
+    let pr2 = IRPrinter()
+    pr2.visit(v: ir.module)
+    print(pr2.str)
     
     print("Compilation exited normally.")
     

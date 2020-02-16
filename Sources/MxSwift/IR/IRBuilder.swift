@@ -78,6 +78,13 @@ class IRBuilder: ASTBaseVisitor {
             Function(name: "size", type: .int, module: module)
                 .added(operand: Value(name: "", type: Type.int.pointer))
         }
+        Builtin.addFunc(name: "getString") {
+            Function(name: "getString", type: .string, module: module)
+        }
+        Builtin.addFunc(name: "parseInt") {
+            Function(name: "parseInt", type: .int, module: module)
+                .added(operand: Value(name: "", type: .string))
+        }
         addStringBOP(name: "add", type: .string)
         addStringBOP(name: "eq", type: .bool)
         addStringBOP(name: "neq", type: .bool)
@@ -169,7 +176,7 @@ class IRBuilder: ASTBaseVisitor {
                         }
                     }
                 } else {
-                    let ret = AllocaInst(name: "", forType: type, in: curBlock)
+                    let ret = AllocaInst(name: $0.0 + "_" + sym.belongsTo.scopeName, forType: type, in: curBlock)
                     sym.value = ret
                     if let e = $0.1 {
                         _ = assign(lhs: ret, rhs: e.ret!, in: curBlock)
@@ -388,6 +395,9 @@ class IRBuilder: ASTBaseVisitor {
         node.toAccess.accept(visitor: self)
         let t = node.toAccess.ret!.loadIfAddress(block: curBlock)
         node.method.accept(visitor: self)
+        if node.method.id == "size" {
+            _ = CastInst(name: "", val: t, toType: Type.int.pointer, in: curBlock)
+        }
         node.ret = (node.method.ret! as! CallInst).inserted(operand: t)
     }
     
@@ -498,8 +508,8 @@ class IRBuilder: ASTBaseVisitor {
         let type = getType(type: node.type)
         
         let perSize = IntC(name: "",
-                               type: .int,
-                               value: node.empty > 0 ? pointerSize : type.getBase.space)
+                           type: .int,
+                           value: node.empty > 0 ? pointerSize : type.getBase.space)
         let num = node.expressions.last!.ret!.loadIfAddress(block: curBlock)
         
         let size = BinaryInst(name: "", type: .int, operation: .mul, lhs: perSize, rhs: num, in: curBlock)

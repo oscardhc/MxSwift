@@ -10,7 +10,7 @@ import Foundation
 class Inst: User {
     
     enum OP {
-        case add, sub, mul, sdiv, srem, shl, ashr, and, or, xor, icmp, ret, alloca, call, load, store, getelementptr, br, bitcast, sext
+        case add, sub, mul, sdiv, srem, shl, ashr, and, or, xor, icmp, ret, alloca, call, load, store, getelementptr, br, bitcast, sext, phi
     }
     let operation: OP
     var currentBlock: BasicBlock
@@ -25,6 +25,13 @@ class Inst: User {
     }
 }
 
+class PhiInst: Inst {
+    init (name: String, type: Type, in block: BasicBlock) {
+        super.init(name: name, type: type, operation: .phi, in: block)
+    }
+    override var toPrint: String {"\(name) = \(operation) [\(operands[0]) \(operands[1])], [\(operands[2]) \(operands[3])]"}
+    override func accept(visitor: IRVisitor) {visitor.visit(v: self)}
+}
 class SExtInst: Inst {
     init (name: String, val: Value, toType: Type, in block: BasicBlock) {
         super.init(name: name, type: toType, operation: .sext, in: block)

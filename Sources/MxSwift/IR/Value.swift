@@ -50,6 +50,12 @@ class Value: HashableObject, CustomStringConvertible {
     }
 }
 
+class Use {
+    
+//    var nodeAsUser
+    
+}
+
 class User: Value {
     
     var operands = List<Value>()

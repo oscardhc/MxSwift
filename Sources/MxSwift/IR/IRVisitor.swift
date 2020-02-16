@@ -14,6 +14,7 @@ protocol IRVisitor {
     func visit(v: Class)
     func visit(v: GlobalVariable)
     func visit(v: BasicBlock)
+    func visit(v: PhiInst)
     func visit(v: SExtInst)
     func visit(v: CastInst)
     func visit(v: BrInst)
@@ -55,6 +56,7 @@ class IRNumberer: IRVisitor {
             $0.accept(visitor: self)
         }
     }
+    func visit(v: PhiInst) {v.initName()}
     func visit(v: SExtInst) {v.initName()}
     func visit(v: CastInst) {v.initName()}
     func visit(v: BrInst) {v.initName()}
@@ -118,6 +120,9 @@ class IRPrinter: IRVisitor {
         v.inst.forEach {
             $0.accept(visitor: self)
         }
+    }
+    func visit(v: PhiInst) {
+        print(v.toPrint)
     }
     func visit(v: SExtInst) {
         print(v.toPrint)

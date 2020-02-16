@@ -22,22 +22,43 @@ extension Array where Element: CustomStringConvertible {
     
 }
 
-class List<T: CustomStringConvertible>: CustomStringConvertible {
+class List<T: CustomStringConvertible>: CustomStringConvertible, Sequence {
     
+    func makeIterator() -> List<T>.Iterator {
+        return Iterator(current: head.next)
+    }
+    
+    
+    struct Iterator: IteratorProtocol {
+        
+        var current: Node?
+        mutating func next() -> T? {
+            let e = current?.value
+            if current?.next != nil {
+                current = current?.next
+                return e
+            } else {
+                return nil
+            }
+        }
+        
+    }
+
+        
     class Node {
         
         var next: Node? = nil
         var prev: Node? = nil
-        var value: T
+        var value: T! = nil
         
-        init(value: T) {
+        init(value: T!) {
             self.value = value
         }
-        func setNext(next: Node) -> Self {
+        @discardableResult func setNext(next: Node?) -> Self {
             self.next = next
             return self
         }
-        func setPrev(prev: Node) -> Self {
+        @discardableResult func setPrev(prev: Node?) -> Self {
             self.prev = prev
             return self
         }
@@ -53,29 +74,43 @@ class List<T: CustomStringConvertible>: CustomStringConvertible {
         
     }
     
-    var head: Node? = nil
-    var tail: Node? = nil
+    class VirtualNode: Node {
+        init() {
+            super.init(value: nil)
+        }
+    }
+    
+    var head: Node = VirtualNode()
+    var tail: Node = VirtualNode()
     
     var count = 0
     var isEmpty: Bool {
-        return head == nil
+        return count == 0
     }
     
-    var first: T {return head!.value}
-    var last: T {return tail!.value}
+    var first: T? {return isEmpty ? nil : head.next!.value}
+    var last: T? {return isEmpty ? nil : tail.prev!.value}
     
-    init() {}
+    init() {
+        head.next = tail
+        tail.prev = head
+    }
+    
+    func nodeAt(index: Int) -> Node {
+        var cur = head.next
+        for _ in 0..<index {
+            cur = cur!.next
+        }
+        return cur!
+    }
     
     func append(_ a: T) -> Node {
         count += 1
         let ret = Node(value: a)
-        if let t = tail {
-            t.next = ret.setPrev(prev: t)
-            tail = t.next
-        } else {
-            head = ret
-            tail = head
-        }
+            .setPrev(prev: tail.prev)
+            .setNext(next: tail)
+        tail.prev!.setNext(next: ret)
+        tail.setPrev(prev: ret)
         return ret
     }
     func insert(_ a: T, at index: Int) -> Node {
@@ -83,22 +118,27 @@ class List<T: CustomStringConvertible>: CustomStringConvertible {
             return append(a)
         }
         count += 1
+        
+        let cur = nodeAt(index: index)
         let ret = Node(value: a)
-        var cur = head!
-        for _ in 0..<index {
-            cur = cur.next!
-        }
-        cur.prev = ret
-        ret.next = cur
-        if let t = cur.prev {
-            t.next = ret
-            ret.prev = t
-        } else {
-            head = ret
-            ret.prev = nil
-        }
+            .setNext(next: cur)
+            .setPrev(prev: cur.prev)
+        
+        cur.setPrev(prev: ret)
+        cur.prev?.setNext(next: ret)
         
         return ret
+    }
+    
+    func findNodeBF(val: T, cmp: ((T, T) -> Bool)) -> Node? {
+        var cur = head.next
+        while cur != nil {
+            if cmp(cur!.value, val) {
+                return cur
+            }
+            cur = cur!.next
+        }
+        return nil
     }
     
     func remove(node cur: Node) {
@@ -106,31 +146,16 @@ class List<T: CustomStringConvertible>: CustomStringConvertible {
         cur.remove()
     }
     
-    func remove(at index: Int) {
-        var cur = head!
-        for _ in 0..<index {
-            cur = cur.next!
-        }
-        remove(node: cur)
-    }
-    
     var description: String {
         return joined()
     }
     
-    func forEach(_ f: ((T) -> Void)) {
-        var cur = head
-        while cur != nil {
-            f(cur!.value)
-            cur = cur!.next
-        }
-    }
     func joined(with sep: String = ", ", method: ((T) -> String) = {return "\($0)"}) -> String {
-        if head == nil {
+        if isEmpty {
             return ""
         }
-        var ret = method(head!.value), cur = head?.next
-        while cur != nil {
+        var ret = method(head.next!.value), cur = head.next!.next
+        while cur?.next != nil {
             ret += (sep + method(cur!.value))
             cur = cur!.next
         }
@@ -138,7 +163,7 @@ class List<T: CustomStringConvertible>: CustomStringConvertible {
     }
     
     subscript(idx: Int) -> T {
-        var cur = head
+        var cur = head.next
         for _ in 0..<idx {
             cur = cur!.next
         }
