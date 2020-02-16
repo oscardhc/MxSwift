@@ -15,13 +15,27 @@ class Inst: User {
     let operation: OP
     var currentBlock: BasicBlock
     
-    var node: List<Inst>.Node? = nil
+    var nodeInBlock: List<Inst>.Node? = nil
+    
+    func disconnect(delUsee: Bool, delUser: Bool) {
+        nodeInBlock?.remove()
+        if delUser {
+            for user in users {
+                user.disconnect()
+            }
+        }
+        if delUsee {
+            for usee in usees {
+                usee.disconnect()
+            }
+        }
+    }
     
     init(name: String, type: Type, operation: OP, in block: BasicBlock) {
         self.operation = operation
         self.currentBlock = block
         super.init(name: name, type: type)
-        self.node = currentBlock.added(self)
+        self.nodeInBlock = currentBlock.added(self)
     }
 }
 

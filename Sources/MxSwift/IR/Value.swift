@@ -22,7 +22,7 @@ let counter = UnnamedCounter()
 
 class Value: HashableObject, CustomStringConvertible {
     
-    var users = List<User>()
+    var users = List<Use>()
     
     var type: Type
     var prefix: String {return "%"}
@@ -50,25 +50,73 @@ class Value: HashableObject, CustomStringConvertible {
     }
 }
 
-class Use {
+class Use: CustomStringConvertible {
     
-//    var nodeAsUser
+    var deleted: Bool = false
+    var value: Value
+    var user: User
+    var nodeInValue: List<Use>.Node!
+    var nodeInUser: List<Use>.Node!
+    var nodeAsOperand: List<Value>.Node!
+    
+    func connect(toInsert: Int) {
+        nodeInValue = value.users.append(self)
+        if toInsert < 0 {
+            nodeInUser = user.usees.append(self)
+            nodeAsOperand = user.operands.append(value)
+        } else {
+            nodeInUser = user.usees.insert(self, at: toInsert)
+            nodeAsOperand = user.operands.insert(value, at: toInsert)
+        }
+    }
+    
+    func disconnect() {
+        if !deleted {
+            nodeInUser.remove()
+            nodeInValue.remove()
+            nodeAsOperand.remove()
+            deleted = true
+        }
+    }
+    
+    // Value -> User
+    func reconnect(fromValue new: Value) {
+        nodeAsOperand.value = new
+        value = new
+        nodeInValue.remove()
+        nodeInValue = new.users.append(self)
+    }
+    func reconnect(toUser new: User) {
+        
+    }
+    
+    init(value: Value, user: User, toInsert: Int = -1) {
+        self.value = value
+        self.user = user
+        connect(toInsert: toInsert)
+    }
+    
+    var description: String {value.description}
     
 }
 
 class User: Value {
     
+    var usees = List<Use>()
     var operands = List<Value>()
     
     @discardableResult func added(operand: Value) -> Self {
-        _ = operands.append(operand)
-        _ = operand.users.append(self)
+        _ = Use(value: operand, user: self)
         return self
     }
     @discardableResult func inserted(operand: Value) -> Self {
-        _ = operands.insert(operand, at: 0)
-        _ = operand.users.insert(self, at: 0)
+        _ = Use(value: operand, user: self, toInsert: 0)
         return self
+    }
+    
+    // directly subscript can get certain operand(Value, not Use)
+    subscript(index: Int) -> Value {
+        return operands[index]
     }
     
 }

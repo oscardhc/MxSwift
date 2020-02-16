@@ -47,12 +47,17 @@ class List<T: CustomStringConvertible>: CustomStringConvertible, Sequence {
         
     class Node {
         
+        var list: List
         var next: Node? = nil
         var prev: Node? = nil
         var value: T! = nil
         
-        init(value: T!) {
+        init(value: T!, in list: List) {
             self.value = value
+            self.list = list
+            if value != nil {
+                list.count += 1
+            }
         }
         @discardableResult func setNext(next: Node?) -> Self {
             self.next = next
@@ -64,24 +69,21 @@ class List<T: CustomStringConvertible>: CustomStringConvertible, Sequence {
         }
         
         func remove() {
-            if let p = prev {
-                p.next = next
-            }
-            if let n = next {
-                n.prev = prev
-            }
+            prev?.next = next
+            next?.prev = prev
+            list.count -= 1
         }
         
     }
     
     class VirtualNode: Node {
-        init() {
-            super.init(value: nil)
+        init(in list: List) {
+            super.init(value: nil, in: list)
         }
     }
     
-    var head: Node = VirtualNode()
-    var tail: Node = VirtualNode()
+    var head: Node!
+    var tail: Node!
     
     var count = 0
     var isEmpty: Bool {
@@ -92,11 +94,13 @@ class List<T: CustomStringConvertible>: CustomStringConvertible, Sequence {
     var last: T? {return isEmpty ? nil : tail.prev!.value}
     
     init() {
+        head = VirtualNode(in: self)
+        tail = VirtualNode(in: self)
         head.next = tail
         tail.prev = head
     }
     
-    func nodeAt(index: Int) -> Node {
+    func node(at index: Int) -> Node {
         var cur = head.next
         for _ in 0..<index {
             cur = cur!.next
@@ -105,8 +109,7 @@ class List<T: CustomStringConvertible>: CustomStringConvertible, Sequence {
     }
     
     func append(_ a: T) -> Node {
-        count += 1
-        let ret = Node(value: a)
+        let ret = Node(value: a, in: self)
             .setPrev(prev: tail.prev)
             .setNext(next: tail)
         tail.prev!.setNext(next: ret)
@@ -117,10 +120,9 @@ class List<T: CustomStringConvertible>: CustomStringConvertible, Sequence {
         if count == 0 {
             return append(a)
         }
-        count += 1
         
-        let cur = nodeAt(index: index)
-        let ret = Node(value: a)
+        let cur = node(at: index)
+        let ret = Node(value: a, in: self)
             .setNext(next: cur)
             .setPrev(prev: cur.prev)
         
@@ -130,10 +132,10 @@ class List<T: CustomStringConvertible>: CustomStringConvertible, Sequence {
         return ret
     }
     
-    func findNodeBF(val: T, cmp: ((T, T) -> Bool)) -> Node? {
+    func findNodeBF(where cmp: ((T) -> Bool)) -> Node? {
         var cur = head.next
         while cur != nil {
-            if cmp(cur!.value, val) {
+            if cmp(cur!.value) {
                 return cur
             }
             cur = cur!.next
@@ -141,8 +143,18 @@ class List<T: CustomStringConvertible>: CustomStringConvertible, Sequence {
         return nil
     }
     
+    func removeNodeBF(where cmp: ((T) -> Bool)) {
+        var cur = head.next
+        while cur != nil {
+            if cmp(cur!.value) {
+                cur!.remove()
+                return
+            }
+            cur = cur!.next
+        }
+    }
+    
     func remove(node cur: Node) {
-        count -= 1
         cur.remove()
     }
     
