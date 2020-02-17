@@ -31,6 +31,10 @@ extension AllocaInst {
 
 class MemToReg: FunctionPass {
     
+    override init() {
+        super.init()
+    }
+    
     private func analyze(ai: AllocaInst) {
         
     }
@@ -47,6 +51,12 @@ class MemToReg: FunctionPass {
                 }
             }
         }
+        
+
+        let domTree = DomTree(function: v)
+        let postTree = PostDomTree(function: v)
+        
+        return
         
         for ai in toPromote {
             
@@ -73,6 +83,9 @@ class MemToReg: FunctionPass {
             
             // a: alloc  s: store  v: value to Store  l: load  u: use load value
             if stores.count == 1 {
+                
+                
+                
                 let a2s = stores[0], s = a2s.user as! StoreInst, v2s = s.usees[0], v = v2s.value
                 for a2l in loads {
                     let l = a2l.user as! LoadInst

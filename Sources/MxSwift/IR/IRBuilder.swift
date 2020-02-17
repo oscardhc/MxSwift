@@ -13,7 +13,6 @@ class IRBuilder: ASTBaseVisitor {
     var curBlock: BasicBlock!
     var curClass: Class?
     var controlBlock = [(BasicBlock, BasicBlock)]() // (breakTo, continueTo)
-    var conditionCounter = UnnamedCounter()
     
     var globalInit = true
     var globalFunc: Function!
@@ -265,7 +264,6 @@ class IRBuilder: ASTBaseVisitor {
     
     override func visit(node: WhileS) {
         //        super.visit(node: node)
-        let number = conditionCounter.tik
         
         let judge = BasicBlock(curfunc: curBlock.currentFunction)
         let accept = BasicBlock(curfunc: curBlock.currentFunction)

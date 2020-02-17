@@ -38,7 +38,7 @@ class IRNumberer: IRVisitor {
         }
     }
     func visit(v: Function) {
-        counter.reset()
+        instNamingCounter.reset()
         v.operands.forEach {$0.initName()}
         v.blocks.forEach {
             $0.initName()

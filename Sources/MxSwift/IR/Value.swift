@@ -7,18 +7,22 @@
 
 import Foundation
     
-class UnnamedCounter {
+class Counter {
+    
     var count = -1
-    var tik: String {
+    
+    var tikInt: Int {
         count += 1
-        return "\(count)"
+        return count
     }
+    var tik: String {"\(tikInt)"}
     func reset() {
         count = -1
     }
+    
 }
 
-let counter = UnnamedCounter()
+let instNamingCounter = Counter()
 
 class Value: HashableObject, CustomStringConvertible {
     
@@ -29,7 +33,7 @@ class Value: HashableObject, CustomStringConvertible {
     
     var originName: String
     var basename = "*"
-    func initName() {basename = originName == "" ? counter.tik : originName}
+    func initName() {basename = originName == "" ? instNamingCounter.tik : originName}
     
     var name: String {return prefix + basename}
     var description: String {return "\(type) \(name)"}
@@ -145,6 +149,23 @@ class BasicBlock: Value {
 //        print("WARNING: Inserting into a terminated block!")
         return nil
     }
+    
+    
+    //*************** for domtree use ****************
+    var sons: [Value] {
+        switch inst.last! {
+        case let v as BrInst:
+            if v.operands.count > 1 {
+                return [v.operands[1], v.operands[2]]
+            } else {
+                return [v.operands[0]]
+            }
+        default:
+            return []
+        }
+    }
+    var domNode: DomTree.Node? = nil
+    var postDomNode: DomTree.Node? = nil
     
     override func accept(visitor: IRVisitor) {visitor.visit(v: self)}
     

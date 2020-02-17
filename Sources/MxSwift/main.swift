@@ -92,7 +92,7 @@ class s {
     IRNumberer().visit(v: ir.module)
     let pr2 = IRPrinter()
     pr2.visit(v: ir.module)
-    print(pr2.str)
+//    print(pr2.str)
     
     print("Compilation exited normally.")
     
