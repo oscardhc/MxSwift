@@ -19,14 +19,14 @@ class Inst: User {
     
     func disconnect(delUsee: Bool, delUser: Bool) {
         nodeInBlock?.remove()
-        if delUser {
-            for user in users {
-                user.disconnect()
-            }
-        }
         if delUsee {
             for usee in usees {
                 usee.disconnect()
+            }
+        }
+        if delUser {
+            for user in users {
+                user.disconnect()
             }
         }
     }
@@ -55,12 +55,12 @@ class PhiInst: Inst {
         super.init(name: name, type: type, operation: .phi, in: block, at: index)
     }
     override var toPrint: String {
-        var ret = "\(name) = \(operation) ", idx = 0
+        var ret = "\(name) = \(operation) \(type) ", idx = 0
         while idx < operands.count {
             if idx != 0 {
-                ret += ","
+                ret += ", "
             }
-            ret += "[\(operands[idx]) \(operands[idx + 1])]"
+            ret += "[\(operands[idx].name), \(operands[idx + 1].name)]"
             idx += 2
         }
         return ret

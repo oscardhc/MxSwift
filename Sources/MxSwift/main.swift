@@ -36,10 +36,10 @@ class s {
     
     let lexer: MxsLexer
     if useFileStream {
-        let testName = "custom"
+        let testName = "t3"
         let testNo = "1"
-        let sourceFilePath = "/Users/oscar/Documents/Classes/1920_Spring/Compiler/Compiler-2020/local-judge/testcase/sema/\(testName)-package/\(testName)-\(testNo).mx"
-//        let sourceFilePath = "/Users/oscar/Documents/Classes/1920_Spring/Compiler/Compiler-2020/local-judge/testcase/codegen/\(testName).mx"
+//        let sourceFilePath = "/Users/oscar/Documents/Classes/1920_Spring/Compiler/Compiler-2020/local-judge/testcase/sema/\(testName)-package/\(testName)-\(testNo).mx"
+        let sourceFilePath = "/Users/oscar/Documents/Classes/1920_Spring/Compiler/Compiler-2020/local-judge/testcase/codegen/\(testName).mx"
         let input = try ANTLRFileStream(sourceFilePath, String.Encoding.utf8)
 //        print(input.toString())
         lexer = MxsLexer(input)
@@ -83,6 +83,7 @@ class s {
     
 //    try handle.close()
     
+    TruncateTerminal().visit(v: ir.module)
     MemToReg().visit(v: ir.module)
     
     IRNumberer().visit(v: ir.module)

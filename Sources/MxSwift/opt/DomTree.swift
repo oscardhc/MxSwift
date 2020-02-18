@@ -14,13 +14,14 @@ class BaseDomTree {
     let dfnCounter = Counter()
     var dfnList = [Node]()
     
-    class Node {
+    class Node: CustomStringConvertible {
+        var description: String {block?.description ?? ""}
         
         let block: BasicBlock?
         var dfn = -1
         var father: Node?
-        var edge = [Node]()
-        var antiEdge = [Node]()
+        var edge = List<Node>()
+        var antiEdge = List<Node>()
         var depth = 0
         
         var belInDSet: Node?
@@ -73,8 +74,8 @@ class BaseDomTree {
         for u in dfnList.reversed() {
             for v in u.antiEdge {
                 let m = eval(v)
-                if m.dfn < u.sdom!.dfn {
-                    u.sdom = m
+                if m.sdom!.dfn < u.sdom!.dfn {
+                    u.sdom = m.sdom
                 }
             }
             u.belInDSet = u.father
@@ -91,6 +92,7 @@ class BaseDomTree {
             }
         }
         for u in dfnList {
+            print(".............", u.name, u.idom?.name)
             u.idom?.domSons.append(u)
         }
         buildDepth(cur: root)
@@ -110,7 +112,7 @@ class BaseDomTree {
             dfnList.append(cur)
         }
         for son in cur.edge {
-            son.antiEdge.append(cur)
+            _ = son.antiEdge.append(cur)
             if son.dfn == -1 {
                 son.dfn = dfnCounter.tikInt()
                 son.father = cur
@@ -135,6 +137,60 @@ class BaseDomTree {
         return x === c
     }
     
+
+//    ******** for renaming ********
+    
+    var stack = [Value: [Value]]() // 1st is actually AllocInst, 2nd is actually Phi or value to Store
+    var phiToAlloc: [PhiInst: AllocaInst]!
+    
+    func variableRenaming(aiList: List<AllocaInst>, phiToAlloc: [PhiInst: AllocaInst]!) {
+        for ai in aiList {
+            stack[ai] = []
+        }
+        self.phiToAlloc = phiToAlloc
+        rename(cur: root)
+    }
+    private func rename(cur: Node) {
+        print("rename", cur.name, "**************", stack)
+        var changed = [Value]()
+        for i in cur.block!.inst {
+            switch i {
+            case let l as LoadInst:
+                if let v = stack[l.operands[0]]?.last {
+                    l.replacedBy(value: v) // promotable
+                }
+            case let s as StoreInst:
+                if stack[s.operands[1]] != nil {
+                    changed.append(s.operands[1])
+                    stack[s.operands[1]]!.append(s.operands[0])
+                    s.disconnect(delUsee: true, delUser: true)
+                }
+            case let p as PhiInst:
+                let ai = phiToAlloc[p]!
+                changed.append(ai)
+                stack[ai]!.append(p)
+            default:
+                break
+            }
+        }
+        print(stack)
+        for suc in cur.edge {
+            let idx = suc.antiEdge.findNodeBF(where: {$0 === cur})!.1
+            for i in suc.block!.inst {
+                if let p = i as? PhiInst {
+                    print(">", phiToAlloc[p]!, stack[phiToAlloc[p]!]!)
+                    p.usees[idx * 2].reconnect(fromValue: stack[phiToAlloc[p]!]!.last!)
+                }
+            }
+        }
+        print("domSons", cur.domSons)
+        for son in cur.domSons {
+            rename(cur: son)
+        }
+        for chg in changed {
+            _ = stack[chg]!.popLast()
+        }
+    }
 }
 
 class DomTree: BaseDomTree {
@@ -148,7 +204,7 @@ class DomTree: BaseDomTree {
         }
         for blk in function.blocks {
             blk.sons.forEach {
-                blk.domNode?.edge.append(($0 as! BasicBlock).domNode!)
+                _ = blk.domNode?.edge.append(($0 as! BasicBlock).domNode!)
             }
         }
         root = function.blocks.first!.domNode!
@@ -172,10 +228,10 @@ class PostDomTree: BaseDomTree {
         
         for blk in function.blocks {
             blk.sons.forEach {
-                ($0 as! BasicBlock).postDomNode!.edge.append(blk.postDomNode!)
+                _ = ($0 as! BasicBlock).postDomNode!.edge.append(blk.postDomNode!)
             }
             if blk.sons.isEmpty {
-                root.edge.append(blk.postDomNode!)
+                _ = root.edge.append(blk.postDomNode!)
             }
         }
         

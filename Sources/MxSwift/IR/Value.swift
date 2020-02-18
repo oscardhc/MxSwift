@@ -108,12 +108,12 @@ class Use: CustomStringConvertible {
     
     // Value -> User
     func reconnect(fromValue new: Value) {
-        print("============ reconnect", user.operands)
+        print("                  reconnect", user.operands)
         nodeAsOperand.value = new
         value = new
         nodeInValue.remove()
         nodeInValue = new.users.append(self)
-        print("after ================", user.operands)
+        print("                  after    ", user.operands)
     }
     func reconnect(toUser new: User) {
         
@@ -160,7 +160,7 @@ class BasicBlock: Value {
     
     init(name: String = "", type: Type = LabelT(), curfunc: Function) {
         self.inFunction = curfunc
-        super.init(name: "", type: type)
+        super.init(name: "b.", type: type)
         nodeInFunction = inFunction.append(self)
     }
     

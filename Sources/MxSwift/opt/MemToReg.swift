@@ -29,22 +29,6 @@ extension AllocaInst {
     }
 }
 
-//extension Array where Element == (StoreInst, Int) {
-//    func lower_bound(k: Int) -> Int {
-//        var l = 0, r = count, ans = -1
-//        while l <= r {
-//            let m = (l + r) / 2
-//            if self[m].1 <= k {
-//                ans = m
-//                l = m + 1
-//            } else {
-//                r = m - 1
-//            }
-//        }
-//        return ans
-//    }
-//}
-
 class MemToReg: FunctionPass {
     
     override init() {
@@ -65,16 +49,15 @@ class MemToReg: FunctionPass {
         let domTree = DomTree(function: v)
 //        let postTree = PostDomTree(function: v)
         
-        var phiMap = [Tuple<Value, Value>: PhiInst]()
+        var allocToPhi = [Tuple<Value, Value>: PhiInst](), phiToAlloc = [PhiInst: AllocaInst]()
         
         for ai in toPromote {
-            
             if ai.users.count == 0 {
                 ai.disconnect(delUsee: true, delUser: true)
                 toPromote.removeNodeBF(where: {$0 === ai})
             }
             
-            var loads = List<Use>(), stores = List<Use>()
+            let loads = List<Use>(), stores = List<Use>()
             var allBlock: BasicBlock? = nil
             var allInOneBlock = false
             
@@ -133,7 +116,6 @@ class MemToReg: FunctionPass {
             }
             
             if allInOneBlock {
-                
 //                 warning: may be extremely slow
 //                var storeWithIndex = [(StoreInst, Int)]()
 //                for a2s in stores {
@@ -143,7 +125,6 @@ class MemToReg: FunctionPass {
 //                storeWithIndex.sort {$0.1 < $1.1}
                 
                 var success = true
-                
                 for a2l in loads {
                     let l = a2l.user as! LoadInst, linfo = allBlock!.inst.findNodeBF(where: {$0 === l})!
                     let nearestStore = allBlock!.inst.findPrevBF(from: linfo.0) {
@@ -180,7 +161,15 @@ class MemToReg: FunctionPass {
                     let frt = frontier.block!
                     if !phiBlocks.contains(frt) {
                         phiBlocks.insert(frt)
-                        phiMap[ai.pairWithValue(frt)] = PhiInst(name: ai.name + ".", type: ai.type.getBase, in: frt, at: 0)
+                        let phi = PhiInst(name: ai.originName + ".", type: ai.type.getBase, in: frt, at: 0)
+                        allocToPhi[ai.pairWithValue(frt)] = phi
+                        phiToAlloc[phi] = ai
+                        
+                        for pre in frt.domNode!.antiEdge {
+                            phi.added(operand: IntC.zero())
+                            phi.added(operand: pre.block!)
+                        }
+                        
                         if !oriBlocks.contains(frt) {
                             workList.insert(frt)
                         }
@@ -188,9 +177,12 @@ class MemToReg: FunctionPass {
                 }
             }
             
-            
         }
-        
+
+        domTree.variableRenaming(aiList: toPromote, phiToAlloc: phiToAlloc)
+        for ai in toPromote {
+            ai.disconnect(delUsee: true, delUser: false)
+        }
     }
-    
 }
+
