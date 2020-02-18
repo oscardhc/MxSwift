@@ -12,8 +12,7 @@ class BaseDomTree {
     let f: Function
     var root: Node!
     let dfnCounter = Counter()
-    
-    var dfnList = [Node]() // with reversed order
+    var dfnList = [Node]()
     
     class Node {
         
@@ -21,6 +20,8 @@ class BaseDomTree {
         var dfn = -1
         var father: Node?
         var edge = [Node]()
+        var antiEdge = [Node]()
+        var depth = 0
         
         var belInDSet: Node?
         
@@ -30,6 +31,9 @@ class BaseDomTree {
         
         var bucket = [Node]()
         var name = ""
+        
+        var domSons = [Node]()
+        var domFrontiers = [Node]()
         
         init(block: BasicBlock?) {
             self.block = block
@@ -66,9 +70,8 @@ class BaseDomTree {
     
     func build() {
         dfs(cur: root)
-        
         for u in dfnList.reversed() {
-            for v in u.edge {
+            for v in u.antiEdge {
                 let m = eval(v)
                 if m.dfn < u.sdom!.dfn {
                     u.sdom = m
@@ -87,9 +90,19 @@ class BaseDomTree {
                 u.idom = u.idom!.idom
             }
         }
-//        for u in dfnList {
-//            print(u.name, "<-", u.idom!.name)
-//        }
+        for u in dfnList {
+            u.idom?.domSons.append(u)
+        }
+        buildDepth(cur: root)
+        for u in dfnList {
+            for v in u.antiEdge {
+                var runner: Node? = v
+                while runner != nil && runner !== u.idom {
+                    runner!.domFrontiers.append(u)
+                    runner = runner!.idom
+                }
+            }
+        }
     }
     
     func dfs(cur: Node) {
@@ -97,14 +110,29 @@ class BaseDomTree {
             dfnList.append(cur)
         }
         for son in cur.edge {
-//            print(cur.name , ".", son.name)
+            son.antiEdge.append(cur)
             if son.dfn == -1 {
-                son.dfn = dfnCounter.tikInt
+                son.dfn = dfnCounter.tikInt()
                 son.father = cur
                 dfs(cur: son)
             }
-            son.edge.append(cur)
         }
+    }
+    func buildDepth(cur: Node) {
+        for son in cur.domSons {
+            son.depth = cur.depth + 1
+            buildDepth(cur: son)
+        }
+    }
+    
+    func checkBF(_ x: Node, dominates y: Node) -> Bool {
+        var c = y
+        if x.depth < c.depth {
+            while x.depth < c.depth {
+                c = c.idom!
+            }
+        }
+        return x === c
     }
     
 }

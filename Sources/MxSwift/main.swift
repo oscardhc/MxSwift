@@ -81,10 +81,6 @@ class s {
     let pr = IRPrinter()
     pr.visit(v: ir.module)
     
-    let handle = FileHandle(forWritingAtPath: "/Users/oscar/Documents/Classes/1920_Spring/Compiler/tmp/out.ll")!
-//    print(pr.str)
-    handle.truncateFile(atOffset: 0)
-    handle.write(pr.str.data(using: .utf8)!)
 //    try handle.close()
     
     MemToReg().visit(v: ir.module)
@@ -93,6 +89,9 @@ class s {
     let pr2 = IRPrinter()
     pr2.visit(v: ir.module)
 //    print(pr2.str)
+    
+    pr.flushToFile(name: "/Users/oscar/Documents/Classes/1920_Spring/Compiler/tmp/out.ll")
+    pr2.flushToFile(name: "/Users/oscar/Documents/Classes/1920_Spring/Compiler/tmp/out2.ll")
     
     print("Compilation exited normally.")
     

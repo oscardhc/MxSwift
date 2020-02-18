@@ -13,7 +13,7 @@ class Inst: User {
         case add, sub, mul, sdiv, srem, shl, ashr, and, or, xor, icmp, ret, alloca, call, load, store, getelementptr, br, bitcast, sext, phi
     }
     let operation: OP
-    var currentBlock: BasicBlock
+    var inBlock: BasicBlock
     
     var nodeInBlock: List<Inst>.Node? = nil
     
@@ -31,19 +31,40 @@ class Inst: User {
         }
     }
     
-    init(name: String, type: Type, operation: OP, in block: BasicBlock) {
+    func replacedBy(value: Value) {
+        for use in users {
+            use.reconnect(fromValue: value)
+        }
+        disconnect(delUsee: true, delUser: false)
+    }
+    
+    init(name: String, type: Type, operation: OP, in block: BasicBlock, at index: Int = -1) {
         self.operation = operation
-        self.currentBlock = block
+        self.inBlock = block
         super.init(name: name, type: type)
-        self.nodeInBlock = currentBlock.added(self)
+        if index == -1 {
+            self.nodeInBlock = inBlock.added(self)
+        } else {
+            self.nodeInBlock = inBlock.inserted(self, at: index)
+        }
     }
 }
 
 class PhiInst: Inst {
-    init (name: String, type: Type, in block: BasicBlock) {
-        super.init(name: name, type: type, operation: .phi, in: block)
+    init (name: String, type: Type, in block: BasicBlock, at index: Int = -1) {
+        super.init(name: name, type: type, operation: .phi, in: block, at: index)
     }
-    override var toPrint: String {"\(name) = \(operation) [\(operands[0]) \(operands[1])], [\(operands[2]) \(operands[3])]"}
+    override var toPrint: String {
+        var ret = "\(name) = \(operation) ", idx = 0
+        while idx < operands.count {
+            if idx != 0 {
+                ret += ","
+            }
+            ret += "[\(operands[idx]) \(operands[idx + 1])]"
+            idx += 2
+        }
+        return ret
+    }
     override func accept(visitor: IRVisitor) {visitor.visit(v: self)}
 }
 class SExtInst: Inst {

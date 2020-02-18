@@ -9,22 +9,37 @@ import Foundation
     
 class Counter {
     
-    var count = -1
+    var count = [String: Int]()
     
-    var tikInt: Int {
-        count += 1
-        return count
+    func tikInt(_ id: String = "") -> Int {
+        if count[id] == nil {
+            count[id] = -1
+        }
+        count[id]! += 1
+        return count[id]!
     }
-    var tik: String {"\(tikInt)"}
+    func tik(_ id: String = "") -> String {"\(tikInt(id))"}
     func reset() {
-        count = -1
+        count = [:]
     }
     
 }
 
 let instNamingCounter = Counter()
 
-class Value: HashableObject, CustomStringConvertible {
+struct Tuple<T: Hashable, U: Hashable>: Hashable {
+    let a: T, b: T
+}
+
+class Value: HashableObject, CustomStringConvertible, Hashable {
+    
+    static func == (lhs: Value, rhs: Value) -> Bool {
+        lhs.hashValue == rhs.hashValue
+    }
+    
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(ObjectIdentifier(self))
+    }
     
     var users = List<Use>()
     
@@ -33,7 +48,11 @@ class Value: HashableObject, CustomStringConvertible {
     
     var originName: String
     var basename = "*"
-    func initName() {basename = originName == "" ? instNamingCounter.tik : originName}
+    func initName() {
+        basename = (originName == "" || originName.hasSuffix("."))
+            ? originName + instNamingCounter.tik(originName)
+            : originName
+    }
     
     var name: String {return prefix + basename}
     var description: String {return "\(type) \(name)"}
@@ -51,6 +70,10 @@ class Value: HashableObject, CustomStringConvertible {
     
     func loadIfAddress(block: BasicBlock) -> Value {
         self.isAddress ? LoadInst(name: "", alloc: self, in: block) : self
+    }
+    
+    func pairWithValue(_ value: Value) -> Tuple<Value, Value> {
+        Tuple<Value, Value>(a: self, b: value)
     }
 }
 
@@ -85,10 +108,12 @@ class Use: CustomStringConvertible {
     
     // Value -> User
     func reconnect(fromValue new: Value) {
+        print("============ reconnect", user.operands)
         nodeAsOperand.value = new
         value = new
         nodeInValue.remove()
         nodeInValue = new.users.append(self)
+        print("after ================", user.operands)
     }
     func reconnect(toUser new: User) {
         
@@ -128,26 +153,29 @@ class User: Value {
 class BasicBlock: Value {
     
     var inst = List<Inst>()
-    var currentFunction: Function
-    var terminated = false
+    var inFunction: Function
+//    var terminated = false
     
     var nodeInFunction: List<BasicBlock>.Node?
     
     init(name: String = "", type: Type = LabelT(), curfunc: Function) {
-        self.currentFunction = curfunc
+        self.inFunction = curfunc
         super.init(name: "", type: type)
-        nodeInFunction = currentFunction.append(self)
+        nodeInFunction = inFunction.append(self)
     }
     
-    func added(_ i: Inst) -> List<Inst>.Node? {
-        if terminated == false {
-            if i.isTerminate {
-                terminated = true
-            }
-            return inst.append(i)
-        }
+    func added(_ i: Inst) -> List<Inst>.Node {
+//        if terminated == false {
+//            if i.isTerminate {
+//                terminated = true
+//            }
+//            return inst.append(i)
+//        }
 //        print("WARNING: Inserting into a terminated block!")
-        return nil
+        return inst.append(i)
+    }
+    func inserted(_ i: Inst, at idx: Int) -> List<Inst>.Node {
+        return inst.insert(i, at: idx)
     }
     
     

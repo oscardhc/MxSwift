@@ -126,32 +126,45 @@ class List<T: CustomStringConvertible>: CustomStringConvertible, Sequence {
             .setNext(next: cur)
             .setPrev(prev: cur.prev)
         
-        cur.setPrev(prev: ret)
         cur.prev?.setNext(next: ret)
+        cur.setPrev(prev: ret)
         
         return ret
     }
     
-    func findNodeBF(where cmp: ((T) -> Bool)) -> Node? {
+    func findNodeBF(where cmp: ((T) -> Bool)) -> (Node, Int)? {
         var cur = head.next
-        while cur != nil {
+        var idx = 0
+        while cur?.next != nil {
             if cmp(cur!.value) {
-                return cur
+                return (cur!, idx)
             }
             cur = cur!.next
+            idx += 1
         }
         return nil
     }
     
     func removeNodeBF(where cmp: ((T) -> Bool)) {
         var cur = head.next
-        while cur != nil {
+        while cur?.next != nil {
             if cmp(cur!.value) {
                 cur!.remove()
                 return
             }
             cur = cur!.next
         }
+    }
+    
+    func findPrevBF(from: Node, where cmp: ((T) -> Bool)) -> Node? {
+        var cur: Node? = from
+        while cur?.prev != nil {
+            if cmp(cur!.value) {
+                return cur!
+            }
+            cur = cur!.prev
+        }
+        return nil
     }
     
     func remove(node cur: Node) {

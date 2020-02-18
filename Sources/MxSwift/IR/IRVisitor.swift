@@ -75,6 +75,11 @@ class IRPrinter: IRVisitor {
     var str = ""
     var indent = 0
     
+    func flushToFile(name: String) {
+        let handle = FileHandle(forWritingAtPath: name)!
+        handle.truncateFile(atOffset: 0)
+        handle.write(str.data(using: .utf8)!)
+    }
     func print(_ items: Any..., end: String = "\n") {
         for _ in 0..<indent {
             str += "\t"

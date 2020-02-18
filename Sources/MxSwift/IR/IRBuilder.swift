@@ -246,9 +246,9 @@ class IRBuilder: ASTBaseVisitor {
         
         node.condition.accept(visitor: self)
         let cond = node.condition.ret!.loadIfAddress(block: curBlock)
-        let accept = BasicBlock(curfunc: curBlock.currentFunction)
-        let reject = BasicBlock(curfunc: curBlock.currentFunction)
-        let merge = BasicBlock(curfunc: curBlock.currentFunction)
+        let accept = BasicBlock(curfunc: curBlock.inFunction)
+        let reject = BasicBlock(curfunc: curBlock.inFunction)
+        let merge = BasicBlock(curfunc: curBlock.inFunction)
         BrInst(name: "", condition: cond, accept: accept, reject: reject, in: curBlock)
         
         curBlock = accept
@@ -265,9 +265,9 @@ class IRBuilder: ASTBaseVisitor {
     override func visit(node: WhileS) {
         //        super.visit(node: node)
         
-        let judge = BasicBlock(curfunc: curBlock.currentFunction)
-        let accept = BasicBlock(curfunc: curBlock.currentFunction)
-        let merge = BasicBlock(curfunc: curBlock.currentFunction)
+        let judge = BasicBlock(curfunc: curBlock.inFunction)
+        let accept = BasicBlock(curfunc: curBlock.inFunction)
+        let merge = BasicBlock(curfunc: curBlock.inFunction)
         BrInst(name: "", des: judge, in: curBlock)
         curBlock = judge
         node.condition.accept(visitor: self)
@@ -288,11 +288,11 @@ class IRBuilder: ASTBaseVisitor {
         
         node.initial?.accept(visitor: self)
         
-        let accept = BasicBlock(curfunc: curBlock.currentFunction)
-        let merge = BasicBlock(curfunc: curBlock.currentFunction)
+        let accept = BasicBlock(curfunc: curBlock.inFunction)
+        let merge = BasicBlock(curfunc: curBlock.inFunction)
         
         if let c = node.condition {
-            let judge = BasicBlock(curfunc: curBlock.currentFunction)
+            let judge = BasicBlock(curfunc: curBlock.inFunction)
             BrInst(name: "", des: judge, in: curBlock)
             curBlock = judge
             c.accept(visitor: self)
@@ -344,7 +344,7 @@ class IRBuilder: ASTBaseVisitor {
     }
     
     private var this: Value {
-        (curBlock?.currentFunction.operands[0])! // first parameter: this
+        (curBlock?.inFunction.operands[0])! // first parameter: this
     }
     
     override func visit(node: VariableE) {

@@ -11,7 +11,7 @@ import Parser
 
 class HashableObject {
     var hashString: String {
-        return String(String(UInt(bitPattern: ObjectIdentifier(self))).suffix(4))
+        return "\(ObjectIdentifier(self).hashValue)"
     }
     var thisType: String {
         return "\(type(of: self))"
