@@ -40,7 +40,7 @@ class BaseDomTree {
             self.block = block
             self.minDfn = self
             self.sdom = self
-            self.name = block?.name ?? "exit"
+            self.name = block?.name ?? "."
         }
         
         func find() -> Node {
@@ -52,6 +52,17 @@ class BaseDomTree {
                 minDfn = belInDSet!.minDfn
             }
             return belInDSet!
+        }
+        
+        func findDomFatherBF(where check: ((Node) -> Bool)) -> Node? {
+            var cur: Node? = self
+            while cur != nil {
+                if check(cur!) {
+                    return cur
+                }
+                cur = cur!.idom
+            }
+            return nil
         }
         
     }
@@ -92,22 +103,27 @@ class BaseDomTree {
             }
         }
         for u in dfnList {
-            print(".............", u.name, u.idom?.name)
-            u.idom?.domSons.append(u)
+            u.idom!.domSons.append(u)
         }
         buildDepth(cur: root)
         for u in dfnList {
+            print("building DF.....", u.name, u.antiEdge.count)
             for v in u.antiEdge {
                 var runner: Node? = v
+                print("     runner", v.name)
                 while runner != nil && runner !== u.idom {
                     runner!.domFrontiers.append(u)
                     runner = runner!.idom
                 }
             }
         }
+        for u in dfnList {
+            print(u.name, u.domFrontiers.count, "::", u.domFrontiers.joined(method: {$0.name}))
+        }
     }
     
     func dfs(cur: Node) {
+        print(">>>>>>>>>>", cur.name, cur.edge.count)
         if cur !== root {
             dfnList.append(cur)
         }
@@ -128,16 +144,32 @@ class BaseDomTree {
     }
     
     func checkBF(_ x: Node, dominates y: Node) -> Bool {
-        var c = y
-        if x.depth < c.depth {
-            while x.depth < c.depth {
-                c = c.idom!
-            }
+        return x === y.findDomFatherBF() {
+            $0.depth == x.depth
         }
-        return x === c
     }
     
+}
 
+class DomTree: BaseDomTree {
+    
+    override init(function: Function) {
+        
+        super.init(function: function)
+        
+        for blk in function.blocks {
+            blk.domNode = Node(block: blk)
+        }
+        for blk in function.blocks {
+            blk.sons.forEach {
+                _ = blk.domNode?.edge.append(($0 as! BasicBlock).domNode!)
+            }
+        }
+        root = function.blocks.first!.domNode!
+        build()
+        
+    }
+    
 //    ******** for renaming ********
     
     var stack = [Value: [Value]]() // 1st is actually AllocInst, 2nd is actually Phi or value to Store
@@ -145,15 +177,16 @@ class BaseDomTree {
     
     func variableRenaming(aiList: List<AllocaInst>, phiToAlloc: [PhiInst: AllocaInst]!) {
         for ai in aiList {
-            stack[ai] = []
+            stack[ai] = [IntC.minusOne()]
         }
         self.phiToAlloc = phiToAlloc
         rename(cur: root)
     }
+    
     private func rename(cur: Node) {
-        print("rename", cur.name, "**************", stack)
+        //        print("rename", cur.name, "**************", stack)
         var changed = [Value]()
-        for i in cur.block!.inst {
+        for i in cur.block!.insts {
             switch i {
             case let l as LoadInst:
                 if let v = stack[l.operands[0]]?.last {
@@ -176,9 +209,9 @@ class BaseDomTree {
         print(stack)
         for suc in cur.edge {
             let idx = suc.antiEdge.findNodeBF(where: {$0 === cur})!.1
-            for i in suc.block!.inst {
+            for i in suc.block!.insts {
                 if let p = i as? PhiInst {
-                    print(">", phiToAlloc[p]!, stack[phiToAlloc[p]!]!)
+                    print(">", suc.block!, phiToAlloc[p]!, stack[phiToAlloc[p]!]!)
                     p.usees[idx * 2].reconnect(fromValue: stack[phiToAlloc[p]!]!.last!)
                 }
             }
@@ -191,26 +224,6 @@ class BaseDomTree {
             _ = stack[chg]!.popLast()
         }
     }
-}
-
-class DomTree: BaseDomTree {
-    
-    override init(function: Function) {
-        
-        super.init(function: function)
-        
-        for blk in function.blocks {
-            blk.domNode = Node(block: blk)
-        }
-        for blk in function.blocks {
-            blk.sons.forEach {
-                _ = blk.domNode?.edge.append(($0 as! BasicBlock).domNode!)
-            }
-        }
-        root = function.blocks.first!.domNode!
-        build()
-        
-    }
     
 }
 
@@ -221,20 +234,23 @@ class PostDomTree: BaseDomTree {
         super.init(function: function)
         
         for blk in function.blocks {
-            blk.postDomNode = Node(block: blk)
+            blk.domNode = Node(block: blk)
         }
         
-        root = Node(block: nil)
+        let entryPoint = Node(block: nil) // note: this is the virtual root
+        root = Node(block: nil) // note: this is actually the exit
+        
+        _ = function.blocks.first!.domNode!.edge.append(entryPoint)
+        _ = root.edge.append(entryPoint)
         
         for blk in function.blocks {
             blk.sons.forEach {
-                _ = ($0 as! BasicBlock).postDomNode!.edge.append(blk.postDomNode!)
+                _ = ($0 as! BasicBlock).domNode!.edge.append(blk.domNode!)
             }
             if blk.sons.isEmpty {
-                _ = root.edge.append(blk.postDomNode!)
+                _ = root.edge.append(blk.domNode!)
             }
         }
-        
         build()
         
     }

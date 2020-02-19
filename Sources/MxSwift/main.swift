@@ -36,10 +36,10 @@ class s {
     
     let lexer: MxsLexer
     if useFileStream {
-        let testName = "t3"
+        let testName = "custom"
         let testNo = "1"
-//        let sourceFilePath = "/Users/oscar/Documents/Classes/1920_Spring/Compiler/Compiler-2020/local-judge/testcase/sema/\(testName)-package/\(testName)-\(testNo).mx"
-        let sourceFilePath = "/Users/oscar/Documents/Classes/1920_Spring/Compiler/Compiler-2020/local-judge/testcase/codegen/\(testName).mx"
+        let sourceFilePath = "/Users/oscar/Documents/Classes/1920_Spring/Compiler/Compiler-2020/local-judge/testcase/sema/\(testName)-package/\(testName)-\(testNo).mx"
+//        let sourceFilePath = "/Users/oscar/Documents/Classes/1920_Spring/Compiler/Compiler-2020/local-judge/testcase/codegen/\(testName).mx"
         let input = try ANTLRFileStream(sourceFilePath, String.Encoding.utf8)
 //        print(input.toString())
         lexer = MxsLexer(input)
@@ -77,21 +77,24 @@ class s {
     let ir = IRBuilder()
     ir.visit(node: prog)
     
+    TruncateTerminal().visit(v: ir.module)
+    MemToReg().visit(v: ir.module)
+    
     IRNumberer().visit(v: ir.module)
     let pr = IRPrinter()
     pr.visit(v: ir.module)
+    pr.flushToFile(name: "/Users/oscar/Documents/Classes/1920_Spring/Compiler/tmp/out.ll")
     
-//    try handle.close()
     
+    DCElimination().visit(v: ir.module)
     TruncateTerminal().visit(v: ir.module)
-    MemToReg().visit(v: ir.module)
+    EmptyBlockRemover().visit(v: ir.module)
     
     IRNumberer().visit(v: ir.module)
     let pr2 = IRPrinter()
     pr2.visit(v: ir.module)
 //    print(pr2.str)
     
-    pr.flushToFile(name: "/Users/oscar/Documents/Classes/1920_Spring/Compiler/tmp/out.ll")
     pr2.flushToFile(name: "/Users/oscar/Documents/Classes/1920_Spring/Compiler/tmp/out2.ll")
     
     print("Compilation exited normally.")

@@ -12,7 +12,7 @@ class TruncateTerminal: FunctionPass {
     override func visit(v: Function) {
         for blk in v.blocks {
             var from: List<Inst>.Node? = nil
-            for inst in blk.inst {
+            for inst in blk.insts {
                 if inst.isTerminate {
                     from = inst.nodeInBlock?.next
                     break

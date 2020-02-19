@@ -152,7 +152,7 @@ class User: Value {
 
 class BasicBlock: Value {
     
-    var inst = List<Inst>()
+    var insts = List<Inst>()
     var inFunction: Function
 //    var terminated = false
     
@@ -172,16 +172,19 @@ class BasicBlock: Value {
 //            return inst.append(i)
 //        }
 //        print("WARNING: Inserting into a terminated block!")
-        return inst.append(i)
+        return insts.append(i)
     }
     func inserted(_ i: Inst, at idx: Int) -> List<Inst>.Node {
-        return inst.insert(i, at: idx)
+        return insts.insert(i, at: idx)
     }
     
+//    func remove() {
+//        for
+//    }
     
     //*************** for domtree use ****************
     var sons: [Value] {
-        switch inst.last! {
+        switch insts.last! {
         case let v as BrInst:
             if v.operands.count > 1 {
                 return [v.operands[1], v.operands[2]]
@@ -193,7 +196,6 @@ class BasicBlock: Value {
         }
     }
     var domNode: DomTree.Node? = nil
-    var postDomNode: DomTree.Node? = nil
     
     override func accept(visitor: IRVisitor) {visitor.visit(v: self)}
     

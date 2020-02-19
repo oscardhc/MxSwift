@@ -52,7 +52,7 @@ class IRNumberer: IRVisitor {
         
     }
     func visit(v: BasicBlock) {
-        v.inst.forEach {
+        v.insts.forEach {
             $0.accept(visitor: self)
         }
     }
@@ -122,7 +122,7 @@ class IRPrinter: IRVisitor {
         print(v.toPrint)
     }
     func visit(v: BasicBlock) {
-        v.inst.forEach {
+        v.insts.forEach {
             $0.accept(visitor: self)
         }
     }

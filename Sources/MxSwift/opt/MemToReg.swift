@@ -37,7 +37,7 @@ class MemToReg: FunctionPass {
     
     override func visit(v: Function) {
         let toPromote = List<AllocaInst>()
-        let insts = v.blocks.first!.inst
+        let insts = v.blocks.first!.insts
         
         for inst in insts {
             if let ai = inst as? AllocaInst {
@@ -46,15 +46,17 @@ class MemToReg: FunctionPass {
                 }
             }
         }
+        
         let domTree = DomTree(function: v)
-//        let postTree = PostDomTree(function: v)
         
         var allocToPhi = [Tuple<Value, Value>: PhiInst](), phiToAlloc = [PhiInst: AllocaInst]()
         
         for ai in toPromote {
+            
             if ai.users.count == 0 {
                 ai.disconnect(delUsee: true, delUser: true)
                 toPromote.removeNodeBF(where: {$0 === ai})
+                continue
             }
             
             let loads = List<Use>(), stores = List<Use>()
@@ -85,17 +87,17 @@ class MemToReg: FunctionPass {
 //            a: alloc  s: store  v: value to Store  l: load  u: use load value
             if stores.count == 1 {
                 let a2s = stores[0], s = a2s.user as! StoreInst, v2s = s.usees[0], v = v2s.value
-                let sIndex = s.inBlock.inst.findNodeBF(where: {$0 === s})!
+                let sIndex = s.inBlock.insts.findNodeBF(where: {$0 === s})!
                 // check for usage domination
                 var canNotHandleLoads = [Use]()
                 for a2l in loads {
                     let l = a2l.user as! LoadInst
-                    print("CHECKING LOADS....", l.inBlock, s.inBlock)
+//                    print("CHECKING LOADS....", l.inBlock, s.inBlock)
                     if v is GlobalVariable {
                         
                     } else if l.inBlock === s.inBlock {
                         // in the same block
-                        if sIndex.1 > l.inBlock.inst.findNodeBF(where: {$0 === l})!.1 {
+                        if sIndex.1 > l.inBlock.insts.findNodeBF(where: {$0 === l})!.1 {
                             canNotHandleLoads.append(a2l)
                             continue
                         }
@@ -111,23 +113,17 @@ class MemToReg: FunctionPass {
                 if canNotHandleLoads.isEmpty {
                     s.disconnect(delUsee: true, delUser: false)
                     ai.disconnect(delUsee: true, delUser: false)
+                    toPromote.removeNodeBF(where: {$0 === ai})
                     continue
                 }
             }
             
             if allInOneBlock {
-//                 warning: may be extremely slow
-//                var storeWithIndex = [(StoreInst, Int)]()
-//                for a2s in stores {
-//                    let s = a2s.user as! StoreInst
-//                    storeWithIndex.append((s, allBlock!.inst.findNodeBF(where: {$0 === s})!.1))
-//                }
-//                storeWithIndex.sort {$0.1 < $1.1}
                 
                 var success = true
                 for a2l in loads {
-                    let l = a2l.user as! LoadInst, linfo = allBlock!.inst.findNodeBF(where: {$0 === l})!
-                    let nearestStore = allBlock!.inst.findPrevBF(from: linfo.0) {
+                    let l = a2l.user as! LoadInst, linfo = allBlock!.insts.findNodeBF(where: {$0 === l})!
+                    let nearestStore = allBlock!.insts.findPrevBF(from: linfo.0) {
                         $0 is StoreInst && $0.operands[1] === ai
                     }
                     
@@ -147,20 +143,23 @@ class MemToReg: FunctionPass {
                         (a2s.user as! StoreInst).disconnect(delUsee: true, delUser: false)
                     }
                     ai.disconnect(delUsee: true, delUser: false)
+                    toPromote.removeNodeBF(where: {$0 === ai})
                 }
             }
             
             var oriBlocks = Set<BasicBlock>(), workList = Set<BasicBlock>(), phiBlocks = Set<BasicBlock>()
             stores.forEach {oriBlocks.insert(($0.user as! StoreInst).inBlock)}
             oriBlocks.forEach {workList.insert($0)}
-            
+            print(ai.name, oriBlocks)
 //            warning: complexity N^2
             while !workList.isEmpty {
                 let cur = workList.popFirst()!
+                
                 for frontier in cur.domNode!.domFrontiers {
                     let frt = frontier.block!
                     if !phiBlocks.contains(frt) {
                         phiBlocks.insert(frt)
+                        print(ai.name, frt.name)
                         let phi = PhiInst(name: ai.originName + ".", type: ai.type.getBase, in: frt, at: 0)
                         allocToPhi[ai.pairWithValue(frt)] = phi
                         phiToAlloc[phi] = ai
@@ -183,6 +182,7 @@ class MemToReg: FunctionPass {
         for ai in toPromote {
             ai.disconnect(delUsee: true, delUser: false)
         }
+        
     }
 }
 

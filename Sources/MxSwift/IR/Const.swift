@@ -22,6 +22,9 @@ class IntC: Const {
     static func four() -> IntC {
         IntC(name: "", type: .int, value: 4)
     }
+    static func minusOne() -> IntC {
+        IntC(name: "", type: .int, value: -1)
+    }
     
     var value: Int
     init(name: String, type: Type, value: Int) {
@@ -117,7 +120,7 @@ class Function: Global {
     
     func checkForEmptyBlock() {
         for blk in blocks {
-            if blk.inst.count == 0 {
+            if blk.insts.count == 0 {
                 blk.nodeInFunction?.remove()
             }
         }

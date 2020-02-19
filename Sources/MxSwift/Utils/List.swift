@@ -69,8 +69,8 @@ class List<T: CustomStringConvertible>: CustomStringConvertible, Sequence {
         }
         
         func remove() {
-            prev?.next = next
-            next?.prev = prev
+            prev!.next = next
+            next!.prev = prev
             list.count -= 1
         }
         

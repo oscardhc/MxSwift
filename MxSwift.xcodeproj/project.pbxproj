@@ -7,12 +7,14 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		5553209523FD61A7003E4BC8 /* EmptyBlockRemover.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5553209423FD61A7003E4BC8 /* EmptyBlockRemover.swift */; };
 		555C57ED23E6B3BA00D9192A /* SemanticChecker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 555C57EC23E6B3BA00D9192A /* SemanticChecker.swift */; };
 		555C57EF23E7314900D9192A /* ErrorListener.swift in Sources */ = {isa = PBXBuildFile; fileRef = 555C57EE23E7314900D9192A /* ErrorListener.swift */; };
 		55ABA11423F90A740030D790 /* Pass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55ABA11323F90A730030D790 /* Pass.swift */; };
 		55ABA11623F90C3D0030D790 /* MemToReg.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55ABA11523F90C3C0030D790 /* MemToReg.swift */; };
 		55ABA11823FA624D0030D790 /* DomTree.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55ABA11723FA624C0030D790 /* DomTree.swift */; };
 		55ABA11A23FC1CBB0030D790 /* TruncateTerminal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55ABA11923FC1CBB0030D790 /* TruncateTerminal.swift */; };
+		55ABA11C23FD17F90030D790 /* DCElimination.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55ABA11B23FD17F90030D790 /* DCElimination.swift */; };
 		55D1C0CA23EA962C0057E80A /* Value.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55D1C0C923EA962C0057E80A /* Value.swift */; };
 		55D1C0CC23EAE30E0057E80A /* IRBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55D1C0CB23EAE30E0057E80A /* IRBuilder.swift */; };
 		55D1C0CE23EAE4B20057E80A /* Type.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55D1C0CD23EAE4B20057E80A /* Type.swift */; };
@@ -221,12 +223,14 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		5553209423FD61A7003E4BC8 /* EmptyBlockRemover.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmptyBlockRemover.swift; sourceTree = "<group>"; };
 		555C57EC23E6B3BA00D9192A /* SemanticChecker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SemanticChecker.swift; sourceTree = "<group>"; };
 		555C57EE23E7314900D9192A /* ErrorListener.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorListener.swift; sourceTree = "<group>"; };
 		55ABA11323F90A730030D790 /* Pass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Pass.swift; sourceTree = "<group>"; };
 		55ABA11523F90C3C0030D790 /* MemToReg.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemToReg.swift; sourceTree = "<group>"; };
 		55ABA11723FA624C0030D790 /* DomTree.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DomTree.swift; sourceTree = "<group>"; };
 		55ABA11923FC1CBB0030D790 /* TruncateTerminal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TruncateTerminal.swift; sourceTree = "<group>"; };
+		55ABA11B23FD17F90030D790 /* DCElimination.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DCElimination.swift; sourceTree = "<group>"; };
 		55ACD0CE23E309EC0087376F /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		55D1C0C923EA962C0057E80A /* Value.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Value.swift; sourceTree = "<group>"; };
 		55D1C0CB23EAE30E0057E80A /* IRBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IRBuilder.swift; sourceTree = "<group>"; };
@@ -451,7 +455,9 @@
 				55ABA11323F90A730030D790 /* Pass.swift */,
 				55ABA11523F90C3C0030D790 /* MemToReg.swift */,
 				55ABA11923FC1CBB0030D790 /* TruncateTerminal.swift */,
+				5553209423FD61A7003E4BC8 /* EmptyBlockRemover.swift */,
 				55ABA11723FA624C0030D790 /* DomTree.swift */,
+				55ABA11B23FD17F90030D790 /* DCElimination.swift */,
 			);
 			path = opt;
 			sourceTree = "<group>";
@@ -1072,6 +1078,7 @@
 				55D1C0DC23EBDF070057E80A /* Module.swift in Sources */,
 				55D1C0D823EB2F1C0057E80A /* IRVisitor.swift in Sources */,
 				55ABA11A23FC1CBB0030D790 /* TruncateTerminal.swift in Sources */,
+				5553209523FD61A7003E4BC8 /* EmptyBlockRemover.swift in Sources */,
 				55D1C0CC23EAE30E0057E80A /* IRBuilder.swift in Sources */,
 				55EEB6A023E562A700E9FE2C /* ASTVisitor.swift in Sources */,
 				55EEB69C23E4919D00E9FE2C /* ASTBuilder.swift in Sources */,
@@ -1080,6 +1087,7 @@
 				55D1C0DA23EBD42A0057E80A /* Const.swift in Sources */,
 				55D1C0CA23EA962C0057E80A /* Value.swift in Sources */,
 				55ABA11623F90C3D0030D790 /* MemToReg.swift in Sources */,
+				55ABA11C23FD17F90030D790 /* DCElimination.swift in Sources */,
 				55D1C0D623EB17700057E80A /* List.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
