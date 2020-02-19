@@ -107,23 +107,17 @@ class BaseDomTree {
         }
         buildDepth(cur: root)
         for u in dfnList {
-            print("building DF.....", u.name, u.antiEdge.count)
             for v in u.antiEdge {
                 var runner: Node? = v
-                print("     runner", v.name)
                 while runner != nil && runner !== u.idom {
                     runner!.domFrontiers.append(u)
                     runner = runner!.idom
                 }
             }
         }
-        for u in dfnList {
-            print(u.name, u.domFrontiers.count, "::", u.domFrontiers.joined(method: {$0.name}))
-        }
     }
     
     func dfs(cur: Node) {
-        print(">>>>>>>>>>", cur.name, cur.edge.count)
         if cur !== root {
             dfnList.append(cur)
         }
@@ -206,17 +200,14 @@ class DomTree: BaseDomTree {
                 break
             }
         }
-        print(stack)
         for suc in cur.edge {
             let idx = suc.antiEdge.findNodeBF(where: {$0 === cur})!.1
             for i in suc.block!.insts {
                 if let p = i as? PhiInst {
-                    print(">", suc.block!, phiToAlloc[p]!, stack[phiToAlloc[p]!]!)
                     p.usees[idx * 2].reconnect(fromValue: stack[phiToAlloc[p]!]!.last!)
                 }
             }
         }
-        print("domSons", cur.domSons)
         for son in cur.domSons {
             rename(cur: son)
         }

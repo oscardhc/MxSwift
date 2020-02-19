@@ -9,13 +9,19 @@ import Foundation
 
 class FunctionPass: IRVisitor {
     
-    
     final func visit(v: Module) {
         v.functions.forEach {
             if $0.blocks.count > 0 {
                 $0.accept(visitor: self)
             }
         }
+    }
+    
+    var resultString: String {"\(self)".fixLength(30) + " finished. "}
+    
+    func work(on v: Module) {
+        visit(v: v)
+        print(resultString)
     }
     
     func visit(v: Function) {}

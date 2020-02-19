@@ -9,6 +9,9 @@ import Foundation
 
 class DCElimination: FunctionPass {
     
+    var instRemoved = 0
+    override var resultString: String {super.resultString + "\(instRemoved) inst(s) removed."}
+    
     override func visit(v: Function) {
         
         let tree = PostDomTree(function: v)
@@ -34,6 +37,11 @@ class DCElimination: FunctionPass {
         
         while !workList.isEmpty {
             let i = workList.popFirst()!
+            if let p = i as? PhiInst {
+                for o in p.operands where o is BasicBlock {
+                    insertIntoList(i: (o as! BasicBlock).insts.last!)
+                }
+            }
             for o in i.operands where o is Inst {
                 insertIntoList(i: o as! Inst)
             }
@@ -51,12 +59,14 @@ class DCElimination: FunctionPass {
                     let to = i.inBlock.domNode!.findDomFatherBF {
                         $0.block != nil && liveBlocks.contains($0.block!)
                     }
+                    print("changed [\(i.inBlock) \(liveBlocks.contains(i.inBlock)) -> \(to!.block!)]:", i.toPrint)
                     BrInst(name: "",
                            des: to!.block!,
                            in: i.inBlock)
                     i.disconnect(delUsee: true, delUser: true)
                 }
             } else {
+                instRemoved += 1
                 i.disconnect(delUsee: true, delUser: true)
             }
         }

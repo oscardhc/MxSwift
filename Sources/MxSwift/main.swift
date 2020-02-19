@@ -36,10 +36,10 @@ class s {
     
     let lexer: MxsLexer
     if useFileStream {
-        let testName = "custom"
+        let testName = "t2"
         let testNo = "1"
-        let sourceFilePath = "/Users/oscar/Documents/Classes/1920_Spring/Compiler/Compiler-2020/local-judge/testcase/sema/\(testName)-package/\(testName)-\(testNo).mx"
-//        let sourceFilePath = "/Users/oscar/Documents/Classes/1920_Spring/Compiler/Compiler-2020/local-judge/testcase/codegen/\(testName).mx"
+//        let sourceFilePath = "/Users/oscar/Documents/Classes/1920_Spring/Compiler/Compiler-2020/local-judge/testcase/sema/\(testName)-package/\(testName)-\(testNo).mx"
+        let sourceFilePath = "/Users/oscar/Documents/Classes/1920_Spring/Compiler/Compiler-2020/local-judge/testcase/codegen/\(testName).mx"
         let input = try ANTLRFileStream(sourceFilePath, String.Encoding.utf8)
 //        print(input.toString())
         lexer = MxsLexer(input)
@@ -55,8 +55,7 @@ class s {
     
     lexer.addErrorListener(listener)
     
-    let tokens = CommonTokenStream(lexer)
-    let parser = try MxsParser(tokens)
+    let parser = try MxsParser(CommonTokenStream(lexer))
     parser.addErrorListener(listener)
     
     let tree = try parser.declarations()
@@ -77,25 +76,16 @@ class s {
     let ir = IRBuilder()
     ir.visit(node: prog)
     
-    TruncateTerminal().visit(v: ir.module)
-    MemToReg().visit(v: ir.module)
+    TruncateTerminal().work(on: ir.module)
+    MemToReg().work(on: ir.module)
     
-    IRNumberer().visit(v: ir.module)
-    let pr = IRPrinter()
-    pr.visit(v: ir.module)
-    pr.flushToFile(name: "/Users/oscar/Documents/Classes/1920_Spring/Compiler/tmp/out.ll")
+    IRPrinter(filename: "/Users/oscar/Documents/Classes/1920_Spring/Compiler/tmp/out.ll").work(on: ir.module)
     
+    DCElimination().work(on: ir.module)
+    TruncateTerminal().work(on: ir.module)
+    EmptyBlockRemover().work(on: ir.module)
     
-    DCElimination().visit(v: ir.module)
-    TruncateTerminal().visit(v: ir.module)
-    EmptyBlockRemover().visit(v: ir.module)
-    
-    IRNumberer().visit(v: ir.module)
-    let pr2 = IRPrinter()
-    pr2.visit(v: ir.module)
-//    print(pr2.str)
-    
-    pr2.flushToFile(name: "/Users/oscar/Documents/Classes/1920_Spring/Compiler/tmp/out2.ll")
+    IRPrinter(filename: "/Users/oscar/Documents/Classes/1920_Spring/Compiler/tmp/out2.ll").work(on: ir.module)
     
     print("Compilation exited normally.")
     

@@ -9,6 +9,9 @@ import Foundation
 
 protocol IRVisitor {
     
+    var resultString: String {get}
+    
+    func work(on v: Module)
     func visit(v: Module)
     func visit(v: Function)
     func visit(v: Class)
@@ -32,6 +35,11 @@ let stdPrint = print
 
 class IRNumberer: IRVisitor {
     
+    var resultString: String {"\(self) finished. "}
+    
+    func work(on v: Module) {
+        visit(v: v)
+    }
     func visit(v: Module) {
         v.functions.forEach {
             $0.accept(visitor: self)
@@ -74,7 +82,19 @@ class IRPrinter: IRVisitor {
     
     var str = ""
     var indent = 0
+    var resultString: String {"\(self) finished. "}
+    var file: String
     
+    init(filename: String = "") {
+        file = filename
+    }
+    func work(on v: Module) {
+        IRNumberer().work(on: v)
+        visit(v: v)
+        if file != "" {
+            flushToFile(name: file)
+        }
+    }
     func flushToFile(name: String) {
         let handle = FileHandle(forWritingAtPath: name)!
         handle.truncateFile(atOffset: 0)

@@ -9,9 +9,6 @@ import Foundation
 
 extension AllocaInst {
     func promotable() -> Bool {
-        print("")
-        print(toPrint, ":")
-        print(users.joined(with: "\n", method: {$0.user.toPrint}))
         for _u in users {
             switch _u.user {
             case is LoadInst:
@@ -24,7 +21,6 @@ extension AllocaInst {
                 return false
             }
         }
-        print("ok!")
         return true
     }
 }
@@ -34,6 +30,9 @@ class MemToReg: FunctionPass {
     override init() {
         super.init()
     }
+    
+    var instRemoved = 0
+    override var resultString: String {super.resultString + "\(instRemoved) inst(s) removed."}
     
     override func visit(v: Function) {
         let toPromote = List<AllocaInst>()
@@ -46,9 +45,9 @@ class MemToReg: FunctionPass {
                 }
             }
         }
+        instRemoved += toPromote.count
         
         let domTree = DomTree(function: v)
-        
         var allocToPhi = [Tuple<Value, Value>: PhiInst](), phiToAlloc = [PhiInst: AllocaInst]()
         
         for ai in toPromote {
@@ -73,7 +72,7 @@ class MemToReg: FunctionPass {
                     allInOneBlock = false
                 }
                 switch use.user {
-                case let l as LoadInst:
+                case is LoadInst:
                     _ = loads.append(use)
                 case is StoreInst:
                     _ = stores.append(use)
@@ -150,7 +149,7 @@ class MemToReg: FunctionPass {
             var oriBlocks = Set<BasicBlock>(), workList = Set<BasicBlock>(), phiBlocks = Set<BasicBlock>()
             stores.forEach {oriBlocks.insert(($0.user as! StoreInst).inBlock)}
             oriBlocks.forEach {workList.insert($0)}
-            print(ai.name, oriBlocks)
+            
 //            warning: complexity N^2
             while !workList.isEmpty {
                 let cur = workList.popFirst()!
@@ -159,7 +158,6 @@ class MemToReg: FunctionPass {
                     let frt = frontier.block!
                     if !phiBlocks.contains(frt) {
                         phiBlocks.insert(frt)
-                        print(ai.name, frt.name)
                         let phi = PhiInst(name: ai.originName + ".", type: ai.type.getBase, in: frt, at: 0)
                         allocToPhi[ai.pairWithValue(frt)] = phi
                         phiToAlloc[phi] = ai

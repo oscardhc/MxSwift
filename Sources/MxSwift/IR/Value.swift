@@ -108,12 +108,10 @@ class Use: CustomStringConvertible {
     
     // Value -> User
     func reconnect(fromValue new: Value) {
-        print("                  reconnect", user.operands)
         nodeAsOperand.value = new
         value = new
         nodeInValue.remove()
         nodeInValue = new.users.append(self)
-        print("                  after    ", user.operands)
     }
     func reconnect(toUser new: User) {
         
