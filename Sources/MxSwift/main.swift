@@ -36,8 +36,8 @@ class s {
     
     let lexer: MxsLexer
     if useFileStream {
-        let testName = "t2"
-        let testNo = "1"
+        let testName = "t17"
+//        let testNo = "1"
 //        let sourceFilePath = "/Users/oscar/Documents/Classes/1920_Spring/Compiler/Compiler-2020/local-judge/testcase/sema/\(testName)-package/\(testName)-\(testNo).mx"
         let sourceFilePath = "/Users/oscar/Documents/Classes/1920_Spring/Compiler/Compiler-2020/local-judge/testcase/codegen/\(testName).mx"
         let input = try ANTLRFileStream(sourceFilePath, String.Encoding.utf8)
@@ -76,14 +76,18 @@ class s {
     let ir = IRBuilder()
     ir.visit(node: prog)
     
-    TruncateTerminal().work(on: ir.module)
-    MemToReg().work(on: ir.module)
-    
     IRPrinter(filename: "/Users/oscar/Documents/Classes/1920_Spring/Compiler/tmp/out.ll").work(on: ir.module)
+    
+    TruncateTerminal().work(on: ir.module)
+    EmptyBlockRemover().work(on: ir.module)
+    
+    MemToReg().work(on: ir.module)
     
     DCElimination().work(on: ir.module)
     TruncateTerminal().work(on: ir.module)
     EmptyBlockRemover().work(on: ir.module)
+    
+    CFGSimplifier().work(on: ir.module)
     
     IRPrinter(filename: "/Users/oscar/Documents/Classes/1920_Spring/Compiler/tmp/out2.ll").work(on: ir.module)
     

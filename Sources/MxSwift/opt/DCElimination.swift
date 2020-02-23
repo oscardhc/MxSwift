@@ -9,7 +9,7 @@ import Foundation
 
 class DCElimination: FunctionPass {
     
-    var instRemoved = 0
+    private var instRemoved = 0
     override var resultString: String {super.resultString + "\(instRemoved) inst(s) removed."}
     
     override func visit(v: Function) {

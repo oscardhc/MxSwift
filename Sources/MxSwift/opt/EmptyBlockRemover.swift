@@ -12,7 +12,7 @@ class EmptyBlockRemover: FunctionPass {
     override func visit(v: Function) {
         for blk in v.blocks {
             if blk.insts.count == 0 {
-                blk.nodeInFunction!.remove()
+                blk.remove()
             }
         }
     }

@@ -113,9 +113,9 @@ class Use: CustomStringConvertible {
         nodeInValue.remove()
         nodeInValue = new.users.append(self)
     }
-    func reconnect(toUser new: User) {
-        
-    }
+//    func reconnect(toUser new: User) {
+//
+//    }
     
     init(value: Value, user: User, toInsert: Int = -1) {
         self.value = value
@@ -151,6 +151,7 @@ class User: Value {
 class BasicBlock: Value {
     
     var insts = List<Inst>()
+    
     var inFunction: Function
 //    var terminated = false
     
@@ -163,25 +164,20 @@ class BasicBlock: Value {
     }
     
     func added(_ i: Inst) -> List<Inst>.Node {
-//        if terminated == false {
-//            if i.isTerminate {
-//                terminated = true
-//            }
-//            return inst.append(i)
-//        }
-//        print("WARNING: Inserting into a terminated block!")
         return insts.append(i)
     }
     func inserted(_ i: Inst, at idx: Int) -> List<Inst>.Node {
         return insts.insert(i, at: idx)
     }
     
-//    func remove() {
-//        for
-//    }
+//    will delete all instructions and their uses
+    func remove(dealWithInsts: ((Inst) -> Void) = {_ in }) {
+        insts.forEach(dealWithInsts)
+        nodeInFunction?.remove()
+    }
     
-    //*************** for domtree use ****************
-    var sons: [Value] {
+//    *************** for domtree use ****************
+    var succs: [Value] {
         switch insts.last! {
         case let v as BrInst:
             if v.operands.count > 1 {
@@ -194,6 +190,7 @@ class BasicBlock: Value {
         }
     }
     var domNode: DomTree.Node? = nil
+    var preds = [BasicBlock]()
     
     override func accept(visitor: IRVisitor) {visitor.visit(v: self)}
     

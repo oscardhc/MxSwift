@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		5553209523FD61A7003E4BC8 /* EmptyBlockRemover.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5553209423FD61A7003E4BC8 /* EmptyBlockRemover.swift */; };
+		555BF87223FFABCB00614C1C /* CFGSimplifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 555BF87123FFABCB00614C1C /* CFGSimplifier.swift */; };
 		555C57ED23E6B3BA00D9192A /* SemanticChecker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 555C57EC23E6B3BA00D9192A /* SemanticChecker.swift */; };
 		555C57EF23E7314900D9192A /* ErrorListener.swift in Sources */ = {isa = PBXBuildFile; fileRef = 555C57EE23E7314900D9192A /* ErrorListener.swift */; };
 		55ABA11423F90A740030D790 /* Pass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55ABA11323F90A730030D790 /* Pass.swift */; };
@@ -224,6 +225,7 @@
 
 /* Begin PBXFileReference section */
 		5553209423FD61A7003E4BC8 /* EmptyBlockRemover.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmptyBlockRemover.swift; sourceTree = "<group>"; };
+		555BF87123FFABCB00614C1C /* CFGSimplifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CFGSimplifier.swift; sourceTree = "<group>"; };
 		555C57EC23E6B3BA00D9192A /* SemanticChecker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SemanticChecker.swift; sourceTree = "<group>"; };
 		555C57EE23E7314900D9192A /* ErrorListener.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorListener.swift; sourceTree = "<group>"; };
 		55ABA11323F90A730030D790 /* Pass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Pass.swift; sourceTree = "<group>"; };
@@ -458,6 +460,7 @@
 				5553209423FD61A7003E4BC8 /* EmptyBlockRemover.swift */,
 				55ABA11723FA624C0030D790 /* DomTree.swift */,
 				55ABA11B23FD17F90030D790 /* DCElimination.swift */,
+				555BF87123FFABCB00614C1C /* CFGSimplifier.swift */,
 			);
 			path = opt;
 			sourceTree = "<group>";
@@ -1078,6 +1081,7 @@
 				55D1C0DC23EBDF070057E80A /* Module.swift in Sources */,
 				55D1C0D823EB2F1C0057E80A /* IRVisitor.swift in Sources */,
 				55ABA11A23FC1CBB0030D790 /* TruncateTerminal.swift in Sources */,
+				555BF87223FFABCB00614C1C /* CFGSimplifier.swift in Sources */,
 				5553209523FD61A7003E4BC8 /* EmptyBlockRemover.swift in Sources */,
 				55D1C0CC23EAE30E0057E80A /* IRBuilder.swift in Sources */,
 				55EEB6A023E562A700E9FE2C /* ASTVisitor.swift in Sources */,

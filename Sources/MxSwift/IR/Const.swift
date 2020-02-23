@@ -108,7 +108,7 @@ class Function: Global {
     }
     override var description: String {return "\(type) \(name)"}
     
-    init(name: String, type: Type, module: Module, attr: String = "ssp uwtable") {
+    init(name: String, type: Type, module: Module, attr: String = "") {
         self.attribute = attr
         super.init(name: name, type: type, module: module)
         module.add(self)

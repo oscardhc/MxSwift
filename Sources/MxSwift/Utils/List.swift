@@ -73,6 +73,10 @@ class List<T: CustomStringConvertible>: CustomStringConvertible, Sequence {
             next!.prev = prev
             list.count -= 1
         }
+        func moveAppendTo(newlist: List) {
+            remove()
+            newlist.append(value)
+        }
         
     }
     
