@@ -172,12 +172,18 @@ class BasicBlock: Value {
     
 //    will delete all instructions and their uses
     func remove(dealWithInsts: ((Inst) -> Void) = {_ in }) {
+        succs.forEach { (b) in
+            (b as! BasicBlock).preds.removeAll(where: {$0 === b})
+        }
         insts.forEach(dealWithInsts)
         nodeInFunction?.remove()
     }
     
 //    *************** for domtree use ****************
     var succs: [Value] {
+        if insts.last == nil {
+            return []
+        }
         switch insts.last! {
         case let v as BrInst:
             if v.operands.count > 1 {

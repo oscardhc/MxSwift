@@ -41,9 +41,8 @@ class IRNumberer: IRVisitor {
         visit(v: v)
     }
     func visit(v: Module) {
-        v.functions.forEach {
-            $0.accept(visitor: self)
-        }
+        v.globalVar.forEach {$0.accept(visitor: self)}
+        v.functions.forEach {$0.accept(visitor: self)}
     }
     func visit(v: Function) {
         instNamingCounter.reset()
@@ -57,7 +56,7 @@ class IRNumberer: IRVisitor {
         v.operands.forEach {$0.initName()}
     }
     func visit(v: GlobalVariable) {
-        
+        v.initName()
     }
     func visit(v: BasicBlock) {
         v.insts.forEach {

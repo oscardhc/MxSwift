@@ -36,10 +36,10 @@ class s {
     
     let lexer: MxsLexer
     if useFileStream {
-        let testName = "t17"
+//        let testName = "t17"
 //        let testNo = "1"
 //        let sourceFilePath = "/Users/oscar/Documents/Classes/1920_Spring/Compiler/Compiler-2020/local-judge/testcase/sema/\(testName)-package/\(testName)-\(testNo).mx"
-        let sourceFilePath = "/Users/oscar/Documents/Classes/1920_Spring/Compiler/Compiler-2020/local-judge/testcase/codegen/\(testName).mx"
+        let sourceFilePath = "/Users/oscar/Documents/Classes/1920_Spring/Compiler/tmp/in.mx"
         let input = try ANTLRFileStream(sourceFilePath, String.Encoding.utf8)
 //        print(input.toString())
         lexer = MxsLexer(input)
@@ -75,19 +75,28 @@ class s {
     
     let ir = IRBuilder()
     ir.visit(node: prog)
-    
-    IRPrinter(filename: "/Users/oscar/Documents/Classes/1920_Spring/Compiler/tmp/out.ll").work(on: ir.module)
-    
     TruncateTerminal().work(on: ir.module)
     EmptyBlockRemover().work(on: ir.module)
     
+    IRPrinter(filename: "/Users/oscar/Documents/Classes/1920_Spring/Compiler/tmp/out0.ll").work(on: ir.module)
+    
+//    CFGSimplifier().work(on: ir.module)
     MemToReg().work(on: ir.module)
     
     DCElimination().work(on: ir.module)
     TruncateTerminal().work(on: ir.module)
     EmptyBlockRemover().work(on: ir.module)
     
+    IRPrinter(filename: "/Users/oscar/Documents/Classes/1920_Spring/Compiler/tmp/out1.ll").work(on: ir.module)
+    
     CFGSimplifier().work(on: ir.module)
+    
+    for _ in 0..<10 {
+        DCElimination().work(on: ir.module)
+        TruncateTerminal().work(on: ir.module)
+        EmptyBlockRemover().work(on: ir.module)
+        CFGSimplifier().work(on: ir.module)
+    }
     
     IRPrinter(filename: "/Users/oscar/Documents/Classes/1920_Spring/Compiler/tmp/out2.ll").work(on: ir.module)
     

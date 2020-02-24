@@ -161,14 +161,16 @@ class Class: Global {
 class GlobalVariable: Global {
     
     var value: Const
+    var const: Bool
     
-    init(name: String, value: Const, module: Module) {
+    init(name: String, value: Const, module: Module, isConst: Bool = true) {
         self.value = value
+        self.const = isConst
         super.init(name: name, type: value.type.pointer, module: module)
         _ = module.add(self)
     }
     
-    override var toPrint: String {"\(name) = global \(value), align \(value.type.space)"}
+    override var toPrint: String {"\(name) = \(const ? "constant" : "global") \(value), align \(value.type.space)"}
     override func accept(visitor: IRVisitor) {visitor.visit(v: self)}
     
 }

@@ -169,7 +169,7 @@ class IRBuilder: ASTBaseVisitor {
                                 return NullC(type: type)
                             }
                         }
-                        sym.value = GlobalVariable(name: $0.0, value: const, module: module)
+                        sym.value = GlobalVariable(name: $0.0, value: const, module: module, isConst: false)
                         if e != nil {
                             assign(lhs: sym.value!, rhs: e!, in: curBlock)
                         }
@@ -376,8 +376,8 @@ class IRBuilder: ASTBaseVisitor {
     override func visit(node: StringLiteralE) {
         super.visit(node: node)
         let cons = StringC(value: node.value)
-        let globS = GlobalVariable(name: "A" + node.hashString, value: cons, module: module)
-        let globP = GlobalVariable(name: "P" + node.hashString, value: NullC(type: .string), module: module)
+        let globS = GlobalVariable(name: "s.", value: cons, module: module)
+        let globP = GlobalVariable(name: "p.", value: NullC(type: .string), module: module, isConst: false)
         let pos = GEPInst(name: "", type: .string, base: globS, needZero: true, val: IntC.zero(), in: globalFunc.blocks[0])
         StoreInst(name: "", alloc: globP, val: pos, in: globalFunc.blocks[0])
         node.ret = globP
