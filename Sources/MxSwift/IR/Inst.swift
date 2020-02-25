@@ -69,7 +69,7 @@ class PhiInst: Inst {
     override func propogate() {
         ccpInfo = CCPInfo()
         for i in 0..<operands.count / 2 where (operands[i * 2 + 1] as! BasicBlock).executable {
-//            print(".....", (operands[i * 2 + 1] as! BasicBlock).name)
+            //            print(".....", (operands[i * 2 + 1] as! BasicBlock).name)
             ccpInfo = ccpInfo.add(rhs: operands[i * 2].ccpInfo) {
                 $0.int! == $1.int! ? $0 : nil
             }
@@ -228,13 +228,12 @@ class CompareInst: BinaryInst {
     override func propogate() {
         ccpInfo = operands[0].ccpInfo.add(rhs: operands[1].ccpInfo) {
             switch cmp {
-            case .eq:   return CCPInfo(type: .int, int: $0.int! == $1.int! ? 1 : 0)
-            case .ne:   return CCPInfo(type: .int, int: $0.int! != $1.int! ? 1 : 0)
-            case .sgt:  return CCPInfo(type: .int, int: $0.int! > $1.int! ? 1 : 0)
-            case .sge:  return CCPInfo(type: .int, int: $0.int! >= $1.int! ? 1 : 0)
-            case .slt:  return CCPInfo(type: .int, int: $0.int! < $1.int! ? 1 : 0)
-            case .sle:  return CCPInfo(type: .int, int: $0.int! <= $1.int! ? 1 : 0)
-            default:    return nil
+            case .eq:   return CCPInfo(type: .int, int: $0.int! ==  $1.int! ? 1 : 0)
+            case .ne:   return CCPInfo(type: .int, int: $0.int! !=  $1.int! ? 1 : 0)
+            case .sgt:  return CCPInfo(type: .int, int: $0.int! >   $1.int! ? 1 : 0)
+            case .sge:  return CCPInfo(type: .int, int: $0.int! >=  $1.int! ? 1 : 0)
+            case .slt:  return CCPInfo(type: .int, int: $0.int! <   $1.int! ? 1 : 0)
+            case .sle:  return CCPInfo(type: .int, int: $0.int! <=  $1.int! ? 1 : 0)
             }
         }
     }

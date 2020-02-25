@@ -75,7 +75,8 @@ class List<T: CustomStringConvertible>: CustomStringConvertible, Sequence {
         }
         func moveAppendTo(newlist: List) {
             remove()
-            newlist.append(value)
+            list = newlist
+            newlist.append(self)
         }
         
     }
@@ -91,7 +92,7 @@ class List<T: CustomStringConvertible>: CustomStringConvertible, Sequence {
     
     var count = 0
     var isEmpty: Bool {
-        return count == 0
+        count == 0
     }
     
     var first: T? {return isEmpty ? nil : head.next!.value}
@@ -112,6 +113,11 @@ class List<T: CustomStringConvertible>: CustomStringConvertible, Sequence {
         return cur!
     }
     
+    func append(_ a: Node) {
+        let ret = a.setPrev(prev: tail.prev).setNext(next: tail)
+        tail.prev!.setNext(next: ret)
+        tail.setPrev(prev: ret)
+    }
     func append(_ a: T) -> Node {
         let ret = Node(value: a, in: self)
             .setPrev(prev: tail.prev)

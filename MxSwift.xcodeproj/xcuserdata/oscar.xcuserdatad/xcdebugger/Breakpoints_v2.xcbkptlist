@@ -3,4 +3,54 @@
    uuid = "4FDFF779-0814-4AE8-879E-5B0EAD2B0291"
    type = "1"
    version = "2.0">
+   <Breakpoints>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "7E722AB7-92B6-47ED-9A9D-FE3906343E7F"
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "Sources/MxSwift/Optim/CFGSimplifier.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "81"
+            endingLineNumber = "81"
+            landmarkName = "visit(v:)"
+            landmarkType = "7">
+            <Locations>
+               <Location
+                  uuid = "7E722AB7-92B6-47ED-9A9D-FE3906343E7F - ec2b42bda45a0706"
+                  shouldBeEnabled = "No"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "MxSwift.CFGSimplifier.visit(v: MxSwift.Function) -&gt; ()"
+                  moduleName = "MxSwift"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/oscar/Documents/Classes/1920_Spring/Compiler/MxSwift/Sources/MxSwift/Optim/CFGSimplifier.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "82"
+                  endingLineNumber = "82"
+                  offsetFromSymbolStart = "4117">
+               </Location>
+               <Location
+                  uuid = "7E722AB7-92B6-47ED-9A9D-FE3906343E7F - f749590843c52964"
+                  shouldBeEnabled = "No"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "closure #4 (MxSwift.Inst) -&gt; Swift.String in MxSwift.CFGSimplifier.visit(v: MxSwift.Function) -&gt; ()"
+                  moduleName = "MxSwift"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/oscar/Documents/Classes/1920_Spring/Compiler/MxSwift/Sources/MxSwift/Optim/CFGSimplifier.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "82"
+                  endingLineNumber = "82"
+                  offsetFromSymbolStart = "42">
+               </Location>
+            </Locations>
+         </BreakpointContent>
+      </BreakpointProxy>
+   </Breakpoints>
 </Bucket>

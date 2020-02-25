@@ -103,6 +103,11 @@ class SCCPropagation: FunctionPass {
             }
         }
         
+        for b in v.blocks { for i in b.insts where i is PhiInst && i.operands.count <= 2 {
+            let v = i.operands[0]
+            i.replacedBy(value: v)
+        }}
+        
     }
     
 }

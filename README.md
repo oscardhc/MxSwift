@@ -40,7 +40,8 @@ A naive Mx* compiler implemented in Swift.
 - [x] [2.13] Variables.
 - [x] [2.14] Builtin functions (except size).
 - [x] [2.15] Size implemented by allocating 4 extra bytes.
-- [x] [2.17] (post) Dominator trees.
+- [x] [2.17] Dominator trees.
 - [x] [2.18] Mem2Reg.
 - [x] [2.19] MSDCE.
+- [x] [2.24] CFG Simplifier.
 - [ ] ...

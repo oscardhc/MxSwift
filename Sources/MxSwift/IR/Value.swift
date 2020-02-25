@@ -9,7 +9,7 @@ import Foundation
 
 class Counter {
     
-    var count = [String: Int]()
+    private var count = [String: Int]()
     
     func tikInt(_ id: String = "") -> Int {
         if count[id] == nil {
@@ -41,7 +41,7 @@ class Value: HashableObject, CustomStringConvertible, Hashable {
         hasher.combine(ObjectIdentifier(self))
     }
     
-    var users = List<Use>()
+    public private(set) var users = List<Use>()
     
     var type: Type
     var prefix: String {return "%"}
@@ -64,10 +64,11 @@ class Value: HashableObject, CustomStringConvertible, Hashable {
         self.type = type
     }
     
-    var isAddress: Bool {self is AllocaInst || self is GEPInst || self is GlobalVariable}
     var isTerminate: Bool {self is BrInst || self is ReturnInst}
     func accept(visitor: IRVisitor) {}
-    
+    var isAddress: Bool {
+        self is AllocaInst || self is GEPInst || self is GlobalVariable
+    }
     func loadIfAddress(block: BasicBlock) -> Value {
         self.isAddress ? LoadInst(name: "", alloc: self, in: block) : self
     }
@@ -186,7 +187,7 @@ class User: Value {
 
 class BasicBlock: Value {
     
-    var insts = List<Inst>()
+    public private(set) var insts = List<Inst>()
     
     var inFunction: Function
     //    var terminated = false
@@ -209,7 +210,11 @@ class BasicBlock: Value {
     //    will delete all instructions and their uses
     func remove(dealWithInsts: ((Inst) -> Void) = {_ in }) {
         succs.forEach { (b) in
-            (b as! BasicBlock).preds.removeAll(where: {$0 === b})
+            let s = b as! BasicBlock
+            s.preds.removeAll(where: {$0 === self})
+            for p in preds {
+                s.preds.append(p)
+            }
         }
         insts.forEach(dealWithInsts)
         nodeInFunction?.remove()

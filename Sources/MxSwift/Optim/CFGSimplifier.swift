@@ -73,13 +73,19 @@ class CFGSimplifier: FunctionPass {
 //                }
                 
                 if b.insts.count == 1 && b.insts.last! is BrInst && b.insts.last!.operands.count == 1 { // only uncond br
+                    
                     let t = b.insts.last!.operands[0] as! BasicBlock
                     if t.insts.first! is PhiInst && b.preds[0].succs.count > 1 {
                         continue
                     }
                     
+                    print(">", b.name, t.name, b.preds[0].name, b.preds.count, b.insts.joined() {"\($0.operation)"})
+
                     for u in b.users {
+                        print("  >", u.user.name, u.user is PhiInst)
+                        print("     ", u.user.toPrint)
                         u.reconnect(fromValue: u.user is PhiInst ? b.preds[0] : t)
+                        print("     ", u.user.toPrint)
                     }
                     b.remove() {
 //                        print($0.users.count, $0.usees.count)

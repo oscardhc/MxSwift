@@ -127,7 +127,6 @@ class IRBuilder: ASTBaseVisitor {
         }
         globalInit = false
         
-        
         // step 3: others
         for i in node.declarations where !(i is VariableD) {
             i.accept(visitor: self)
