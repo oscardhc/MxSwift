@@ -6,7 +6,7 @@
 //
 
 import Foundation
-    
+
 class Counter {
     
     var count = [String: Int]()
@@ -75,6 +75,42 @@ class Value: HashableObject, CustomStringConvertible, Hashable {
     func pairWithValue(_ value: Value) -> Tuple<Value, Value> {
         Tuple<Value, Value>(a: self, b: value)
     }
+    
+    //    *************** for SCCP ****************
+    struct CCPInfo {
+        enum T {
+            case int, unknown, variable
+        }
+        var type: T = .unknown
+        var int: Int? = nil
+        
+        var constValue: Int? {
+            type == .int ? int! : nil
+        }
+        
+        func add(rhs: CCPInfo, f: ((CCPInfo, CCPInfo) -> CCPInfo?)) -> CCPInfo {
+            switch (type, rhs.type) {
+            case (_, .variable), (.variable, _):
+                return CCPInfo(type: .variable)
+            case (_, .unknown):
+                return self
+            case (.unknown, _):
+                return rhs
+            default:
+                //                f: assume type is now equal
+                return type != rhs.type
+                    ? CCPInfo(type: .variable)
+                    : (f(self, rhs) ?? CCPInfo(type: .variable))
+            }
+        }
+        static func == (lhs: CCPInfo, rhs: CCPInfo) -> Bool {
+            return lhs.type == rhs.type && lhs.int == rhs.int
+        }
+    }
+    var ccpInfo = CCPInfo()
+    var isVariable: Bool {ccpInfo.type == .variable}
+    func propogate() {}
+    
 }
 
 class Use: CustomStringConvertible {
@@ -113,9 +149,9 @@ class Use: CustomStringConvertible {
         nodeInValue.remove()
         nodeInValue = new.users.append(self)
     }
-//    func reconnect(toUser new: User) {
-//
-//    }
+    //    func reconnect(toUser new: User) {
+    //
+    //    }
     
     init(value: Value, user: User, toInsert: Int = -1) {
         self.value = value
@@ -153,7 +189,7 @@ class BasicBlock: Value {
     var insts = List<Inst>()
     
     var inFunction: Function
-//    var terminated = false
+    //    var terminated = false
     
     var nodeInFunction: List<BasicBlock>.Node?
     
@@ -170,7 +206,7 @@ class BasicBlock: Value {
         return insts.insert(i, at: idx)
     }
     
-//    will delete all instructions and their uses
+    //    will delete all instructions and their uses
     func remove(dealWithInsts: ((Inst) -> Void) = {_ in }) {
         succs.forEach { (b) in
             (b as! BasicBlock).preds.removeAll(where: {$0 === b})
@@ -179,7 +215,7 @@ class BasicBlock: Value {
         nodeInFunction?.remove()
     }
     
-//    *************** for domtree use ****************
+    //    *************** for domtree use ****************
     var succs: [Value] {
         if insts.last == nil {
             return []
@@ -197,6 +233,9 @@ class BasicBlock: Value {
     }
     var domNode: DomTree.Node? = nil
     var preds = [BasicBlock]()
+    
+    //    ************** for SCCP ***************
+    var executable: Bool = false
     
     override func accept(visitor: IRVisitor) {visitor.visit(v: self)}
     

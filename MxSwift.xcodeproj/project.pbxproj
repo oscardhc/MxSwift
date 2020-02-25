@@ -11,6 +11,7 @@
 		555BF87223FFABCB00614C1C /* CFGSimplifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 555BF87123FFABCB00614C1C /* CFGSimplifier.swift */; };
 		555C57ED23E6B3BA00D9192A /* SemanticChecker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 555C57EC23E6B3BA00D9192A /* SemanticChecker.swift */; };
 		555C57EF23E7314900D9192A /* ErrorListener.swift in Sources */ = {isa = PBXBuildFile; fileRef = 555C57EE23E7314900D9192A /* ErrorListener.swift */; };
+		557E873B2404B51E007074A5 /* SCCPropagation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 557E873A2404B51E007074A5 /* SCCPropagation.swift */; };
 		55ABA11423F90A740030D790 /* Pass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55ABA11323F90A730030D790 /* Pass.swift */; };
 		55ABA11623F90C3D0030D790 /* MemToReg.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55ABA11523F90C3C0030D790 /* MemToReg.swift */; };
 		55ABA11823FA624D0030D790 /* DomTree.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55ABA11723FA624C0030D790 /* DomTree.swift */; };
@@ -228,6 +229,7 @@
 		555BF87123FFABCB00614C1C /* CFGSimplifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CFGSimplifier.swift; sourceTree = "<group>"; };
 		555C57EC23E6B3BA00D9192A /* SemanticChecker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SemanticChecker.swift; sourceTree = "<group>"; };
 		555C57EE23E7314900D9192A /* ErrorListener.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorListener.swift; sourceTree = "<group>"; };
+		557E873A2404B51E007074A5 /* SCCPropagation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SCCPropagation.swift; sourceTree = "<group>"; };
 		55ABA11323F90A730030D790 /* Pass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Pass.swift; sourceTree = "<group>"; };
 		55ABA11523F90C3C0030D790 /* MemToReg.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemToReg.swift; sourceTree = "<group>"; };
 		55ABA11723FA624C0030D790 /* DomTree.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DomTree.swift; sourceTree = "<group>"; };
@@ -451,10 +453,11 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		55ABA11223F90A590030D790 /* opt */ = {
+		55ABA11223F90A590030D790 /* Optim */ = {
 			isa = PBXGroup;
 			children = (
 				55ABA11323F90A730030D790 /* Pass.swift */,
+				557E873A2404B51E007074A5 /* SCCPropagation.swift */,
 				55ABA11523F90C3C0030D790 /* MemToReg.swift */,
 				55ABA11923FC1CBB0030D790 /* TruncateTerminal.swift */,
 				5553209423FD61A7003E4BC8 /* EmptyBlockRemover.swift */,
@@ -462,7 +465,7 @@
 				55ABA11B23FD17F90030D790 /* DCElimination.swift */,
 				555BF87123FFABCB00614C1C /* CFGSimplifier.swift */,
 			);
-			path = opt;
+			path = Optim;
 			sourceTree = "<group>";
 		};
 		55D1C0C823EA96100057E80A /* IR */ = {
@@ -588,7 +591,7 @@
 		OBJ_169 /* MxSwift */ = {
 			isa = PBXGroup;
 			children = (
-				55ABA11223F90A590030D790 /* opt */,
+				55ABA11223F90A590030D790 /* Optim */,
 				55D1C0C823EA96100057E80A /* IR */,
 				55EEB69223E41A9F00E9FE2C /* Utils */,
 				OBJ_170 /* Frontend */,
@@ -1072,6 +1075,7 @@
 				555C57EF23E7314900D9192A /* ErrorListener.swift in Sources */,
 				55EEB69423E41ABC00E9FE2C /* Utils.swift in Sources */,
 				55ABA11823FA624D0030D790 /* DomTree.swift in Sources */,
+				557E873B2404B51E007074A5 /* SCCPropagation.swift in Sources */,
 				55EEB69A23E4311B00E9FE2C /* ASTNode.swift in Sources */,
 				OBJ_362 /* Scope.swift in Sources */,
 				55D1C0D023EAE5830057E80A /* Inst.swift in Sources */,

@@ -142,6 +142,7 @@ class IRPrinter: IRVisitor {
     }
     func visit(v: BasicBlock) {
         v.insts.forEach {
+//            print("[\($0.ccpInfo.type)] ", end: "")
             $0.accept(visitor: self)
         }
     }

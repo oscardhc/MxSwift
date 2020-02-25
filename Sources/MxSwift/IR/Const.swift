@@ -30,6 +30,9 @@ class IntC: Const {
     init(name: String, type: Type, value: Int) {
         self.value = value
         super.init(name: name, type: type)
+        
+        ccpInfo = CCPInfo(type: .int, int: value)
+        
     }
     override func initName() {}
     override var name: String {return "\(value)"}

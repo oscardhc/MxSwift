@@ -50,17 +50,19 @@ class CFGSimplifier: FunctionPass {
             for b in v.blocks {
 //                print(b.name, b.preds.count, b.insts.count, b.insts.joined() {"\($0.operation)"}, b.insts.last?.operation)
                 
-                if b.preds.count == 1 && b.preds[0].succs.count == 1 { // only route
-                    let p = b.preds[0]
-
-                    p.insts.last?.disconnect(delUsee: true, delUser: true)
-                    b.remove() {
-                        $0.nodeInBlock?.moveAppendTo(newlist: p.insts)
-                    }
-//                    print("!! 1")
-                    change()
-                    continue
-                }
+//                if b.preds.count == 1 && b.preds[0].succs.count == 1 { // only route
+//                    let p = b.preds[0]
+//
+//                    p.insts.last?.disconnect(delUsee: true, delUser: true)
+//                    for u in b.users {
+//                        u.reconnect(fromValue: u.user is PhiInst ? b.preds[0] : t)
+//                    }
+//                    b.remove() {
+//                        $0.nodeInBlock?.moveAppendTo(newlist: p.insts)
+//                    }
+//                    change()
+//                    continue
+//                }
 //
 //                if b.preds.count == 1 && b.insts.first! is PhiInst {
 //                    for i in b.insts where i is PhiInst {
@@ -72,8 +74,7 @@ class CFGSimplifier: FunctionPass {
                 
                 if b.insts.count == 1 && b.insts.last! is BrInst && b.insts.last!.operands.count == 1 { // only uncond br
                     let t = b.insts.last!.operands[0] as! BasicBlock
-                    
-                    if t.insts.first! is PhiInst {
+                    if t.insts.first! is PhiInst && b.preds[0].succs.count > 1 {
                         continue
                     }
                     

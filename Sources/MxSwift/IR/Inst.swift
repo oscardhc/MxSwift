@@ -66,6 +66,20 @@ class PhiInst: Inst {
         return ret
     }
     override func accept(visitor: IRVisitor) {visitor.visit(v: self)}
+    override func propogate() {
+        ccpInfo = CCPInfo()
+        for i in 0..<operands.count / 2 where (operands[i * 2 + 1] as! BasicBlock).executable {
+//            print(".....", (operands[i * 2 + 1] as! BasicBlock).name)
+            ccpInfo = ccpInfo.add(rhs: operands[i * 2].ccpInfo) {
+                $0.int! == $1.int! ? $0 : nil
+            }
+        }
+        //        for op in operands where !(op is BasicBlock) {
+        //            ccpInfo = ccpInfo.add(rhs: op.ccpInfo) {
+        //                $0.int! == $1.int! ? $0 : nil
+        //            }
+        //        }
+    }
 }
 class SExtInst: Inst {
     init (name: String, val: Value, toType: Type, in block: BasicBlock) {
@@ -74,6 +88,9 @@ class SExtInst: Inst {
     }
     override var toPrint: String {"\(name) = \(operation) \(operands[0]) to \(type)"}
     override func accept(visitor: IRVisitor) {visitor.visit(v: self)}
+    override func propogate() {
+        ccpInfo = operands[0].ccpInfo
+    }
 }
 class CastInst: Inst {
     init (name: String, val: Value, toType: Type, in block: BasicBlock) {
@@ -82,6 +99,9 @@ class CastInst: Inst {
     }
     override var toPrint: String {"\(name) = \(operation) \(operands[0]) to \(type)"}
     override func accept(visitor: IRVisitor) {visitor.visit(v: self)}
+    override func propogate() {
+        ccpInfo = operands[0].ccpInfo
+    }
 }
 class BrInst: Inst {
     @discardableResult init(name: String, des: Value, in block: BasicBlock) {
@@ -125,6 +145,9 @@ class LoadInst: Inst {
     }
     override var toPrint: String {"\(name) = \(operation) \(type), \(operands[0]), align \((operands[0].type as! PointerT).baseType.space)"}
     override func accept(visitor: IRVisitor) {visitor.visit(v: self)}
+    override func propogate() {
+        ccpInfo = CCPInfo(type: .variable)
+    }
 }
 class StoreInst: Inst {
     @discardableResult init(name: String, alloc: Value, val: Value, in block: BasicBlock) {
@@ -150,6 +173,9 @@ class CallInst: Inst {
     }
     override var toPrint: String {"\(type is VoidT ? "" : "\(name) = ")\(operation) \(type) \(function.name)(\(operands))"}
     override func accept(visitor: IRVisitor) {visitor.visit(v: self)}
+    override func propogate() {
+        ccpInfo = CCPInfo(type: .variable)
+    }
 }
 class AllocaInst: Inst {
     init(name: String, forType: Type, in block: BasicBlock) {
@@ -157,9 +183,9 @@ class AllocaInst: Inst {
     }
     override var toPrint: String {"\(name) = \(operation) \((type as! PointerT).baseType.withAlign)"}
     override func accept(visitor: IRVisitor) {visitor.visit(v: self)}
-}
-class UnaryInst: Inst {
-    
+    override func propogate() {
+        ccpInfo = CCPInfo(type: .variable)
+    }
 }
 class BinaryInst: Inst {
     init(name: String, type: Type, operation: Inst.OP, lhs: Value, rhs: Value, in block: BasicBlock) {
@@ -169,6 +195,23 @@ class BinaryInst: Inst {
     }
     override var toPrint: String {return "\(name) = \(operation) \(type) " + operands.joined() {"\($0.name)"}}
     override func accept(visitor: IRVisitor) {visitor.visit(v: self)}
+    override func propogate() {
+        ccpInfo = operands[0].ccpInfo.add(rhs: operands[1].ccpInfo) {
+            switch operation {
+            case .add:  return CCPInfo(type: .int, int: $0.int! + $1.int!)
+            case .sub:  return CCPInfo(type: .int, int: $0.int! - $1.int!)
+            case .mul:  return CCPInfo(type: .int, int: $0.int! * $1.int!)
+            case .sdiv: return CCPInfo(type: .int, int: $0.int! / $1.int!)
+            case .srem: return CCPInfo(type: .int, int: $0.int! % $1.int!)
+            case .shl:  return CCPInfo(type: .int, int: $0.int! << $1.int!)
+            case .ashr: return CCPInfo(type: .int, int: $0.int! >> $1.int!)
+            case .and:  return CCPInfo(type: .int, int: $0.int! & $1.int!)
+            case .or:   return CCPInfo(type: .int, int: $0.int! | $1.int!)
+            case .xor:  return CCPInfo(type: .int, int: $0.int! ^ $1.int!)
+            default:    return nil
+            }
+        }
+    }
 }
 
 class CompareInst: BinaryInst {
@@ -182,5 +225,18 @@ class CompareInst: BinaryInst {
     }
     override var toPrint: String {return "\(name) = \(operation) \(cmp) \(operands[0].type) " + operands.joined() {"\($0.name)"}}
     override func accept(visitor: IRVisitor) {visitor.visit(v: self)}
+    override func propogate() {
+        ccpInfo = operands[0].ccpInfo.add(rhs: operands[1].ccpInfo) {
+            switch cmp {
+            case .eq:   return CCPInfo(type: .int, int: $0.int! == $1.int! ? 1 : 0)
+            case .ne:   return CCPInfo(type: .int, int: $0.int! != $1.int! ? 1 : 0)
+            case .sgt:  return CCPInfo(type: .int, int: $0.int! > $1.int! ? 1 : 0)
+            case .sge:  return CCPInfo(type: .int, int: $0.int! >= $1.int! ? 1 : 0)
+            case .slt:  return CCPInfo(type: .int, int: $0.int! < $1.int! ? 1 : 0)
+            case .sle:  return CCPInfo(type: .int, int: $0.int! <= $1.int! ? 1 : 0)
+            default:    return nil
+            }
+        }
+    }
 }
 
