@@ -12,6 +12,7 @@
 		555C57ED23E6B3BA00D9192A /* SemanticChecker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 555C57EC23E6B3BA00D9192A /* SemanticChecker.swift */; };
 		555C57EF23E7314900D9192A /* ErrorListener.swift in Sources */ = {isa = PBXBuildFile; fileRef = 555C57EE23E7314900D9192A /* ErrorListener.swift */; };
 		557E873B2404B51E007074A5 /* SCCPropagation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 557E873A2404B51E007074A5 /* SCCPropagation.swift */; };
+		557E873D24064C07007074A5 /* CSElimination.swift in Sources */ = {isa = PBXBuildFile; fileRef = 557E873C24064C07007074A5 /* CSElimination.swift */; };
 		55ABA11423F90A740030D790 /* Pass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55ABA11323F90A730030D790 /* Pass.swift */; };
 		55ABA11623F90C3D0030D790 /* MemToReg.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55ABA11523F90C3C0030D790 /* MemToReg.swift */; };
 		55ABA11823FA624D0030D790 /* DomTree.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55ABA11723FA624C0030D790 /* DomTree.swift */; };
@@ -230,6 +231,7 @@
 		555C57EC23E6B3BA00D9192A /* SemanticChecker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SemanticChecker.swift; sourceTree = "<group>"; };
 		555C57EE23E7314900D9192A /* ErrorListener.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorListener.swift; sourceTree = "<group>"; };
 		557E873A2404B51E007074A5 /* SCCPropagation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SCCPropagation.swift; sourceTree = "<group>"; };
+		557E873C24064C07007074A5 /* CSElimination.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CSElimination.swift; sourceTree = "<group>"; };
 		55ABA11323F90A730030D790 /* Pass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Pass.swift; sourceTree = "<group>"; };
 		55ABA11523F90C3C0030D790 /* MemToReg.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemToReg.swift; sourceTree = "<group>"; };
 		55ABA11723FA624C0030D790 /* DomTree.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DomTree.swift; sourceTree = "<group>"; };
@@ -463,6 +465,7 @@
 				5553209423FD61A7003E4BC8 /* EmptyBlockRemover.swift */,
 				55ABA11723FA624C0030D790 /* DomTree.swift */,
 				55ABA11B23FD17F90030D790 /* DCElimination.swift */,
+				557E873C24064C07007074A5 /* CSElimination.swift */,
 				555BF87123FFABCB00614C1C /* CFGSimplifier.swift */,
 			);
 			path = Optim;
@@ -1091,6 +1094,7 @@
 				55EEB6A023E562A700E9FE2C /* ASTVisitor.swift in Sources */,
 				55EEB69C23E4919D00E9FE2C /* ASTBuilder.swift in Sources */,
 				OBJ_365 /* main.swift in Sources */,
+				557E873D24064C07007074A5 /* CSElimination.swift in Sources */,
 				555C57ED23E6B3BA00D9192A /* SemanticChecker.swift in Sources */,
 				55D1C0DA23EBD42A0057E80A /* Const.swift in Sources */,
 				55D1C0CA23EA962C0057E80A /* Value.swift in Sources */,

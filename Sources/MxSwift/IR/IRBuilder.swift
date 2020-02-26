@@ -189,7 +189,7 @@ class IRBuilder: ASTBaseVisitor {
         curBlock = BasicBlock(curfunc: ret)
         
         if node.id == "main" {
-            CallInst(name: "", function: globalFunc, in: curBlock)
+            _ = CallInst(name: "", function: globalFunc, in: curBlock)
         }
         
         if curClass != nil {
@@ -219,7 +219,7 @@ class IRBuilder: ASTBaseVisitor {
     
     override func visit(node: ClassD) {
         //        super.visit(node: node)
-        curClass = node.ret! as! Class
+        curClass = node.ret! as? Class
         node.properties.forEach {
             $0.accept(visitor: self)
         }
@@ -439,7 +439,7 @@ class IRBuilder: ASTBaseVisitor {
             f = Builtin.functions[node.id]!
         } else {
             sym = node.scope.find(name: node.id)!
-            f = sym!.subScope!.correspondingNode!.ret as! Function
+            f = sym!.subScope!.correspondingNode!.ret as? Function
         }
         
         var arg = [Value]()

@@ -176,7 +176,50 @@ class MemToReg: FunctionPass {
             
         }
 
-        domTree.variableRenaming(aiList: toPromote, phiToAlloc: phiToAlloc)
+        var stack = [Value: [Value]]() // 1st is actually AllocInst, 2nd is actually Phi or value to Store
+        for ai in toPromote {
+            stack[ai] = [IntC.minusOne()]
+        }
+        
+        func rename(cur: DomTree.Node) {
+            var changed = [Value]()
+            for i in cur.block!.insts {
+                switch i {
+                case let l as LoadInst:
+                    if let v = stack[l.operands[0]]?.last {
+                        l.replacedBy(value: v) // promotable
+                    }
+                case let s as StoreInst:
+                    if stack[s.operands[1]] != nil {
+                        changed.append(s.operands[1])
+                        stack[s.operands[1]]!.append(s.operands[0])
+                        s.disconnect(delUsee: true, delUser: true)
+                    }
+                case let p as PhiInst:
+                    let ai = phiToAlloc[p]!
+                    changed.append(ai)
+                    stack[ai]!.append(p)
+                default:
+                    break
+                }
+            }
+            for suc in cur.edge {
+                let idx = suc.antiEdge.findNodeBF(where: {$0 === cur})!.1
+                for i in suc.block!.insts {
+                    if let p = i as? PhiInst {
+                        p.usees[idx * 2].reconnect(fromValue: stack[phiToAlloc[p]!]!.last!)
+                    }
+                }
+            }
+            for son in cur.domSons {
+                rename(cur: son)
+            }
+            for chg in changed {
+                _ = stack[chg]!.popLast()
+            }
+        }
+        rename(cur: domTree.root)
+        
         for ai in toPromote {
             ai.disconnect(delUsee: true, delUser: false)
         }

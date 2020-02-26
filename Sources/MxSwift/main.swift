@@ -94,8 +94,6 @@ class s {
     
     DCElimination().work(on: ir.module)
     
-    IRPrinter(filename: "/Users/oscar/Documents/Classes/1920_Spring/Compiler/tmp/out1.ll").work(on: ir.module)
-    
     CFGSimplifier().work(on: ir.module)
     
     for _ in 0..<3 {
@@ -108,8 +106,10 @@ class s {
         EmptyBlockRemover().work(on: ir.module)
         CFGSimplifier().work(on: ir.module)
     }
-
     
+    
+    IRPrinter(filename: "/Users/oscar/Documents/Classes/1920_Spring/Compiler/tmp/out1.ll").work(on: ir.module)
+    CSElimination().work(on: ir.module)
     IRPrinter(filename: "/Users/oscar/Documents/Classes/1920_Spring/Compiler/tmp/out2.ll").work(on: ir.module)
     
     print("Compilation exited normally.")

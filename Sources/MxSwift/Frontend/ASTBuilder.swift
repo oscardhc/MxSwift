@@ -242,7 +242,7 @@ class ASTBuilder: MxsBaseVisitor<ASTNode> {
         scopes.append(current.newSubscope(withName: "For", withType: .LOOP))
         let ini = ctx.declSentence() != nil ? visit(ctx.declSentence()!) : (ctx.expressionSentence() != nil ? visit(ctx.expressionSentence()!) : nil)
         let node = ForS(scope: current,
-                        initial: ini == nil ? nil : ini as! Statement,
+                        initial: ini == nil ? nil : ini as? Statement,
                         condition: ctx.cod == nil ? nil : visit(ctx.cod!) as? Expression,
                         increment: ctx.inc == nil ? nil : visit(ctx.inc!) as? Expression,
                         accept: visit(ctx.body!) as? Statement)

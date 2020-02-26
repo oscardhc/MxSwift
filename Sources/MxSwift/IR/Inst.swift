@@ -48,6 +48,7 @@ class Inst: User {
             self.nodeInBlock = inBlock.inserted(self, at: index)
         }
     }
+    
 }
 
 class PhiInst: Inst {
