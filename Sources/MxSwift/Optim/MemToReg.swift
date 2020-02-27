@@ -106,7 +106,7 @@ class MemToReg: FunctionPass {
                         continue
                     }
                     assert(v !== l, "load from itself!")
-                    l.replacedBy(value: v)
+                    l.replaced(by: v)
                 }
                 
                 if canNotHandleLoads.isEmpty {
@@ -128,7 +128,7 @@ class MemToReg: FunctionPass {
                     
                     if let s = nearestStore?.value as? StoreInst {
                         let v = s.operands[0]
-                        l.replacedBy(value: v)
+                        l.replaced(by: v)
                     } else {
                         // undefined loads, should not occur, just in case
                         success = false
@@ -187,7 +187,7 @@ class MemToReg: FunctionPass {
                 switch i {
                 case let l as LoadInst:
                     if let v = stack[l.operands[0]]?.last {
-                        l.replacedBy(value: v) // promotable
+                        l.replaced(by: v) // promotable
                     }
                 case let s as StoreInst:
                     if stack[s.operands[1]] != nil {

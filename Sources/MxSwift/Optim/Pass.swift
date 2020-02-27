@@ -22,6 +22,7 @@ class FunctionPass: IRVisitor {
     func work(on v: Module) {
         visit(v: v)
         print(resultString)
+        DeadCleaner().work(on: v)
     }
     
     func visit(v: Function) {}

@@ -15,7 +15,7 @@ class Inst: User {
     let operation: OP
     var inBlock: BasicBlock
     
-    var nodeInBlock: List<Inst>.Node? = nil
+    private var nodeInBlock: List<Inst>.Node? = nil
     
     func disconnect(delUsee: Bool, delUser: Bool) {
         nodeInBlock?.remove()
@@ -31,7 +31,7 @@ class Inst: User {
         }
     }
     
-    func replacedBy(value: Value) {
+    func replaced(by value: Value) {
         for use in users {
             use.reconnect(fromValue: value)
         }
@@ -47,6 +47,10 @@ class Inst: User {
         } else {
             self.nodeInBlock = inBlock.inserted(self, at: index)
         }
+    }
+    
+    var isCritical: Bool {
+        self is AllocaInst || self is CallInst || self is StoreInst || self is LoadInst || self is BrInst
     }
     
 }

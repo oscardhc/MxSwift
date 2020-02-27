@@ -78,7 +78,7 @@ class SCCPropagation: FunctionPass {
         for b in v.blocks {
             for i in b.insts where i.ccpInfo.type == .int {
                 instRemoved += 1
-                i.replacedBy(value: IntC(name: "", type: i.type, value: i.ccpInfo.int!))
+                i.replaced(by: IntC(name: "", type: i.type, value: i.ccpInfo.int!))
             }
             if b.insts.last! is BrInst && b.insts.last!.operands[0] is IntC {
                 branchChanged += 1
@@ -105,7 +105,7 @@ class SCCPropagation: FunctionPass {
         
         for b in v.blocks { for i in b.insts where i is PhiInst && i.operands.count <= 2 {
             let v = i.operands[0]
-            i.replacedBy(value: v)
+            i.replaced(by: v)
         }}
         
     }

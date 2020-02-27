@@ -150,9 +150,6 @@ class Use: CustomStringConvertible {
         nodeInValue.remove()
         nodeInValue = new.users.append(self)
     }
-    //    func reconnect(toUser new: User) {
-    //
-    //    }
     
     init(value: Value, user: User, toInsert: Int = -1) {
         self.value = value

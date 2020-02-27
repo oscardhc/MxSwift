@@ -73,43 +73,25 @@ class s {
         throw error
     }
     
+//    return
+    
     let ir = IRBuilder()
     ir.visit(node: prog)
-    TruncateTerminal().work(on: ir.module)
-    EmptyBlockRemover().work(on: ir.module)
+    DeadCleaner().work(on: ir.module)
     
+    IRPrinter(filename: "/Users/oscar/Documents/Classes/1920_Spring/Compiler/tmp/out0.ll").work(on: ir.module)
 //    CFGSimplifier().work(on: ir.module)
     MemToReg().work(on: ir.module)
     
-    IRPrinter(filename: "/Users/oscar/Documents/Classes/1920_Spring/Compiler/tmp/out0.ll").work(on: ir.module)
-    
-//    DCElimination().work(on: ir.module)
-//    TruncateTerminal().work(on: ir.module)
-//    EmptyBlockRemover().work(on: ir.module)
-//
-//    CFGSimplifier().work(on: ir.module)
-    
-    SCCPropagation().work(on: ir.module)
-    
-    
-    DCElimination().work(on: ir.module)
-    
-    CFGSimplifier().work(on: ir.module)
+    IRPrinter(filename: "/Users/oscar/Documents/Classes/1920_Spring/Compiler/tmp/out1.ll").work(on: ir.module)
     
     for _ in 0..<3 {
         SCCPropagation().work(on: ir.module)
-
-//        IRPrinter(filename: "/Users/oscar/Documents/Classes/1920_Spring/Compiler/tmp/out3.ll").work(on: ir.module)
-        
         DCElimination().work(on: ir.module)
-        TruncateTerminal().work(on: ir.module)
-        EmptyBlockRemover().work(on: ir.module)
         CFGSimplifier().work(on: ir.module)
+        CSElimination().work(on: ir.module)
     }
     
-    
-    IRPrinter(filename: "/Users/oscar/Documents/Classes/1920_Spring/Compiler/tmp/out1.ll").work(on: ir.module)
-    CSElimination().work(on: ir.module)
     IRPrinter(filename: "/Users/oscar/Documents/Classes/1920_Spring/Compiler/tmp/out2.ll").work(on: ir.module)
     
     print("Compilation exited normally.")

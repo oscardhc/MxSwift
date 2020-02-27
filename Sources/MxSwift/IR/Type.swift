@@ -26,6 +26,10 @@ class Type: CustomStringConvertible {
     static let long = IntT(.long)
     static let string = PointerT(base: char)
     
+    static func == (lhs: Type, rhs: Type) -> Bool {
+        return lhs.description == rhs.description && lhs.description != "???"
+    }
+    
 }
 
 class LabelT: Type {

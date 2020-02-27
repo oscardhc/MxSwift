@@ -24,13 +24,29 @@ class CSElimination: FunctionPass {
         
         let domTree = DomTree(function: v)
         
-        func cse(n: BaseDomTree.Node) {
-            for i in n.block!.insts where i.basename != "" {
-                let str = "[\(i.operation) " + i.operands.joined() {
-                    $0 is Inst ? (cseReMap[$0 as! Inst] ?? "\($0.name)") : "\($0)"
+        func getStr(i: Inst, depth: Int) -> String {
+            if depth > 0 && !i.isCritical {
+                return "[\(i.operation) " + i.operands.joined() {
+                    $0 is Inst ? getStr(i: $0 as! Inst, depth: depth - 1) : "\($0)"
                 } + "]"
+            } else {
+                return "\(i.name)"
+            }
+        }
+        
+        func cse(n: BaseDomTree.Node) {
+            for i in n.block!.insts where !i.isCritical {
+                
+                if i is CastInst && i.type == i.operands[0].type {
+                    i.replaced(by: i.operands[0])
+                    instRemoved += 1
+                    continue
+                }
+                let str = getStr(i: i, depth: 8)
                 if let p = cseMap[str] {
-                    i.replacedBy(value: p)
+//                    print(">", i.toPrint)
+//                    print("  <", p.toPrint)
+                    i.replaced(by: p)
                     instRemoved += 1
                 } else {
                     cseMap[str] = i
