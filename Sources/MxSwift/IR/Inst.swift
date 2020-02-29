@@ -11,6 +11,9 @@ class Inst: User {
     
     enum OP {
         case add, sub, mul, sdiv, srem, shl, ashr, and, or, xor, icmp, ret, alloca, call, load, store, getelementptr, br, bitcast, sext, phi
+        static let map: [OP: ((Int, Int) -> Int)] = [
+            .add: (+), .sub: (-), .mul: (*), .sdiv: (/), .srem: (%), .shl: (<<), .ashr: (>>), .and: (&), .or: (|), .xor: (^)
+        ]
     }
     let operation: OP
     var inBlock: BasicBlock
@@ -36,6 +39,12 @@ class Inst: User {
             use.reconnect(fromValue: value)
         }
         disconnect(delUsee: true, delUser: false)
+    }
+    
+    func changeAppend(to b: BasicBlock) {
+        nodeInBlock?.remove()
+        nodeInBlock = b.added(self)
+        inBlock = b
     }
     
     init(name: String, type: Type, operation: OP, in block: BasicBlock, at index: Int = -1) {
@@ -74,16 +83,10 @@ class PhiInst: Inst {
     override func propogate() {
         ccpInfo = CCPInfo()
         for i in 0..<operands.count / 2 where (operands[i * 2 + 1] as! BasicBlock).executable {
-            //            print(".....", (operands[i * 2 + 1] as! BasicBlock).name)
             ccpInfo = ccpInfo.add(rhs: operands[i * 2].ccpInfo) {
                 $0.int! == $1.int! ? $0 : nil
             }
         }
-        //        for op in operands where !(op is BasicBlock) {
-        //            ccpInfo = ccpInfo.add(rhs: op.ccpInfo) {
-        //                $0.int! == $1.int! ? $0 : nil
-        //            }
-        //        }
     }
 }
 class SExtInst: Inst {
@@ -200,21 +203,10 @@ class BinaryInst: Inst {
     }
     override var toPrint: String {return "\(name) = \(operation) \(type) " + operands.joined() {"\($0.name)"}}
     override func accept(visitor: IRVisitor) {visitor.visit(v: self)}
+    
     override func propogate() {
         ccpInfo = operands[0].ccpInfo.add(rhs: operands[1].ccpInfo) {
-            switch operation {
-            case .add:  return CCPInfo(type: .int, int: $0.int! + $1.int!)
-            case .sub:  return CCPInfo(type: .int, int: $0.int! - $1.int!)
-            case .mul:  return CCPInfo(type: .int, int: $0.int! * $1.int!)
-            case .sdiv: return CCPInfo(type: .int, int: $0.int! / $1.int!)
-            case .srem: return CCPInfo(type: .int, int: $0.int! % $1.int!)
-            case .shl:  return CCPInfo(type: .int, int: $0.int! << $1.int!)
-            case .ashr: return CCPInfo(type: .int, int: $0.int! >> $1.int!)
-            case .and:  return CCPInfo(type: .int, int: $0.int! & $1.int!)
-            case .or:   return CCPInfo(type: .int, int: $0.int! | $1.int!)
-            case .xor:  return CCPInfo(type: .int, int: $0.int! ^ $1.int!)
-            default:    return nil
-            }
+            CCPInfo(type: .int, int: OP.map[operation]!($0.int!, $1.int!))
         }
     }
 }
@@ -222,24 +214,22 @@ class BinaryInst: Inst {
 class CompareInst: BinaryInst {
     enum CMP {
         case eq, ne, sgt, sge, slt, sle
+        static let map: [CMP: ((Int, Int) -> Bool)] = [
+            .eq: (==), .ne: (!=), .sgt: (>), .sge: (>=), .slt: (<), .sle: (<=)
+        ]
     }
     let cmp: CMP
+    
     init(name: String, operation: Inst.OP, lhs: Value, rhs: Value, cmp: CMP, in block: BasicBlock) {
         self.cmp = cmp
         super.init(name: name, type: IntT.bool, operation: operation, lhs: lhs, rhs: rhs, in: block)
     }
     override var toPrint: String {return "\(name) = \(operation) \(cmp) \(operands[0].type) " + operands.joined() {"\($0.name)"}}
     override func accept(visitor: IRVisitor) {visitor.visit(v: self)}
+    
     override func propogate() {
         ccpInfo = operands[0].ccpInfo.add(rhs: operands[1].ccpInfo) {
-            switch cmp {
-            case .eq:   return CCPInfo(type: .int, int: $0.int! ==  $1.int! ? 1 : 0)
-            case .ne:   return CCPInfo(type: .int, int: $0.int! !=  $1.int! ? 1 : 0)
-            case .sgt:  return CCPInfo(type: .int, int: $0.int! >   $1.int! ? 1 : 0)
-            case .sge:  return CCPInfo(type: .int, int: $0.int! >=  $1.int! ? 1 : 0)
-            case .slt:  return CCPInfo(type: .int, int: $0.int! <   $1.int! ? 1 : 0)
-            case .sle:  return CCPInfo(type: .int, int: $0.int! <=  $1.int! ? 1 : 0)
-            }
+            CCPInfo(type: .int, int: CMP.map[cmp]!($0.int!, $1.int!) ? 1 : 0)
         }
     }
 }

@@ -72,26 +72,34 @@ class s {
     if error.message.count > 0 {
         throw error
     }
-    
-//    return
+   
+    return
     
     let ir = IRBuilder()
     ir.visit(node: prog)
+    
+    
+    if error.message.count > 0 {
+        throw error
+    }
+    
+    return
+    
     DeadCleaner().work(on: ir.module)
     
     IRPrinter(filename: "/Users/oscar/Documents/Classes/1920_Spring/Compiler/tmp/out0.ll").work(on: ir.module)
 //    CFGSimplifier().work(on: ir.module)
     MemToReg().work(on: ir.module)
-    
     IRPrinter(filename: "/Users/oscar/Documents/Classes/1920_Spring/Compiler/tmp/out1.ll").work(on: ir.module)
     
-    for _ in 0..<3 {
+
+    for _ in 0..<1 {
         SCCPropagation().work(on: ir.module)
         DCElimination().work(on: ir.module)
         CFGSimplifier().work(on: ir.module)
         CSElimination().work(on: ir.module)
     }
-    
+
     IRPrinter(filename: "/Users/oscar/Documents/Classes/1920_Spring/Compiler/tmp/out2.ll").work(on: ir.module)
     
     print("Compilation exited normally.")

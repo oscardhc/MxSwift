@@ -36,7 +36,9 @@ class SemanticChecker: ASTBaseVisitor {
                 if let e = $0.1 {
                     if node.type === e.type || (e.type == null && (node.type.hasSuffix("[]") || !node.type.isBuiltinType())) {
                         
-                    } else {error.binaryOperatorError(op: .assign, type1: node.type, type2: e.type)}
+                    } else {
+                        error.binaryOperatorError(op: .assign, type1: node.type, type2: e.type)
+                    }
                 }
             }
         } else {
@@ -48,9 +50,6 @@ class SemanticChecker: ASTBaseVisitor {
         super.visit(node: node)
         if node.id == "main" && (node.type != int || node.parameters.count > 0) {
             error.mainFuncError()
-        }
-        if node.hasReturn == false && node.type != void && node.id != "main" {
-            error.noReturn(name: node.id)
         }
     }
 
@@ -92,13 +91,12 @@ class SemanticChecker: ASTBaseVisitor {
         if let _c = node.scope.currentScope(type: .FUNCTION) {
             let c = _c.correspondingNode as! FunctionD
             c.hasReturn = true
-            if node.expression == nil {
-                if c.type != void {
+            if c.type == void || c.id == c.type {
+                if node.expression?.type ?? void != void {
                     error.returnTypeError(name: c.id, expected: c.type, received: void)
                 }
             } else {
                 if c.type !== node.expression!.type {
-                    print(node.expression!.description)
                     error.returnTypeError(name: c.id, expected: c.type, received: node.expression!.type)
                 }
             }
@@ -210,8 +208,6 @@ class SemanticChecker: ASTBaseVisitor {
 
     override func visit(node: FunctionCallE) {
         super.visit(node: node)
-//        print(">>>>>>>>", node.id, node.scope.scopeName)
-//        node.scope.printScope()
         if let t = node.scope.find(name: node.id, check: {[.CLASS, .FUNCTION].contains($0.subScope?.scopeType)}) {
             if let scp = t.subScope {
                 let decl = (scp.scopeType == .CLASS ? scp.table[node.id]!.subScope!.correspondingNode! : scp.correspondingNode!) as! FunctionD
@@ -222,7 +218,7 @@ class SemanticChecker: ASTBaseVisitor {
                 decl.parameters.forEach{exp.append($0.type)}
                 node.arguments.forEach{rec.append($0.type)}
                 node.type = decl.type
-                if exp != rec {
+                if exp !== rec {
                     error.argumentError(name: node.id, expected: exp, received: rec)
                 }
             } else {
@@ -272,8 +268,9 @@ class SemanticChecker: ASTBaseVisitor {
     override func visit(node: NewE) {
         super.visit(node: node)
         if node.baseType.isBuiltinType() || node.scope.find(name: node.baseType) != nil {
-            node.expressions.forEach{if $0.type != int {error.indexError(name: $0.description, type: $0.type)}}
-            
+            for exp in node.expressions where exp.type != int {
+                error.indexError(name: exp.description, type: exp.type)
+            }
             node.type = node.baseType
             for _ in 0 ..< (node.expressions.count + node.empty) {node.type += "[]"}
         }

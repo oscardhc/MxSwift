@@ -24,16 +24,6 @@ class CSElimination: FunctionPass {
         
         let domTree = DomTree(function: v)
         
-        func getStr(i: Inst, depth: Int) -> String {
-            if depth > 0 && !i.isCritical {
-                return "[\(i.operation) " + i.operands.joined() {
-                    $0 is Inst ? getStr(i: $0 as! Inst, depth: depth - 1) : "\($0)"
-                } + "]"
-            } else {
-                return "\(i.name)"
-            }
-        }
-        
         func cse(n: BaseDomTree.Node) {
             for i in n.block!.insts where !i.isCritical {
                 
@@ -42,9 +32,11 @@ class CSElimination: FunctionPass {
                     instRemoved += 1
                     continue
                 }
-                let str = getStr(i: i, depth: 8)
+                let str = "[\(i.operation) " + i.operands.joined() {
+                    $0 is Inst ? "<\($0.toPrint)>" : "<\($0)>"
+                } + "]"
                 if let p = cseMap[str] {
-//                    print(">", i.toPrint)
+//                    print(">", i.toPrint, str)
 //                    print("  <", p.toPrint)
                     i.replaced(by: p)
                     instRemoved += 1
@@ -63,7 +55,24 @@ class CSElimination: FunctionPass {
                 }
             }
         }
+    
         cse(n: domTree.root)
+    }
+    
+    func valueNumbering(f: Function) {
+        
+        func getCanonical(v: Value, depth: Int) -> [String] {
+            if depth == 0 || (v is Inst && (v as! Inst).isCritical) || !(v is User) {
+                return ["\(v)"]
+            } else {
+                let i = v as! User
+                var ops = [[String]]()
+                for op in i.operands {
+                    ops.append(getCanonical(v: op, depth: depth - 1))
+                }
+                return []
+            }
+        }
         
     }
     

@@ -121,14 +121,6 @@ class Function: Global {
         blocks.append(b)
     }
     
-    func checkForEmptyBlock() {
-        for blk in blocks {
-            if blk.insts.count == 0 {
-                blk.nodeInFunction?.remove()
-            }
-        }
-    }
-    
 }
 
 class Class: Global {

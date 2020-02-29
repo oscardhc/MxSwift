@@ -86,7 +86,7 @@ class IRBuilder: ASTBaseVisitor {
         }
         addStringBOP(name: "add", type: .string)
         addStringBOP(name: "eq", type: .bool)
-        addStringBOP(name: "neq", type: .bool)
+        addStringBOP(name: "ne", type: .bool)
         addStringBOP(name: "slt", type: .bool)
         addStringBOP(name: "sgt", type: .bool)
         addStringBOP(name: "sle", type: .bool)
@@ -208,11 +208,15 @@ class IRBuilder: ASTBaseVisitor {
             $0.accept(visitor: self)
         }
         
-        if node.hasReturn == false {
-            ReturnInst(name: "", val: VoidC(), in: curBlock)
+        if curBlock.insts.count == 0 || !curBlock.insts.last!.isTerminate {
+            if ret.type is VoidT {
+                ReturnInst(name: "", val: VoidC(), in: curBlock)
+            } else if node.id == "main" {
+                ReturnInst(name: "", val: IntC.zero(), in: curBlock)
+            } else {
+                error.noReturn(name: node.id)
+            }
         }
-        
-        ret.checkForEmptyBlock()
         
         curBlock = nil
     }
@@ -507,6 +511,7 @@ class IRBuilder: ASTBaseVisitor {
         let perSize = IntC(name: "",
                            type: .int,
                            value: node.empty > 0 ? pointerSize : type.getBase.space)
+        
         let num = node.expressions.last!.ret!.loadIfAddress(block: curBlock)
         
         let size = BinaryInst(name: "", type: .int, operation: .mul, lhs: perSize, rhs: num, in: curBlock)

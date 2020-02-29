@@ -56,6 +56,7 @@ class ASTBaseVisitor: ASTVisitor {
     
     func visit(node: ClassD) {
         node.properties.forEach{$0.accept(visitor: self)}
+        node.initial.forEach{$0.accept(visitor: self)}
         node.methods.forEach{$0.accept(visitor: self)}
     }
     

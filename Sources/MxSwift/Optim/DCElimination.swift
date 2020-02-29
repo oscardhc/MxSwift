@@ -17,6 +17,7 @@ class DCElimination: FunctionPass {
         let tree = PostDomTree(function: v)
         
         var deadInsts = Set<Inst>(), workList = Set<Inst>(), liveBlocks = Set<BasicBlock>()
+        
         for b in v.blocks {
             for i in b.insts {
                 switch i {
@@ -56,10 +57,10 @@ class DCElimination: FunctionPass {
         for i in deadInsts {
             if i is BrInst {
                 if i.operands.count != 1 {
-                    let to = i.inBlock.domNode!.findDomFatherBF {
+                    let to = i.inBlock.domNode?.idom!.findDomFatherBF {
                         $0.block != nil && liveBlocks.contains($0.block!)
                     }
-                    print("changed [\(i.inBlock) \(liveBlocks.contains(i.inBlock)) -> \(to!.block!)]:", i.toPrint)
+//                    print("changed [\(i.inBlock) \(liveBlocks.contains(i.inBlock)) -> \(to!.block!)]:", i.toPrint)
                     BrInst(name: "",
                            des: to!.block!,
                            in: i.inBlock)

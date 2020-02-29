@@ -24,6 +24,7 @@ class CFGSimplifier: FunctionPass {
             v.blocks.forEach { (b) in
                 b.succs.forEach {($0 as! BasicBlock).preds.append(b)}
             }
+            
             var emptyReturns = [BasicBlock]()
             for b in v.blocks where b.insts.last is ReturnInst {
                 if b.insts.count == 1 || (b.insts.count == 2 && b.insts.first is PhiInst) {
@@ -57,17 +58,31 @@ class CFGSimplifier: FunctionPass {
                     }
                     BrInst(name: "", des: ret, in: blk)
                 }
-                changed = true
+                change()
             }
             
             for b in v.blocks where b.preds.isEmpty && b !== b.inFunction.blocks.first! {
                 b.remove() {
                     $0.disconnect(delUsee: true, delUser: true)
                 }
-                changed = true
+                change()
             }
             
+            // possible users of a basic block: PHI inst or BR inst
+            
             for b in v.blocks {
+                
+                if b.preds.count == 1 && b.preds[0].succs.count == 1 {
+                    let v = b.preds[0]
+                    v.insts.last?.disconnect(delUsee: true, delUser: true)
+                    for u in b.users {
+                        u.reconnect(fromValue: v)
+                    }
+                    b.remove() {
+                        $0.changeAppend(to: v)
+                    }
+                    change()
+                }
                 
                 if b.preds.count > 0 && b.insts.count == 1 && b.insts.last! is BrInst && b.insts.last!.operands.count == 1 { // only uncond br
                     
@@ -75,24 +90,21 @@ class CFGSimplifier: FunctionPass {
                     if t.insts.first! is PhiInst && b.preds[0].succs.count > 1 {
                         continue
                     }
-                    
-//                    print(">", b.name, t.name, b.preds[0].name, b.preds.count, b.insts.joined() {"\($0.operation)"})
-
+                    //                    print(">", b.name, t.name, b.preds[0].name, b.preds.count, b.insts.joined() {"\($0.operation)"})
                     for u in b.users {
-//                        print("  >", u.user.name, u.user is PhiInst)
-//                        print("     ", u.user.toPrint)
+                        //                        print("  >", u.user.name, u.user is PhiInst)
+                        //                        print("     ", u.user.toPrint)
                         u.reconnect(fromValue: u.user is PhiInst ? b.preds[0] : t)
-//                        print("     ", u.user.toPrint)
+                        //                        print("     ", u.user.toPrint)
                     }
                     b.remove() {
                         $0.disconnect(delUsee: false, delUser: false)
                     }
                     change()
-                    continue
                 }
                 
             }
-//            break
+            //            break
             
         }
         

@@ -70,6 +70,10 @@ class ASTBuilder: MxsBaseVisitor<ASTNode> {
     override func visitInitialDeclaration(_ ctx: MxsParser.InitialDeclarationContext) -> ASTNode? {
         let id = ctx.Identifier(0)!.getText()
         
+        if id != current.scopeName {
+            error.returnTypeError(name: id, expected: current.scopeName, received: id)
+        }
+        
         let _s = current.newSubscope(withName: id, withType: .FUNCTION)
         current.newSymbol(name: id, value: Symbol(_type: id, _bel: current, _subScope: _s))
         scopes.append(_s)
