@@ -147,15 +147,15 @@ class BaseDomTree {
 
 class DomTree: BaseDomTree {
     
-    override init(function: Function) {
+    init(function: Function, check: (BasicBlock) -> Bool = {_ in true}) {
         
         super.init(function: function)
         
-        for blk in function.blocks {
+        for blk in function.blocks.filter(check) {
             blk.domNode = Node(block: blk)
         }
-        for blk in function.blocks {
-            blk.succs.forEach {
+        for blk in function.blocks.filter(check) {
+            blk.succs.filter(check).forEach {
                 _ = blk.domNode?.edge.append($0.domNode!)
             }
         }
@@ -168,26 +168,26 @@ class DomTree: BaseDomTree {
 
 class PostDomTree: BaseDomTree {
     
-    override init(function: Function) {
+    init(function: Function, check: (BasicBlock) -> Bool = {_ in true}) {
         
         super.init(function: function)
         
-        for blk in function.blocks {
-            blk.domNode = Node(block: blk)
+        for blk in function.blocks.filter(check) {
+            blk.pdomNode = Node(block: blk)
         }
         
         let entryPoint = Node(block: nil) // note: this is the virtual root
         root = Node(block: nil) // note: this is actually the exit
         
-        _ = function.blocks.first!.domNode!.edge.append(entryPoint)
+        _ = function.blocks.first!.pdomNode!.edge.append(entryPoint)
         _ = root.edge.append(entryPoint)
         
-        for blk in function.blocks {
-            blk.succs.forEach {
-                _ = $0.domNode!.edge.append(blk.domNode!)
+        for blk in function.blocks.filter(check){
+            blk.succs.filter(check).forEach {
+                _ = $0.pdomNode!.edge.append(blk.pdomNode!)
             }
-            if blk.succs.isEmpty {
-                _ = root.edge.append(blk.domNode!)
+            if blk.succs.filter(check).isEmpty {
+                _ = root.edge.append(blk.pdomNode!)
             }
         }
         build()

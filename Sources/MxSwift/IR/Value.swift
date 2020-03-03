@@ -210,6 +210,7 @@ class BasicBlock: Value {
         }
     }
     var domNode: DomTree.Node? = nil
+    var pdomNode: DomTree.Node? = nil
     var preds = [BasicBlock]()
     
     //    ************** for SCCP ***************

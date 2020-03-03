@@ -52,7 +52,7 @@ class NullC: Const {
     }
     override func initName() {}
     override var name: String {"null"}
-    override var description: String {"null"}
+//    override var description: String {"\(type) null"}
 }
 class StringC: Const {
     var value: String

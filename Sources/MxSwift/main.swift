@@ -97,7 +97,8 @@ class s {
         SCCPropagation().work(on: ir.module)
         DCElimination().work(on: ir.module)
         CFGSimplifier().work(on: ir.module)
-        CSElimination().work(on: ir.module)
+//        CSElimination().work(on: ir.module)
+        GVNumberer().work(on: ir.module)
     }
 
     IRPrinter(filename: "/Users/oscar/Documents/Classes/1920_Spring/Compiler/tmp/out2.ll").work(on: ir.module)
