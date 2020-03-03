@@ -156,7 +156,7 @@ class DomTree: BaseDomTree {
         }
         for blk in function.blocks {
             blk.succs.forEach {
-                _ = blk.domNode?.edge.append(($0 as! BasicBlock).domNode!)
+                _ = blk.domNode?.edge.append($0.domNode!)
             }
         }
         root = function.blocks.first!.domNode!
@@ -184,7 +184,7 @@ class PostDomTree: BaseDomTree {
         
         for blk in function.blocks {
             blk.succs.forEach {
-                _ = ($0 as! BasicBlock).domNode!.edge.append(blk.domNode!)
+                _ = $0.domNode!.edge.append(blk.domNode!)
             }
             if blk.succs.isEmpty {
                 _ = root.edge.append(blk.domNode!)

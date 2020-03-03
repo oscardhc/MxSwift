@@ -33,6 +33,7 @@
 		55EEB69E23E55D5500E9FE2C /* ASTPrinter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55EEB69D23E55D5500E9FE2C /* ASTPrinter.swift */; };
 		55EEB6A023E562A700E9FE2C /* ASTVisitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55EEB69F23E562A700E9FE2C /* ASTVisitor.swift */; };
 		55F78B202408082A00CE3771 /* LICHoister.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55F78B1F2408082A00CE3771 /* LICHoister.swift */; };
+		55F78B22240B6FF000CE3771 /* Counter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55F78B21240B6FF000CE3771 /* Counter.swift */; };
 		OBJ_201 /* ANTLRErrorListener.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_9 /* ANTLRErrorListener.swift */; };
 		OBJ_202 /* ANTLRErrorStrategy.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_10 /* ANTLRErrorStrategy.swift */; };
 		OBJ_203 /* ANTLRFileStream.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_11 /* ANTLRFileStream.swift */; };
@@ -253,6 +254,7 @@
 		55EEB69D23E55D5500E9FE2C /* ASTPrinter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ASTPrinter.swift; sourceTree = "<group>"; };
 		55EEB69F23E562A700E9FE2C /* ASTVisitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ASTVisitor.swift; sourceTree = "<group>"; };
 		55F78B1F2408082A00CE3771 /* LICHoister.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LICHoister.swift; sourceTree = "<group>"; };
+		55F78B21240B6FF000CE3771 /* Counter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Counter.swift; sourceTree = "<group>"; };
 		"MxSwift::Antlr4::Product" /* Antlr4.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Antlr4.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		"MxSwift::MxSwift::Product" /* MxSwift */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; path = MxSwift; sourceTree = BUILT_PRODUCTS_DIR; };
 		"MxSwift::Parser::Product" /* Parser.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Parser.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -489,6 +491,7 @@
 			isa = PBXGroup;
 			children = (
 				55EEB69323E41ABC00E9FE2C /* Utils.swift */,
+				55F78B21240B6FF000CE3771 /* Counter.swift */,
 				55D1C0D523EB17700057E80A /* List.swift */,
 				OBJ_171 /* CompilationError.swift */,
 			);
@@ -1095,6 +1098,7 @@
 				55EEB69C23E4919D00E9FE2C /* ASTBuilder.swift in Sources */,
 				OBJ_365 /* main.swift in Sources */,
 				557E873D24064C07007074A5 /* CSElimination.swift in Sources */,
+				55F78B22240B6FF000CE3771 /* Counter.swift in Sources */,
 				555C57ED23E6B3BA00D9192A /* SemanticChecker.swift in Sources */,
 				55D1C0DA23EBD42A0057E80A /* Const.swift in Sources */,
 				55D1C0CA23EA962C0057E80A /* Value.swift in Sources */,

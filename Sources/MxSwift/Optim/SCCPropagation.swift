@@ -45,7 +45,6 @@ class SCCPropagation: FunctionPass {
                 if !i.inBlock.executable {
                     continue
                 }
-//                print(">", i.inBlock.name, i.toPrint, i.ccpInfo)
                 if let b = i as? BrInst {
                     if b.operands.count == 1 {
                         tryExecute(t: b.operands[0] as! BasicBlock)
@@ -63,11 +62,8 @@ class SCCPropagation: FunctionPass {
                         continue
                     }
                     i.propogate()
-//                    print("  >", i.ccpInfo)
                     if !(last == i.ccpInfo) {
-//                        for u in i.users where (u.user as! Inst).inBlock.executable {
                         for u in i.users {
-//                            print("    >", u.user.name)
                             workList.append(u.user as! Inst)
                         }
                     }

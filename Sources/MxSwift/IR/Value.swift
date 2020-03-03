@@ -7,29 +7,7 @@
 
 import Foundation
 
-class Counter {
-    
-    private var count = [String: Int]()
-    
-    func tikInt(_ id: String = "") -> Int {
-        if count[id] == nil {
-            count[id] = -1
-        }
-        count[id]! += 1
-        return count[id]!
-    }
-    func tik(_ id: String = "") -> String {"\(tikInt(id))"}
-    func reset() {
-        count = [:]
-    }
-    
-}
-
 let instNamingCounter = Counter()
-
-struct Tuple<T: Hashable, U: Hashable>: Hashable {
-    let a: T, b: T
-}
 
 class Value: HashableObject, CustomStringConvertible, Hashable {
     
@@ -73,10 +51,6 @@ class Value: HashableObject, CustomStringConvertible, Hashable {
         self.isAddress ? LoadInst(name: "", alloc: self, in: block) : self
     }
     
-    func pairWithValue(_ value: Value) -> Tuple<Value, Value> {
-        Tuple<Value, Value>(a: self, b: value)
-    }
-    
     //    *************** for SCCP ****************
     struct CCPInfo {
         enum T {
@@ -111,6 +85,9 @@ class Value: HashableObject, CustomStringConvertible, Hashable {
     var ccpInfo = CCPInfo()
     var isVariable: Bool {ccpInfo.type == .variable}
     func propogate() {}
+    
+    //    **************** for VN ****************
+    var rank = -1
     
 }
 
@@ -206,8 +183,7 @@ class BasicBlock: Value {
     
     //    will delete all instructions and their uses
     func remove(dealWithInsts: ((Inst) -> Void) = {_ in }) {
-        succs.forEach { (b) in
-            let s = b as! BasicBlock
+        succs.forEach { (s) in
             s.preds.removeAll(where: {$0 === self})
             for p in preds {
                 s.preds.append(p)
@@ -218,16 +194,16 @@ class BasicBlock: Value {
     }
     
     //    *************** for domtree use ****************
-    var succs: [Value] {
+    var succs: [BasicBlock] {
         if insts.last == nil {
             return []
         }
         switch insts.last! {
         case let v as BrInst:
             if v.operands.count > 1 {
-                return [v.operands[1], v.operands[2]]
+                return [v.operands[1] as! BasicBlock, v.operands[2] as! BasicBlock]
             } else {
-                return [v.operands[0]]
+                return [v.operands[0] as! BasicBlock]
             }
         default:
             return []
@@ -240,5 +216,12 @@ class BasicBlock: Value {
     var executable: Bool = false
     
     override func accept(visitor: IRVisitor) {visitor.visit(v: self)}
+    
+//    *************** for VN **************
+    var rpoRank = -1
+    struct Edge: Hashable {
+        var from, to: BasicBlock
+//        var 
+    }
     
 }

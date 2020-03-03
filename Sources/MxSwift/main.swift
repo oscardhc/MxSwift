@@ -73,7 +73,7 @@ class s {
         throw error
     }
    
-    return
+//    return
     
     let ir = IRBuilder()
     ir.visit(node: prog)
@@ -83,7 +83,7 @@ class s {
         throw error
     }
     
-    return
+//    return
     
     DeadCleaner().work(on: ir.module)
     

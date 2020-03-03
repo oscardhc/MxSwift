@@ -8,7 +8,6 @@
 import Foundation
 
 extension Array where Element: CustomStringConvertible {
-    
     func joined(with sep: String = ", ", method: ((Element) -> String) = {return "\($0)"}) -> String {
         if self.count == 0 {
             return ""
@@ -19,7 +18,18 @@ extension Array where Element: CustomStringConvertible {
         }
         return ret
     }
-    
+}
+
+extension Array {
+    func generated(check: (Element) -> Element?) -> Array<Element> {
+        var ret = [Element]()
+        for i in self {
+            if let p = check(i) {
+                ret.append(p)
+            }
+        }
+        return ret
+    }
 }
 
 class List<T: CustomStringConvertible>: CustomStringConvertible, Sequence {

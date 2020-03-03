@@ -22,7 +22,7 @@ class CFGSimplifier: FunctionPass {
             changed = false
             v.blocks.forEach {$0.preds = []}
             v.blocks.forEach { (b) in
-                b.succs.forEach {($0 as! BasicBlock).preds.append(b)}
+                b.succs.forEach {$0.preds.append(b)}
             }
             
             var emptyReturns = [BasicBlock]()

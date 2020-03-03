@@ -48,7 +48,7 @@ class MemToReg: FunctionPass {
         instRemoved += toPromote.count
         
         let domTree = DomTree(function: v)
-        var allocToPhi = [Tuple<Value, Value>: PhiInst](), phiToAlloc = [PhiInst: AllocaInst]()
+        var phiToAlloc = [PhiInst: AllocaInst]()
         
         for ai in toPromote {
             
@@ -159,7 +159,6 @@ class MemToReg: FunctionPass {
                     if !phiBlocks.contains(frt) {
                         phiBlocks.insert(frt)
                         let phi = PhiInst(name: ai.originName + ".", type: ai.type.getBase, in: frt, at: 0)
-                        allocToPhi[ai.pairWithValue(frt)] = phi
                         phiToAlloc[phi] = ai
                         
                         for pre in frt.domNode!.antiEdge {

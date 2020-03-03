@@ -59,7 +59,7 @@ class Inst: User {
     }
     
     var isCritical: Bool {
-        self is AllocaInst || self is CallInst || self is StoreInst || self is LoadInst || self is BrInst
+        self is AllocaInst || self is CallInst || self is StoreInst || self is LoadInst || self is BrInst || self is PhiInst
     }
     
 }
@@ -89,6 +89,7 @@ class PhiInst: Inst {
         }
     }
 }
+
 class SExtInst: Inst {
     init (name: String, val: Value, toType: Type, in block: BasicBlock) {
         super.init(name: name, type: toType, operation: .sext, in: block)
@@ -100,6 +101,7 @@ class SExtInst: Inst {
         ccpInfo = operands[0].ccpInfo
     }
 }
+
 class CastInst: Inst {
     init (name: String, val: Value, toType: Type, in block: BasicBlock) {
         super.init(name: name, type: toType, operation: .bitcast, in: block)
@@ -111,6 +113,7 @@ class CastInst: Inst {
         ccpInfo = operands[0].ccpInfo
     }
 }
+
 class BrInst: Inst {
     @discardableResult init(name: String, des: Value, in block: BasicBlock) {
         super.init(name: name, type: Type(), operation: .br, in: block)
@@ -126,6 +129,7 @@ class BrInst: Inst {
     override var toPrint: String {"\(operation) " + operands.joined()}
     override func accept(visitor: IRVisitor) {visitor.visit(v: self)}
 }
+
 class GEPInst: Inst {
     let needZero: Bool
     init(name: String, type: Type, base: Value, needZero: Bool, val: Value, in block: BasicBlock) {
@@ -137,6 +141,7 @@ class GEPInst: Inst {
     override var toPrint: String {"\(name) = \(operation) \((operands[0].type as! PointerT).baseType), \(operands[0]),\(needZero ? " i32 0," : "") \(operands[1])"}
     override func accept(visitor: IRVisitor) {visitor.visit(v: self)}
 }
+
 class ReturnInst: Inst {
     @discardableResult init(name: String, val: Value, in block: BasicBlock) {
         super.init(name: name, type: VoidT(), operation: .ret, in: block)
@@ -146,6 +151,7 @@ class ReturnInst: Inst {
     override var toPrint: String {"\(operation) \(operands[0])"}
     override func accept(visitor: IRVisitor) {visitor.visit(v: self)}
 }
+
 class LoadInst: Inst {
     init(name: String, alloc: Value, in block: BasicBlock) {
         super.init(name: name, type: (alloc.type as! PointerT).baseType, operation: .load, in: block)
@@ -157,6 +163,7 @@ class LoadInst: Inst {
         ccpInfo = CCPInfo(type: .variable)
     }
 }
+
 class StoreInst: Inst {
     @discardableResult init(name: String, alloc: Value, val: Value, in block: BasicBlock) {
         super.init(name: name, type: Type(), operation: .store, in: block)
@@ -167,6 +174,7 @@ class StoreInst: Inst {
     override var toPrint: String {"\(operation) " + operands.joined() + ", align \((operands[1].type as! PointerT).baseType.space)"}
     override func accept(visitor: IRVisitor) {visitor.visit(v: self)}
 }
+
 class CallInst: Inst {
     var function: Function
     init(name: String, function: Function, arguments: [Value] = [], in block: BasicBlock) {
@@ -185,6 +193,7 @@ class CallInst: Inst {
         ccpInfo = CCPInfo(type: .variable)
     }
 }
+
 class AllocaInst: Inst {
     init(name: String, forType: Type, in block: BasicBlock) {
         super.init(name: name, type: forType.pointer, operation: .alloca, in: block)
@@ -195,6 +204,7 @@ class AllocaInst: Inst {
         ccpInfo = CCPInfo(type: .variable)
     }
 }
+
 class BinaryInst: Inst {
     init(name: String, type: Type, operation: Inst.OP, lhs: Value, rhs: Value, in block: BasicBlock) {
         super.init(name: name, type: type, operation: operation, in: block)
@@ -214,7 +224,7 @@ class BinaryInst: Inst {
 class CompareInst: BinaryInst {
     enum CMP {
         case eq, ne, sgt, sge, slt, sle
-        static let map: [CMP: ((Int, Int) -> Bool)] = [
+        static let map: [CMP: (Int, Int) -> Bool] = [
             .eq: (==), .ne: (!=), .sgt: (>), .sge: (>=), .slt: (<), .sle: (<=)
         ]
     }

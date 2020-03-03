@@ -35,14 +35,15 @@ class IntC: Const {
         
     }
     override func initName() {}
-    override var name: String {return "\(value)"}
-    override var description: String {return "\(type) \(value)"}
+    override var name: String {"\(value)"}
+    override var description: String {"\(type) \(value)"}
 }
 class VoidC: Const {
     init() {
         super.init(name: "", type: .void)
     }
     override func initName() {}
+    override var name: String {"void"}
     override var description: String {"void"}
 }
 class NullC: Const {
@@ -51,6 +52,7 @@ class NullC: Const {
     }
     override func initName() {}
     override var name: String {"null"}
+    override var description: String {"null"}
 }
 class StringC: Const {
     var value: String
