@@ -47,7 +47,7 @@ class MemToReg: FunctionPass {
         }
         instRemoved += toPromote.count
         
-        let domTree = DomTree(function: v)
+        let tree = DomTree(function: v)
         var phiToAlloc = [PhiInst: AllocaInst]()
         
         for ai in toPromote {
@@ -100,7 +100,7 @@ class MemToReg: FunctionPass {
                             canNotHandleLoads.append(a2l)
                             continue
                         }
-                    } else if !domTree.checkBF(s.inBlock.domNode!, dominates: l.inBlock.domNode!) {
+                    } else if !tree.checkBF(s.inBlock, dominates: l.inBlock) {
                         // not in the dominated block, cannot handle
                         canNotHandleLoads.append(a2l)
                         continue
@@ -154,14 +154,14 @@ class MemToReg: FunctionPass {
             while !workList.isEmpty {
                 let cur = workList.popFirst()!
                 
-                for frontier in cur.domNode!.domFrontiers {
+                for frontier in tree[cur].domFrontiers {
                     let frt = frontier.block!
                     if !phiBlocks.contains(frt) {
                         phiBlocks.insert(frt)
                         let phi = PhiInst(name: ai.originName + ".", type: ai.type.getBase, in: frt, at: 0)
                         phiToAlloc[phi] = ai
                         
-                        for pre in frt.domNode!.antiEdge {
+                        for pre in tree[frt].antiEdge {
                             phi.added(operand: IntC.zero())
                             phi.added(operand: pre.block!)
                         }
@@ -217,7 +217,7 @@ class MemToReg: FunctionPass {
                 _ = stack[chg]!.popLast()
             }
         }
-        rename(cur: domTree.root)
+        rename(cur: tree.root)
         
         for ai in toPromote {
             ai.disconnect(delUsee: true, delUser: false)

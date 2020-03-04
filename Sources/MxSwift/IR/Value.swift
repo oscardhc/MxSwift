@@ -209,17 +209,16 @@ class BasicBlock: Value {
             return []
         }
     }
-    var domNode: DomTree.Node? = nil
-    var pdomNode: DomTree.Node? = nil
+//    var domNode: DomTree.Node? = nil
+//    var pdomNode: DomTree.Node? = nil
     var preds = [BasicBlock]()
     
     //    ************** for SCCP ***************
-    var executable: Bool = false
+    var reachable: Bool = false
     
     override func accept(visitor: IRVisitor) {visitor.visit(v: self)}
     
 //    *************** for VN **************
-    var rpoRank = -1
     struct Edge: Hashable {
         var from, to: BasicBlock
 //        var 

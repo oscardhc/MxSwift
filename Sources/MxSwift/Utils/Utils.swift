@@ -18,10 +18,38 @@ class HashableObject {
     }
 }
 
+class RefList<P> {
+    var list = [P]()
+}
+class RefSet<P: Hashable> {
+    private(set) var _s = Set<P>()
+    
+    func contains(_ v: P) -> Bool {
+        _s.contains(v)
+    }
+    func insert(_ v: P) {
+        _s.insert(v)
+    }
+    func popFirst() -> P? {
+        _s.popFirst()
+    }
+}
+class RefDict<P: Hashable, Q> {
+    private(set) var _s = [P: Q]()
+    
+    subscript(p: P) -> Q? {
+        get {
+            _s[p]
+        }
+        set(q) {
+            _s[p] = q
+        }
+    }
+}
+
 enum UnaryOperator {
     case doubleAdd, doubleSub, add, sub, bitwise, negation
 }
-
 enum BinaryOperator {
     case add, sub, mul, div, mod, gt, lt, geq, leq, eq, neq, bitAnd, bitOr, bitXor, logAnd, logOr, lShift, rShift, assign
 }

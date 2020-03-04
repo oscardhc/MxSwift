@@ -48,7 +48,7 @@ class DCElimination: FunctionPass {
             }
             if !liveBlocks.contains(i.inBlock) {
                 liveBlocks.insert(i.inBlock)
-                for df in i.inBlock.pdomNode!.domFrontiers where df.block != nil {
+                for df in tree[i.inBlock].domFrontiers where df.block != nil {
                     insertIntoList(i: df.block!.insts.last!)
                 }
             }
@@ -57,7 +57,7 @@ class DCElimination: FunctionPass {
         for i in deadInsts {
             if i is BrInst {
                 if i.operands.count != 1 {
-                    let to = i.inBlock.pdomNode?.idom!.findDomFatherBF {
+                    let to = tree[i.inBlock].idom!.findDomFatherBF {
                         $0.block != nil && liveBlocks.contains($0.block!)
                     }
 //                    print("changed [\(i.inBlock) \(liveBlocks.contains(i.inBlock)) -> \(to!.block!)]:", i.toPrint)

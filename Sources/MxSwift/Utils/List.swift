@@ -21,8 +21,8 @@ extension Array where Element: CustomStringConvertible {
 }
 
 extension Array {
-    func generated(check: (Element) -> Element?) -> Array<Element> {
-        var ret = [Element]()
+    func generated<T>(check: (Element) -> T?) -> Array<T> {
+        var ret = [T]()
         for i in self {
             if let p = check(i) {
                 ret.append(p)

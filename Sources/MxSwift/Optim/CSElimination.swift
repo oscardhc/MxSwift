@@ -76,36 +76,72 @@ class GVNumberer: FunctionPass {
     private var map = [BasicBlock: [String: Inst]]()
     
     private var workList = Set<Inst>(), blockList = Set<BasicBlock>()
-    private var reachableBlock = Set<BasicBlock>(), predicateEdge = [BasicBlock.Edge: VNExpression]()
+    private var predicateEdge = [BasicBlock.Edge: VNExpression]()
     
-    private func evaluate(_ inst: Inst, in block: BasicBlock) -> Inst? {
-        let str = VNExpression(v: inst).simplified().description
-        
-        var it: BasicBlock? = block
-        while let cur = it {
-            if let i = map[cur]![str] {
-                if i !== inst {
-                    print(inst.toPrint, str)
-                    print(">", i.toPrint)
-                    return i
-                }
-            }
-            it = cur.domNode?.idom?.block
-        }
-        map[block]![str] = inst
-        return nil
-    }
-
     private var visited = Set<BasicBlock>()
-    private func dfs(block: BasicBlock) {
-        visited.insert(block)
-        for son in block.succs where !visited.contains(son) {
-            dfs(block: son)
-        }
-        rpo.append(block)
-    }
+    
+    
     
     override func visit(v: Function) {
+        
+        func getPredicate(from block: BasicBlock) -> [VNExpression] {
+            var it: DomTree.Node? = domTree[block], pre = [VNExpression]()
+            while let cur = it?.block {
+                let only = cur.preds.generated {
+                    $0.reachable ? BasicBlock.Edge(from: $0, to: cur) : nil
+                }
+                if only.count == 1 {
+                    if let p = predicateEdge[only[0]] {
+                        pre.append(p)
+                    }
+                }
+                it = it?.idom
+            }
+            return pre
+        }
+        func evaluate(_ inst: Inst, in block: BasicBlock) -> Inst? {
+            let str = VNExpression(v: inst).simplified().description
+            let pre = getPredicate(from: block)
+            var it: DomTree.Node? = domTree[block], atoms = [(String, Bool)]()
+            let atm = RefSet<String>()
+            for p in pre {
+                p.getAllBoolAtoms(to: atm)
+            }
+            for a in atm._s {
+                atoms.append((a, false))
+            }
+            func tryPredicate(depth: Int) {
+                if depth >= atoms.count {
+                    
+                    return
+                } else {
+                    tryPredicate(depth: depth + 1)
+                    atoms[depth].1 = true
+                    tryPredicate(depth: depth + 1)
+                }
+            }
+            print(inst.toPrint)
+            print(str, atoms)
+            while let cur = it?.block {
+                if let i = map[cur]![str] {
+                    if i !== inst {
+                        print(inst.toPrint, str)
+                        print(">", i.toPrint)
+                        return i
+                    }
+                }
+                it = it?.idom
+            }
+            map[block]![str] = inst
+            return nil
+        }
+        func dfs(block: BasicBlock) {
+            visited.insert(block)
+            for son in block.succs where !visited.contains(son) {
+                dfs(block: son)
+            }
+            rpo.append(block)
+        }
         func changeIfNeeded(edge: BasicBlock.Edge, exp: VNExpression) -> Bool {
             if let p = predicateEdge[edge] {
                 if p != exp {
@@ -118,21 +154,24 @@ class GVNumberer: FunctionPass {
                 return true
             }
         }
-        func dealWith(edge: BasicBlock.Edge, exp: VNExpression) {
+        func updatePredicate(edge: BasicBlock.Edge, exp: VNExpression) {
             if changeIfNeeded(edge: edge, exp: exp) {
-                for blk in v.blocks where domTree.checkBF(edge.to.domNode!, dominates: blk.domNode!) {
-                    
+                for blk in v.blocks where blk.reachable && domTree.checkBF(edge.to, dominates: blk) {
+                    for i in blk.insts {workList.insert(i)}
+                }
+                for blk in v.blocks where blk.reachable && pdomTree.checkBF(blk, dominates: edge.to) {
+                    blockList.insert(blk)
                 }
             }
         }
         func tryBlock(block: BasicBlock) {
-            if !reachableBlock.contains(block) {
-                reachableBlock.insert(block)
-                domTree = DomTree(function: v, check: {reachableBlock.contains($0)})
-                pdomTree = PostDomTree(function: v, check: {reachableBlock.contains($0)})
-                for i in block.insts { workList.insert(i) }
+            if !block.reachable {
+                block.reachable = true
+                domTree = DomTree(function: v, check: {$0.reachable})
+                pdomTree = PostDomTree(function: v, check: {$0.reachable})
+                for i in block.insts {workList.insert(i)}
             } else {
-                for i in block.insts where i is PhiInst { workList.insert(i) }
+                for i in block.insts where i is PhiInst {workList.insert(i)}
             }
         }
         
@@ -142,18 +181,17 @@ class GVNumberer: FunctionPass {
         dfs(block: v.blocks.first!)
         rpo.reverse()
         map.removeAll()
-        for blk in v.blocks { map[blk] = [String: Inst]()}
-        workList.removeAll(); blockList.removeAll(); reachableBlock.removeAll(); predicateEdge.removeAll();
+        for blk in v.blocks {map[blk] = [String: Inst](); blk.reachable = false;}
+        workList.removeAll(); blockList.removeAll(); predicateEdge.removeAll();
         
         tryBlock(block: v.blocks.first!)
         
         while !workList.isEmpty || !blockList.isEmpty {
             for blk in rpo {
-                let flag = reachableBlock.contains(blk)
                 blockList.remove(blk)
                 for i in blk.insts where workList.contains(i) {
                     workList.remove(i)
-                    if !flag || !reachableBlock.contains(blk){
+                    if !blk.reachable {
                         continue
                     }
                     if i is CastInst && i.type == i.operands[0].type {
@@ -164,10 +202,11 @@ class GVNumberer: FunctionPass {
                     if let jump = i as? BrInst {
                         for s in blk.succs { tryBlock(block: s) }
                         if jump.operands.count > 1 {
-                            let preTrue = VNExpression(v: jump.operands[0]), preFalse = VNExpression(v: jump.operands[0])
+                            let preTrue = VNExpression(v: jump.operands[0])
+                            let preFalse = VNExpression(v: jump.operands[0])
                             preFalse.negation()
-                            dealWith(edge: BasicBlock.Edge(from: blk, to: blk.succs[0]), exp: preTrue)
-                            dealWith(edge: BasicBlock.Edge(from: blk, to: blk.succs[1]), exp: preFalse)
+                            updatePredicate(edge: BasicBlock.Edge(from: blk, to: blk.succs[0]), exp: preTrue.simplified())
+                            updatePredicate(edge: BasicBlock.Edge(from: blk, to: blk.succs[1]), exp: preFalse.simplified())
                         }
                     } else if !i.isCritical {
                         if let ninst = evaluate(i, in: blk) {
@@ -189,13 +228,21 @@ class VNExpression: CustomStringConvertible {
     var val = [VNExpression]() // be careful that there should be NO same expression references
     
     var unsigned: String {
-        val.count > 0 ? ("(\(op)" + (op == .icmp ? "_\(sop)" : "") + " " + val.joined() + ")") : name
+        name + (val.count > 0 ? ("=(" + (op == .icmp ? "\(sop)" : "\(op)") + " " + val.joined() + ")") : "")
     }
-    var description: String {
-        (neg ? "-" : "") + unsigned
+    var description: String {(neg ? "-" : "") + unsigned}
+    static func == (l: VNExpression, r: VNExpression) -> Bool {l.description == r.description}
+    static func != (l: VNExpression, r: VNExpression) -> Bool {!(l == r)}
+    
+    init(_ a: VNExpression) {
+        op      = a.op
+        sop     = a.sop
+        name    = a.name
+        neg     = a.neg
+        for v in a.val {
+            val.append(VNExpression(v))
+        }
     }
-    static func == (l: VNExpression, r: VNExpression) -> Bool { l.description == r.description }
-    static func != (l: VNExpression, r: VNExpression) -> Bool { !(l == r) }
     
     init(v: Value, depth: Int = 4) {
         name = v.name
@@ -203,16 +250,20 @@ class VNExpression: CustomStringConvertible {
             if !(depth == 0 || i.isCritical) {
                 op = i.operation
                 if i is PhiInst {
-                    for j in 0..<i.operands.count / 2 where (i.operands[j * 2 + 1] as! BasicBlock).executable {
-                        val.append(VNExpression(v: i.operands[j * 2], depth: depth - 1))
-                        val.append(VNExpression(v: i.operands[j * 2 + 1], depth: depth - 1))
-                    }
+//                    for j in 0..<i.operands.count / 2 where (i.operands[j * 2 + 1] as! BasicBlock).executable {
+//                        val.append(VNExpression(v: i.operands[j * 2], depth: depth - 1))
+//                        val.append(VNExpression(v: i.operands[j * 2 + 1], depth: depth - 1))
+//                    }
                 } else {
                     if let c = i as? CompareInst {
-                        sop = c.cmp
-                        val.append(VNExpression(n: "_compare_temp", o: .sub))
-                        for o in i.operands {
-                            val[0].val.append(VNExpression(v: o, depth: depth - 1))
+                        if c.cmp == .eq || c.cmp == .ne { // now only consider equations
+                            sop = c.cmp
+                            val.append(VNExpression(n: "_", o: .sub))
+                            for o in i.operands {
+                                val[0].val.append(VNExpression(v: o, depth: depth - 1))
+                            }
+                        } else {
+                            name = "1"
                         }
                     } else {
                         for o in i.operands {
@@ -267,6 +318,21 @@ class VNExpression: CustomStringConvertible {
         sop = VNExpression.notCompare[sop]!
     }
     
+    func getAllBoolAtoms(to dict: RefSet<String>) {
+        if op == .icmp {
+            dict.insert(description)
+        } else {
+            for v in val {
+                v.getAllBoolAtoms(to: dict)
+            }
+        }
+    }
+    
+    @discardableResult func addedPredicate(predicate: VNExpression) -> Self {
+        
+        return simplified()
+    }
+    
     @discardableResult func simplified() -> Self {
         val = val.generated {
             if $0.val.count > 0 {
@@ -277,15 +343,15 @@ class VNExpression: CustomStringConvertible {
             }
             return $0
         }
-
-        if let nop = VNExpression.opp[op] {
-            val[1].neg = val[1].neg != true
-            op = nop
-        }
         
         if let nop = VNExpression.normalCompare[sop] {
             val[0].neg = val[0].neg != true
             sop = nop
+        }
+
+        if let nop = VNExpression.opp[op] {
+            val[1].neg = val[1].neg != true
+            op = nop
         }
         
         if VNExpression.commutative.contains(op) {

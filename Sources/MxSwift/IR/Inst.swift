@@ -82,7 +82,7 @@ class PhiInst: Inst {
     override func accept(visitor: IRVisitor) {visitor.visit(v: self)}
     override func propogate() {
         ccpInfo = CCPInfo()
-        for i in 0..<operands.count / 2 where (operands[i * 2 + 1] as! BasicBlock).executable {
+        for i in 0..<operands.count / 2 where (operands[i * 2 + 1] as! BasicBlock).reachable {
             ccpInfo = ccpInfo.add(rhs: operands[i * 2].ccpInfo) {
                 $0.int! == $1.int! ? $0 : nil
             }

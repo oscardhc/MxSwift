@@ -12,16 +12,17 @@ class SCCPropagation: FunctionPass {
     var instRemoved = 0, branchChanged = 0
     override var resultString: String {super.resultString + "\(instRemoved) inst(s) removed, \(branchChanged) branch(es) changed."}
     
+    var workList = [Inst](), blockList = [BasicBlock]()
+    
     override func visit(v: Function) {
         //        each edge will only be evaluated ONCE, because the first time always have the highest lattice.
         
-        var workList = [Inst](), blockList = [BasicBlock]()
-        v.blocks.forEach {$0.executable = false}
+        workList.removeAll(); blockList.removeAll();
         
         func tryExecute(t: BasicBlock) {
-            if !t.executable {
+            if !t.reachable {
 //                print("EXE", t.name)
-                t.executable = true
+                t.reachable = true
                 blockList.append(t)
                 for u in t.users where u.user is PhiInst {
                     workList.append(u.user as! Inst)
@@ -42,7 +43,7 @@ class SCCPropagation: FunctionPass {
             }
             if !workList.isEmpty {
                 let i = workList.removeFirst()
-                if !i.inBlock.executable {
+                if !i.inBlock.reachable {
                     continue
                 }
                 if let b = i as? BrInst {

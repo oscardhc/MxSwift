@@ -9,10 +9,9 @@ import Foundation
 
 class BaseDomTree {
     
-    let f: Function
     var root: Node!
-    let dfnCounter = Counter()
-    var dfnList = [Node]()
+    private let f: Function, dfnCounter = Counter()
+    private var dfnList = [Node](), map = [BasicBlock: Node]()
     
     class Node: CustomStringConvertible {
         var description: String {block?.description ?? ""}
@@ -137,9 +136,19 @@ class BaseDomTree {
         }
     }
     
-    func checkBF(_ x: Node, dominates y: Node) -> Bool {
+    func checkBF(_ _x: BasicBlock, dominates _y: BasicBlock) -> Bool {
+        let x = self[_x], y = self[_y]
         return x === y.findDomFatherBF() {
             $0.depth == x.depth
+        }
+    }
+    
+    subscript(b: BasicBlock) -> Node {
+        get {
+            map[b]!
+        }
+        set(new) {
+            map[b] = new
         }
     }
     
@@ -152,14 +161,14 @@ class DomTree: BaseDomTree {
         super.init(function: function)
         
         for blk in function.blocks.filter(check) {
-            blk.domNode = Node(block: blk)
+            self[blk] = Node(block: blk)
         }
         for blk in function.blocks.filter(check) {
             blk.succs.filter(check).forEach {
-                _ = blk.domNode?.edge.append($0.domNode!)
+                _ = self[blk].edge.append(self[$0])
             }
         }
-        root = function.blocks.first!.domNode!
+        root = self[function.blocks.first!]
         build()
         
     }
@@ -173,21 +182,21 @@ class PostDomTree: BaseDomTree {
         super.init(function: function)
         
         for blk in function.blocks.filter(check) {
-            blk.pdomNode = Node(block: blk)
+            self[blk] = Node(block: blk)
         }
         
         let entryPoint = Node(block: nil) // note: this is the virtual root
         root = Node(block: nil) // note: this is actually the exit
         
-        _ = function.blocks.first!.pdomNode!.edge.append(entryPoint)
+        _ = self[function.blocks.first!].edge.append(entryPoint)
         _ = root.edge.append(entryPoint)
         
         for blk in function.blocks.filter(check){
             blk.succs.filter(check).forEach {
-                _ = $0.pdomNode!.edge.append(blk.pdomNode!)
+                _ = self[$0].edge.append(self[blk])
             }
             if blk.succs.filter(check).isEmpty {
-                _ = root.edge.append(blk.pdomNode!)
+                _ = root.edge.append(self[blk])
             }
         }
         build()
