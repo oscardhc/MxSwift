@@ -31,6 +31,9 @@ class SCCPropagation: FunctionPass {
         }
         
         v.operands.forEach {$0.ccpInfo = Value.CCPInfo(type: .variable)}
+        for blk in v.blocks {
+            blk.insts.forEach {$0.ccpInfo = Value.CCPInfo()}
+        }
         
         tryExecute(t: v.blocks.first!)
         
