@@ -32,7 +32,7 @@ class CSElimination: FunctionPass {
                     instRemoved += 1
                     continue
                 }
-                let exp = VNExpression(v: i, depth: -1)
+                let exp = VNExpression(v: i, depth: 4)
                 let str = exp.simplified().description
                 if let p = cseMap[str] {
                     print(i.toPrint)
@@ -79,7 +79,6 @@ class GVNumberer: FunctionPass {
     private var predicateEdge   = [BasicBlock.Edge: VNExpression]()
     private var visited         = Set<BasicBlock>()
     private var belongTo        = [Inst: String]()
-    private var leader          = [String: Inst]()
     
     override func visit(v: Function) {
         
@@ -98,6 +97,24 @@ class GVNumberer: FunctionPass {
             }
             return pre
         }
+        func lookup(description str: String, in block: BasicBlock, for inst: Inst) -> (Inst?, String)? {
+            var it  : DomTree.Node? = domTree[block]
+            //                print("=", str)
+            if Int(str) != nil {
+                return (nil, str)
+            }
+            while let cur = it?.block {
+                if let i = map[cur]![str] {
+                    if i !== inst {
+                        //                            print(inst.toPrint, str)
+                        //                            print(">>>>>>", i.toPrint)
+                        return (i, str)
+                    }
+                }
+                it = it?.idom
+            }
+            return nil
+        }
         func evaluate(_ inst: Inst, in block: BasicBlock) -> (Inst?, String) {
             let exp     = VNExpression(v: inst)
             let pres    = VNExpression(o: .and, from: getPredicate(from: block))
@@ -107,26 +124,8 @@ class GVNumberer: FunctionPass {
             var preRes  = [String: Int?]()
             var reach   = Set<String>()
             
-            func lookup(expression: VNExpression) -> (Inst?, String)? {
-                let str = expression.simplified().description
-                var it  : DomTree.Node? = domTree[block]
-                print("=", str)
-                if Int(str) != nil {
-                    return (nil, str)
-                }
-                while let cur = it?.block {
-                    if let i = map[cur]![str] {
-                        if i !== inst {
-                            print(inst.toPrint, str)
-                            print(">>>>>>", i.toPrint)
-                            return (i, str)
-                        }
-                    }
-                    it = it?.idom
-                }
-                return nil
-            }
-            func tryPredicate(depth: Int) {
+            
+            func findPredDomination(depth: Int) {
                 if depth >= keys.count {
                     let flag = pres.checkSatisfied(with: atomMap)
                     if flag > 0 {
@@ -141,21 +140,21 @@ class GVNumberer: FunctionPass {
                     return
                 } else {
                     atomMap[keys[depth]]!.0 = true
-                    tryPredicate(depth: depth + 1)
+                    findPredDomination(depth: depth + 1)
                     atomMap[keys[depth]]!.0 = false
-                    tryPredicate(depth: depth + 1)
+                    findPredDomination(depth: depth + 1)
                 }
             }
-            func findSubsets(current: VNExpression) -> (Inst?, String)? {
-                let expression = VNExpression(current)
-                if let i = lookup(expression: expression) {
+            func findAllCongruence(current: VNExpression) -> (Inst?, String)? {
+                let str = VNExpression(current).simplified().description
+                if let i = lookup(description: str, in: block, for: inst) {
                     return i
                 }
                 for (pred, _) in preRes {
                     let nexp = VNExpression(current)
                     if nexp.addedPredicate(predicate: atomMap[pred]!.1) && !reach.contains(nexp.description) {
                         reach.insert(nexp.description)
-                        if let i = findSubsets(current: nexp) {
+                        if let i = findAllCongruence(current: nexp) {
                             return i
                         }
                     }
@@ -164,13 +163,13 @@ class GVNumberer: FunctionPass {
             }
             
             // the terrible 2^n procedure
-            tryPredicate(depth: 0)
+            findPredDomination(depth: 0)
             
-            print("")
-            print(inst.toPrint, "           ", exp.description)
+//            print("")
+//            print(inst.toPrint, "           ", exp.description)
             // another terrible 2^n procedure
             
-            if let i = findSubsets(current: exp.simplified()) {
+            if let i = findAllCongruence(current: exp.simplified()) {
                 return i
             } else {
                 return (nil, exp.simplified().description)
@@ -216,18 +215,13 @@ class GVNumberer: FunctionPass {
             }
         }
         
-        v.operands.forEach {$0.ccpInfo = Value.CCPInfo(type: .variable)}
-        for blk in v.blocks {
-            blk.insts.forEach {$0.ccpInfo = Value.CCPInfo()}
-        }
-        
         rpo.removeAll(); visited.removeAll();
         dfs(block: v.blocks.first!)
         rpo.reverse()
         map.removeAll()
         for blk in v.blocks {map[blk] = [String: Inst](); blk.reachable = false;}
         workList.removeAll(); blockList.removeAll(); predicateEdge.removeAll();
-        belongTo.removeAll(); leader.removeAll();
+        belongTo.removeAll();
         
         tryBlock(block: v.blocks.first!)
         
@@ -266,7 +260,7 @@ class GVNumberer: FunctionPass {
                                 workList.insert(u.user as! Inst)
                             }
                         }
-                        print(">", res.1)
+//                        print(">", res.1)
                     }
                 }
             }
@@ -276,13 +270,13 @@ class GVNumberer: FunctionPass {
             for i in blk.insts where !i.isCritical {
                 let str = belongTo[i]!
                 if let n = Int(str) {
+                    print(i.toPrint)
+                    print(">", n)
                     i.replaced(by: IntC(name: "", type: .int, value: n))
                     instRemoved += 1
-                } else if let l = leader[str] {
-                    i.replaced(by: l)
+                } else if let (l, _) = lookup(description: str, in: blk, for: i) {
+                    i.replaced(by: l!)
                     instRemoved += 1
-                } else {
-                    leader[str] = i
                 }
             }
         }
@@ -427,7 +421,7 @@ class VNExpression: CustomStringConvertible {
             case .add:
                 for use in v.vals {
                     for old in vals where old.name == use.name {
-                        print("|", description, predicate.description, terminator: " -> ")
+//                        print("|", description, predicate.description, terminator: " -> ")
                         let _des = description
                         for _new in v.vals where _new !== use {
                             let new = VNExpression(_new)
@@ -435,7 +429,7 @@ class VNExpression: CustomStringConvertible {
                             vals.append(new)
                         }
                         vals.removeAll {$0 === old}
-                        print(description)
+//                        print(description)
                         return description != _des
                     }
                 }
