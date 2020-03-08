@@ -187,6 +187,15 @@ class List<T: CustomStringConvertible>: CustomStringConvertible, Sequence {
         return nil
     }
     
+    func getNodeIndexBF(from: Node) -> Int {
+        var cur: Node? = from, ret = 0
+        while cur?.prev != nil {
+            cur = cur!.prev
+            ret += 1
+        }
+        return ret
+    }
+    
     func remove(node cur: Node) {
         cur.remove()
     }

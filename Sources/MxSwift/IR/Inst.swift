@@ -62,6 +62,10 @@ class Inst: User {
         self is AllocaInst || self is CallInst || self is StoreInst || self is LoadInst || self is BrInst
     }
     
+    var blockIndexBF: Int {
+        nodeInBlock!.list.getNodeIndexBF(from: nodeInBlock!)
+    }
+    
 }
 
 class PhiInst: Inst {

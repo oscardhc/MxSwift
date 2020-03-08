@@ -86,6 +86,8 @@ class Value: HashableObject, CustomStringConvertible, Hashable {
     var isVariable: Bool {ccpInfo.type == .variable}
     func propogate() {}
     
+    var parseInt: Int?
+    
     //    **************** for VN ****************
     var rank = -1
     

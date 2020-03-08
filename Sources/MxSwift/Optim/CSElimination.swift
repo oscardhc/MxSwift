@@ -116,6 +116,7 @@ class GVNumberer: FunctionPass {
             return nil
         }
         func evaluate(_ inst: Inst, in block: BasicBlock) -> (Inst?, String) {
+            
             let exp     = VNExpression(v: inst)
             let pres    = VNExpression(o: .and, from: getPredicate(from: block))
             let atomMap = RefDict<String, (Bool, VNExpression)>()
@@ -123,7 +124,6 @@ class GVNumberer: FunctionPass {
             let keys    = [String](atomMap._s.keys)
             var preRes  = [String: Int?]()
             var reach   = Set<String>()
-            
             
             func findPredDomination(depth: Int) {
                 if depth >= keys.count {
@@ -146,8 +146,10 @@ class GVNumberer: FunctionPass {
                 }
             }
             func findAllCongruence(current: VNExpression) -> (Inst?, String)? {
+                print("find", current.description)
                 let str = VNExpression(current).simplified().description
                 if let i = lookup(description: str, in: block, for: inst) {
+                    print(">>>>>>", i)
                     return i
                 }
                 for (pred, _) in preRes {
@@ -169,7 +171,7 @@ class GVNumberer: FunctionPass {
 //            print(inst.toPrint, "           ", exp.description)
             // another terrible 2^n procedure
             
-            if let i = findAllCongruence(current: exp.simplified()) {
+            if let i = findAllCongruence(current: exp) {
                 return i
             } else {
                 return (nil, exp.simplified().description)
@@ -222,6 +224,7 @@ class GVNumberer: FunctionPass {
         for blk in v.blocks {map[blk] = [String: Inst](); blk.reachable = false;}
         workList.removeAll(); blockList.removeAll(); predicateEdge.removeAll();
         belongTo.removeAll();
+        for b in v.blocks {b.insts.forEach {$0.parseInt = nil}}
         
         tryBlock(block: v.blocks.first!)
         
@@ -241,18 +244,35 @@ class GVNumberer: FunctionPass {
                     if let jump = i as? BrInst {
                         for s in blk.succs { tryBlock(block: s) }
                         if jump.operands.count > 1 {
-                            let preTrue = VNExpression(v: jump.operands[0])
-                            let preFalse = VNExpression(v: jump.operands[0])
+                            let preTrue = VNExpression(v: jump.operands[0], toFold: false)
+                            let preFalse = VNExpression(v: jump.operands[0], toFold: false)
                             preFalse.negation()
-                            updatePredicate(edge: BasicBlock.Edge(from: blk, to: blk.succs[0]), exp: preTrue.simplified())
-                            updatePredicate(edge: BasicBlock.Edge(from: blk, to: blk.succs[1]), exp: preFalse.simplified())
+                            updatePredicate(edge: BasicBlock.Edge(from: blk, to: blk.succs[0]), exp: preTrue.simplified(toFold: false))
+                            updatePredicate(edge: BasicBlock.Edge(from: blk, to: blk.succs[1]), exp: preFalse.simplified(toFold: false))
+                            print("        branch", preTrue.description)
                         }
                     } else if !i.isCritical {
 
+                        print("")
                         let res = evaluate(i, in: blk)
                         // how to deal with conflicts between propogation predicted value and predicatedly predicted value?
                         // answer: there should be no conflicts...
-                        map[blk]![res.1] = i
+                        
+                        print(i.toPrint, res)
+                        
+                        if let x = map[blk]![res.1] {
+                            if x.blockIndexBF > i.blockIndexBF {
+                                map[blk]![res.1] = i
+                            }
+                        } else {
+                            map[blk]![res.1] = i
+                        }
+                        
+                        if let n = Int(res.1) {
+                            i.parseInt = n
+                        } else {
+                            i.parseInt = nil
+                        }
                         
                         if belongTo[i] != res.1 {
                             belongTo[i] = res.1
@@ -267,7 +287,7 @@ class GVNumberer: FunctionPass {
         }
         
         for blk in rpo {
-            for i in blk.insts where !i.isCritical {
+            for i in blk.insts.reversed() where !i.isCritical {
                 let str = belongTo[i]!
                 if let n = Int(str) {
                     print(i.toPrint)
@@ -275,10 +295,30 @@ class GVNumberer: FunctionPass {
                     i.replaced(by: IntC(name: "", type: .int, value: n))
                     instRemoved += 1
                 } else if let (l, _) = lookup(description: str, in: blk, for: i) {
+                    print(i.toPrint)
+                    print(">", l!)
                     i.replaced(by: l!)
                     instRemoved += 1
                 }
             }
+            
+            // phi with same value
+            for i in blk.insts where i is PhiInst {
+                var res: Value? = nil, flag = true
+                for j in 0..<i.operands.count/2 {
+                    if res == nil {
+                        res = i.operands[j*2]
+                    } else {
+                        if res !== i.operands[j*2] {
+                            flag = false
+                        }
+                    }
+                }
+                if flag && res != nil {
+                    i.replaced(by: res!)
+                }
+            }
+            
         }
     
     
@@ -290,6 +330,7 @@ class VNExpression: CustomStringConvertible {
     var op      = Inst.OP.add, sop = CompareInst.CMP.eq // just nonsence init
     var name    : String
     var neg     = false
+    var intVal  : Int? // for SCCPredicted value
     var vals    = [VNExpression]() // be careful that there should be NO same expression references
     
     var unsigned: String {
@@ -298,6 +339,8 @@ class VNExpression: CustomStringConvertible {
     var description: String {(neg ? "-" : "") + unsigned}
     static func == (l: VNExpression, r: VNExpression) -> Bool {l.description == r.description}
     static func != (l: VNExpression, r: VNExpression) -> Bool {!(l == r)}
+    
+    static var maxInit = 4
     
     init(_ a: VNExpression) {
         op      = a.op
@@ -313,28 +356,29 @@ class VNExpression: CustomStringConvertible {
         vals    = vs
         name    = "_"
     }
-    init(v: Value, depth: Int = 4) {
+    init(v: Value, depth: Int = VNExpression.maxInit, toFold: Bool = true) {
         name = v.name
         if let i = v as? Inst {
-            if let n = v.ccpInfo.constValue {
-                name = "\(n)"
-            } else if !(depth == 0 || i.isCritical) {
+            if depth != VNExpression.maxInit && toFold && v.parseInt != nil {
+                intVal = v.parseInt!
+            }
+            if !(depth == 0 || i.isCritical) {
                 op = i.operation
                 if i is PhiInst {
                     for j in 0..<i.operands.count/2 where (i.operands[j*2 + 1] as! BasicBlock).reachable {
-                        vals.append(VNExpression(v: i.operands[j*2], depth: depth - 1))
-                        vals.append(VNExpression(v: i.operands[j*2 + 1], depth: depth - 1))
+                        vals.append(VNExpression(v: i.operands[j*2], depth: depth - 1, toFold: toFold))
+                        vals.append(VNExpression(v: i.operands[j*2 + 1], depth: depth - 1, toFold: toFold))
                     }
                 } else {
                     if let c = i as? CompareInst {
                         sop = c.cmp
                         vals.append(VNExpression(n: "_", o: .sub))
                         for o in i.operands {
-                            vals[0].vals.append(VNExpression(v: o, depth: depth - 1))
+                            vals[0].vals.append(VNExpression(v: o, depth: depth - 1, toFold: toFold))
                         }
                     } else {
                         for o in i.operands {
-                            vals.append(VNExpression(v: o, depth: depth - 1))
+                            vals.append(VNExpression(v: o, depth: depth - 1, toFold: toFold))
                         }
                     }
                 }
@@ -347,12 +391,12 @@ class VNExpression: CustomStringConvertible {
     init(n: String, o: Inst.OP) {name = n; op = o}
     
     func sort() {
-        vals.forEach {$0.sort()}
         vals.sort {"\($0)" < "\($1)"}
     }
     
     static let commutative: Set<Inst.OP> = [.add, .mul]
     static let opp = [Inst.OP.sub: Inst.OP.add]
+    
     func deleteOpp() -> Bool {
         for l in vals { for r in vals where l.neg != r.neg && l.unsigned == r.unsigned {
             vals.removeAll {$0 === l}
@@ -372,6 +416,8 @@ class VNExpression: CustomStringConvertible {
     }
     func getSubInt(v: VNExpression) -> Int? {
         if let n = Int(v.name) {
+            return v.neg ? inverse(i: n) : n
+        } else if let n = intVal {
             return v.neg ? inverse(i: n) : n
         }
         return nil
@@ -420,16 +466,20 @@ class VNExpression: CustomStringConvertible {
             switch v.op {
             case .add:
                 for use in v.vals {
-                    for old in vals where old.name == use.name {
-//                        print("|", description, predicate.description, terminator: " -> ")
+                    for j in 0..<vals.count where vals[j].name == use.name && Int(use.name) == nil {
+                        //                    for old in vals where old.name == use.name {
+                        let old = vals[j]
+                        print("|", description, predicate.description, terminator: " --[\(old.name), \(use.name)]-> ")
                         let _des = description
+                        let replaced = VNExpression(o: .add, from: [])
                         for _new in v.vals where _new !== use {
                             let new = VNExpression(_new)
                             new.neg = (new.neg == old.neg) != use.neg
-                            vals.append(new)
+                            replaced.vals.append(new)
                         }
+                        vals.insert(replaced, at: j)
                         vals.removeAll {$0 === old}
-//                        print(description)
+                        print(description)
                         return description != _des
                     }
                 }
@@ -437,13 +487,23 @@ class VNExpression: CustomStringConvertible {
                 break
             }
         }
+        for v in vals where v.vals.count > 0 && v.addedPredicate(predicate: predicate) {
+            return true
+        }
         return false
     }
     
-    @discardableResult func simplified() -> Self {
+    @discardableResult func simplified(toFold: Bool = true) -> Self {
+        
+        if intVal != nil {
+            name = "\(intVal!)"
+            vals = []
+            return self
+        }
+        
         vals = vals.generated {
             if $0.vals.count > 0 {
-                $0.simplified()
+                $0.simplified(toFold: toFold)
                 if $0.vals.count == 1 && Inst.OP.map[$0.op] != nil {
                     return $0.vals[0]
                 }
@@ -462,24 +522,29 @@ class VNExpression: CustomStringConvertible {
         }
         if op == .phi {
             
-            var res: Int? = nil, flag = true
-            for j in 0..<vals.count/2 {
-                if let n = getSubInt(v: vals[j]) {
-                    if res == nil {
-                        if flag {
-                            res = n
+            if toFold {
+                var res: Int? = nil, flag = true
+                for j in 0..<vals.count/2 {
+                    if let n = getSubInt(v: vals[j*2]) {
+                        if res == nil {
+                            if flag {
+                                res = n
+                            }
+                        } else if res! != n {
+                            print("false.1", vals[j*2+1])
+                            flag = false
+                            res = nil
                         }
-                    } else if res! != n {
+                    } else {
+                        print("false.2", vals[j*2+1])
                         flag = false
-                        res = nil
                     }
-                } else {
-                    flag = false
                 }
-            }
-            if flag && res != nil {
-                vals = []
-                name = "\(res!)"
+                print("simplify phi", name, res, flag)
+                if flag && res != nil {
+                    vals = []
+                    name = "\(res!)"
+                }
             }
             
         } else if VNExpression.commutative.contains(op) {
@@ -493,19 +558,21 @@ class VNExpression: CustomStringConvertible {
                 }
             }
             
-            var res: Int? = nil
-            vals = vals.generated {
-                if let n = getSubInt(v: $0) {
-                    res = res == nil ? n : Inst.OP.map[op]!(res!, n)
-                    return nil
+            if toFold {
+                var res: Int? = nil
+                vals = vals.generated {
+                    if let n = getSubInt(v: $0) {
+                        res = res == nil ? n : Inst.OP.map[op]!(res!, n)
+                        return nil
+                    }
+                    return $0
                 }
-                return $0
-            }
-            if let n = res {
-                if vals.isEmpty {
-                    name = "\(n)"
-                } else {
-                    vals.append(VNExpression(i: n))
+                if let n = res {
+                    if vals.isEmpty {
+                        name = "\(n)"
+                    } else {
+                        vals.append(VNExpression(i: n))
+                    }
                 }
             }
             
