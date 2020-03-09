@@ -147,7 +147,7 @@ class s {
     IRPrinter(filename: "/Users/oscar/Documents/Classes/1920_Spring/Compiler/tmp/out1.ll").work(on: ir.module)
     
 
-    for _ in 0..<2 {
+    for _ in 0..<1 {
         SCCPropagation().work(on: ir.module)
         DCElimination().work(on: ir.module)
         CFGSimplifier().work(on: ir.module)

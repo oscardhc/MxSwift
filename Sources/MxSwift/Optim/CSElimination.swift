@@ -34,8 +34,8 @@ class CSElimination: FunctionPass {
                 }
                 let exp = VNExpression(v: i, depth: 4)
                 let str = exp.simplified().description
+                print(i.toPrint, str)
                 if let p = cseMap[str] {
-                    print(i.toPrint)
                     print(">", p.toPrint)
                     i.replaced(by: p)
                     instRemoved += 1
@@ -99,15 +99,12 @@ class GVNumberer: FunctionPass {
         }
         func lookup(description str: String, in block: BasicBlock, for inst: Inst) -> (Inst?, String)? {
             var it  : DomTree.Node? = domTree[block]
-            //                print("=", str)
             if Int(str) != nil {
                 return (nil, str)
             }
             while let cur = it?.block {
                 if let i = map[cur]![str] {
                     if i !== inst {
-                        //                            print(inst.toPrint, str)
-                        //                            print(">>>>>>", i.toPrint)
                         return (i, str)
                     }
                 }
@@ -146,7 +143,7 @@ class GVNumberer: FunctionPass {
                 }
             }
             func findAllCongruence(current: VNExpression) -> (Inst?, String)? {
-                print("find", current.description)
+                print("find", current.description, current.simplified().description)
                 let str = VNExpression(current).simplified().description
                 if let i = lookup(description: str, in: block, for: inst) {
                     print(">>>>>>", i)
@@ -154,7 +151,7 @@ class GVNumberer: FunctionPass {
                 }
                 for (pred, _) in preRes {
                     let nexp = VNExpression(current)
-                    if nexp.addedPredicate(predicate: atomMap[pred]!.1) && !reach.contains(nexp.description) {
+                    if nexp.addedPredicate(predicate: atomMap[pred]!.1) && !reach.contains(nexp.simplified().description) {
                         reach.insert(nexp.description)
                         if let i = findAllCongruence(current: nexp) {
                             return i
@@ -167,15 +164,14 @@ class GVNumberer: FunctionPass {
             // the terrible 2^n procedure
             findPredDomination(depth: 0)
             
-//            print("")
-//            print(inst.toPrint, "           ", exp.description)
             // another terrible 2^n procedure
-            
             if let i = findAllCongruence(current: exp) {
                 return i
             } else {
+                print("failed", exp.description, exp.simplified().description)
                 return (nil, exp.simplified().description)
             }
+            
         }
         func dfs(block: BasicBlock) {
             visited.insert(block)
@@ -224,7 +220,7 @@ class GVNumberer: FunctionPass {
         for blk in v.blocks {map[blk] = [String: Inst](); blk.reachable = false;}
         workList.removeAll(); blockList.removeAll(); predicateEdge.removeAll();
         belongTo.removeAll();
-        for b in v.blocks {b.insts.forEach {$0.parseInt = nil}}
+        for b in v.blocks {b.insts.forEach {$0.constInt = nil}}
         
         tryBlock(block: v.blocks.first!)
         
@@ -242,14 +238,34 @@ class GVNumberer: FunctionPass {
                         continue
                     }
                     if let jump = i as? BrInst {
-                        for s in blk.succs { tryBlock(block: s) }
+                        
                         if jump.operands.count > 1 {
-                            let preTrue = VNExpression(v: jump.operands[0], toFold: false)
-                            let preFalse = VNExpression(v: jump.operands[0], toFold: false)
-                            preFalse.negation()
-                            updatePredicate(edge: BasicBlock.Edge(from: blk, to: blk.succs[0]), exp: preTrue.simplified(toFold: false))
-                            updatePredicate(edge: BasicBlock.Edge(from: blk, to: blk.succs[1]), exp: preFalse.simplified(toFold: false))
-                            print("        branch", preTrue.description)
+                            
+                            var flag: Bool? = nil
+                            if let ci = jump.operands[0] as? Inst {
+                                let condition = evaluate(ci, in: blk)
+                                print("        condition", ci.toPrint, condition)
+                                if let n = Int(condition.1) {
+                                    flag = n == 1
+                                }
+                            }
+                            
+                            if flag != false {
+                                tryBlock(block: blk.succs[0])
+                                let preTrue = VNExpression(v: jump.operands[0])
+                                updatePredicate(edge: BasicBlock.Edge(from: blk, to: blk.succs[0]), exp: preTrue.simplified(toFold: false))
+                                print("        branch T", preTrue.description)
+                            }
+                            if flag != true {
+                                tryBlock(block: blk.succs[1])
+                                let preFalse = VNExpression(v: jump.operands[0])
+                                preFalse.negation()
+                                updatePredicate(edge: BasicBlock.Edge(from: blk, to: blk.succs[1]), exp: preFalse.simplified(toFold: false))
+                                print("        branch F", preFalse.description)
+                            }
+                            
+                        } else {
+                            tryBlock(block: blk.succs[0])
                         }
                     } else if !i.isCritical {
 
@@ -269,9 +285,9 @@ class GVNumberer: FunctionPass {
                         }
                         
                         if let n = Int(res.1) {
-                            i.parseInt = n
+                            i.constInt = n
                         } else {
-                            i.parseInt = nil
+                            i.constInt = nil
                         }
                         
                         if belongTo[i] != res.1 {
@@ -286,7 +302,7 @@ class GVNumberer: FunctionPass {
             }
         }
         
-        for blk in rpo {
+        for blk in rpo where blk.reachable {
             for i in blk.insts.reversed() where !i.isCritical {
                 let str = belongTo[i]!
                 if let n = Int(str) {
@@ -304,6 +320,7 @@ class GVNumberer: FunctionPass {
             
             // phi with same value
             for i in blk.insts where i is PhiInst {
+                
                 var res: Value? = nil, flag = true
                 for j in 0..<i.operands.count/2 {
                     if res == nil {
@@ -330,7 +347,6 @@ class VNExpression: CustomStringConvertible {
     var op      = Inst.OP.add, sop = CompareInst.CMP.eq // just nonsence init
     var name    : String
     var neg     = false
-    var intVal  : Int? // for SCCPredicted value
     var vals    = [VNExpression]() // be careful that there should be NO same expression references
     
     var unsigned: String {
@@ -356,29 +372,28 @@ class VNExpression: CustomStringConvertible {
         vals    = vs
         name    = "_"
     }
-    init(v: Value, depth: Int = VNExpression.maxInit, toFold: Bool = true) {
+    init(v: Value, depth: Int = VNExpression.maxInit) {
         name = v.name
         if let i = v as? Inst {
-            if depth != VNExpression.maxInit && toFold && v.parseInt != nil {
-                intVal = v.parseInt!
-            }
-            if !(depth == 0 || i.isCritical) {
+            if depth != VNExpression.maxInit && v.constInt != nil {
+                name = "\(v.constInt!)"
+            } else if !(depth == 0 || i.isCritical) {
                 op = i.operation
                 if i is PhiInst {
                     for j in 0..<i.operands.count/2 where (i.operands[j*2 + 1] as! BasicBlock).reachable {
-                        vals.append(VNExpression(v: i.operands[j*2], depth: depth - 1, toFold: toFold))
-                        vals.append(VNExpression(v: i.operands[j*2 + 1], depth: depth - 1, toFold: toFold))
+                        vals.append(VNExpression(v: i.operands[j*2], depth: depth - 1))
+                        vals.append(VNExpression(v: i.operands[j*2 + 1], depth: depth - 1))
                     }
                 } else {
                     if let c = i as? CompareInst {
                         sop = c.cmp
                         vals.append(VNExpression(n: "_", o: .sub))
                         for o in i.operands {
-                            vals[0].vals.append(VNExpression(v: o, depth: depth - 1, toFold: toFold))
+                            vals[0].vals.append(VNExpression(v: o, depth: depth - 1))
                         }
                     } else {
                         for o in i.operands {
-                            vals.append(VNExpression(v: o, depth: depth - 1, toFold: toFold))
+                            vals.append(VNExpression(v: o, depth: depth - 1))
                         }
                     }
                 }
@@ -396,6 +411,9 @@ class VNExpression: CustomStringConvertible {
     
     static let commutative: Set<Inst.OP> = [.add, .mul]
     static let opp = [Inst.OP.sub: Inst.OP.add]
+    static let normalCompare = [CompareInst.CMP.sle: CompareInst.CMP.sge, .slt: .sgt]
+    static let notCompare = [CompareInst.CMP.sle: CompareInst.CMP.sgt, .sgt: .sle, .sge: .slt, .slt: .sge, .eq: .ne, .ne: .eq]
+    static let comparisons = [CompareInst.CMP.eq, .ne, .sle, .sge, .slt, .sgt]
     
     func deleteOpp() -> Bool {
         for l in vals { for r in vals where l.neg != r.neg && l.unsigned == r.unsigned {
@@ -411,20 +429,15 @@ class VNExpression: CustomStringConvertible {
         case .add:
             return -i
         default:
-            return 0
+            return -i
         }
     }
     func getSubInt(v: VNExpression) -> Int? {
         if let n = Int(v.name) {
             return v.neg ? inverse(i: n) : n
-        } else if let n = intVal {
-            return v.neg ? inverse(i: n) : n
         }
         return nil
     }
-    
-    static let normalCompare = [CompareInst.CMP.sle: CompareInst.CMP.sge, .slt: .sgt]
-    static let notCompare = [CompareInst.CMP.sle: CompareInst.CMP.sgt, .sgt: .sle, .sge: .slt, .slt: .sge, .eq: .ne, .ne: .eq]
     
     //    !(a < 0) -> a >= 0 -> -a <= 0
     func negation() {
@@ -495,9 +508,7 @@ class VNExpression: CustomStringConvertible {
     
     @discardableResult func simplified(toFold: Bool = true) -> Self {
         
-        if intVal != nil {
-            name = "\(intVal!)"
-            vals = []
+        if vals.isEmpty {
             return self
         }
         
@@ -531,16 +542,13 @@ class VNExpression: CustomStringConvertible {
                                 res = n
                             }
                         } else if res! != n {
-                            print("false.1", vals[j*2+1])
                             flag = false
                             res = nil
                         }
                     } else {
-                        print("false.2", vals[j*2+1])
                         flag = false
                     }
                 }
-                print("simplify phi", name, res, flag)
                 if flag && res != nil {
                     vals = []
                     name = "\(res!)"
@@ -577,6 +585,13 @@ class VNExpression: CustomStringConvertible {
             }
             
             sort()
+            
+        } else if op == .icmp && VNExpression.comparisons.contains(sop) {
+            if let n = getSubInt(v: vals[0]) {
+                name = "\(CompareInst.CMP.map[sop]!(n, 0) ? 1 : 0)"
+                vals = []
+            }
+            
         }
         
         while deleteOpp() {}

@@ -59,7 +59,7 @@ class Inst: User {
     }
     
     var isCritical: Bool {
-        self is AllocaInst || self is CallInst || self is StoreInst || self is LoadInst || self is BrInst
+        self is AllocaInst || self is CallInst || self is StoreInst || self is LoadInst || self is BrInst || self is ReturnInst
     }
     
     var blockIndexBF: Int {
