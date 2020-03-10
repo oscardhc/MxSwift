@@ -126,8 +126,10 @@ class s {
     if error.message.count > 0 {
         throw error
     }
-   
-//    return
+    
+    if CommandLine.arguments.count > 1 {
+        return
+    }
     
     let ir = IRBuilder()
     ir.visit(node: prog)
@@ -136,8 +138,6 @@ class s {
     if error.message.count > 0 {
         throw error
     }
-    
-//    return
     
     DeadCleaner().work(on: ir.module)
     
@@ -166,8 +166,8 @@ class s {
 }
 
 do {
-    try compile(useFileStream: true)
-//    try compile(useFileStream: false)
+//    try compile(useFileStream: true)
+    try compile(useFileStream: false)
 } catch let e as CompilationError {
     e.show()
     exit(-1)

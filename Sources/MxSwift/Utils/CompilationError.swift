@@ -68,6 +68,9 @@ class CompilationError: Error {
     func noReturn(name: String) {
         message.append(#"[Error] Non-void function \#(name) has no return value."#)
     }
+    func newExprError(name: String) {
+        message.append(#"[Error] New expression error for \#(name)."#)
+    }
     
     func show() {
         message.forEach{print($0)}

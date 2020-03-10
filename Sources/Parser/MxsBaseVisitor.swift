@@ -156,6 +156,13 @@ open class MxsBaseVisitor<T>: AbstractParseTreeVisitor<T> {
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
+	open func visitNewIndex(_ ctx: MxsParser.NewIndexContext) -> T? { return visitChildren(ctx) }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation returns the result of calling
+	 * {@link #visitChildren} on {@code ctx}.</p>
+	 */
 	open func visitNewExpr(_ ctx: MxsParser.NewExprContext) -> T? { return visitChildren(ctx) }
 	/**
 	 * {@inheritDoc}

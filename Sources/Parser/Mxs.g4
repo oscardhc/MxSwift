@@ -36,6 +36,8 @@ type: (Bool | Int | String | Void | Identifier) emptySet*;
 
 functionExpression: Identifier '(' ((expression ',')* expression)? ')';
 
+newIndex: '[' expression? ']';
+
 expression
     : Identifier                                                                    #idExpr
     | (This | BoolLiteral | IntLiteral | StringLiteral | NullLiteral)               #literalExpr
@@ -43,7 +45,7 @@ expression
     | expression op='.' (Identifier | This | functionExpression)                    #memberExpr
     | array=expression op='[' idx=expression ']'                                    #arrayExpr
     | functionExpression                                                            #funcExpr
-    | New ty=(Bool | Int | String | Void | Identifier) ('[' expression ']')+  emptySet*     #newExpr
+    | New ty=(Bool | Int | String | Void | Identifier) newIndex+                    #newExpr
     | expression op=(SelfAdd | SelfSub)                                             #sufExpr
     | op=(SelfAdd | SelfSub | Add | Sub | Negation | Bitwise) expression            #unaryExpr
     | New Identifier ('(' ')')?                                                     #instExpr

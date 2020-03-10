@@ -202,10 +202,21 @@ class ASTBuilder: MxsBaseVisitor<ASTNode> {
     }
     
     override func visitNewExpr(_ ctx: MxsParser.NewExprContext) -> ASTNode? {
-        let node = NewE(scope: current, baseType: ctx.ty.getText(), expressions: [], empty: ctx.emptySet().count)
-        for expr in ctx.expression() {
-            node.expressions.append(visit(expr) as! Expression)
+        let node = NewE(scope: current, baseType: ctx.ty.getText(), expressions: [], empty: 0)
+        var flag = true
+        for idx in ctx.newIndex() {
+            if let expr = idx.expression() {
+                if flag {
+                    node.expressions.append(visit(expr) as! Expression)
+                } else {
+                    error.newExprError(name: ctx.ty.getText()!)
+                }
+            } else {
+                node.empty += 1
+                flag = false
+            }
         }
+        
         return node
     }
     

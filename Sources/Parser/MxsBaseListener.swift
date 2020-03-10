@@ -275,6 +275,19 @@ open class MxsBaseListener: MxsListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	open func enterNewIndex(_ ctx: MxsParser.NewIndexContext) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	open func exitNewIndex(_ ctx: MxsParser.NewIndexContext) { }
+
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	open func enterNewExpr(_ ctx: MxsParser.NewExprContext) { }
 	/**
 	 * {@inheritDoc}

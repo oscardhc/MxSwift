@@ -48,6 +48,10 @@ class SemanticChecker: ASTBaseVisitor {
 
     override func visit(node: FunctionD) {
         super.visit(node: node)
+        let type = node.type.dropAllArray()
+        if !builtinTypes.contains(type) && node.scope.find(name: type, check: {$0.subScope?.scopeType == .CLASS}) == nil {
+            error.typeError(name: node.id, type: node.type)
+        }
         if node.id == "main" && (node.type != int || node.parameters.count > 0) {
             error.mainFuncError()
         }

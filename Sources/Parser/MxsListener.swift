@@ -247,6 +247,18 @@ public protocol MxsListener: ParseTreeListener {
 	 */
 	func exitFunctionExpression(_ ctx: MxsParser.FunctionExpressionContext)
 	/**
+	 * Enter a parse tree produced by {@link MxsParser#newIndex}.
+	 - Parameters:
+	   - ctx: the parse tree
+	 */
+	func enterNewIndex(_ ctx: MxsParser.NewIndexContext)
+	/**
+	 * Exit a parse tree produced by {@link MxsParser#newIndex}.
+	 - Parameters:
+	   - ctx: the parse tree
+	 */
+	func exitNewIndex(_ ctx: MxsParser.NewIndexContext)
+	/**
 	 * Enter a parse tree produced by the {@code newExpr}
 	 * labeled alternative in {@link MxsParser#expression}.
 	 - Parameters:

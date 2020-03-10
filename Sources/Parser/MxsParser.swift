@@ -38,7 +38,7 @@ open class MxsParser: Parser {
             RULE_returnSentence = 11, RULE_breakSentence = 12, RULE_continueSentence = 13, 
             RULE_expressionSentence = 14, RULE_sentence = 15, RULE_codeBlock = 16, 
             RULE_emptySet = 17, RULE_type = 18, RULE_functionExpression = 19, 
-            RULE_expression = 20
+            RULE_newIndex = 20, RULE_expression = 21
 
 	public
 	static let ruleNames: [String] = [
@@ -46,7 +46,7 @@ open class MxsParser: Parser {
 		"singleVarDeclaration", "variableDeclaration", "classDeclaration", "declSentence", 
 		"ifSentence", "whileSentence", "forSentence", "returnSentence", "breakSentence", 
 		"continueSentence", "expressionSentence", "sentence", "codeBlock", "emptySet", 
-		"type", "functionExpression", "expression"
+		"type", "functionExpression", "newIndex", "expression"
 	]
 
 	private static let _LITERAL_NAMES: [String?] = [
@@ -143,7 +143,7 @@ open class MxsParser: Parser {
 	    }
 		do {
 		 	try enterOuterAlt(_localctx, 1)
-		 	setState(45)
+		 	setState(47)
 		 	try _errHandler.sync(self)
 		 	_la = try _input.LA(1)
 		 	while (//closure
@@ -154,11 +154,11 @@ open class MxsParser: Parser {
 		 	}()
 		 	      return testSet
 		 	 }()) {
-		 		setState(42)
+		 		setState(44)
 		 		try declaration()
 
 
-		 		setState(47)
+		 		setState(49)
 		 		try _errHandler.sync(self)
 		 		_la = try _input.LA(1)
 		 	}
@@ -223,24 +223,24 @@ open class MxsParser: Parser {
 	    		try! exitRule()
 	    }
 		do {
-		 	setState(51)
+		 	setState(53)
 		 	try _errHandler.sync(self)
 		 	switch(try getInterpreter().adaptivePredict(_input,1, _ctx)) {
 		 	case 1:
 		 		try enterOuterAlt(_localctx, 1)
-		 		setState(48)
+		 		setState(50)
 		 		try functionDeclaration()
 
 		 		break
 		 	case 2:
 		 		try enterOuterAlt(_localctx, 2)
-		 		setState(49)
+		 		setState(51)
 		 		try variableDeclaration()
 
 		 		break
 		 	case 3:
 		 		try enterOuterAlt(_localctx, 3)
-		 		setState(50)
+		 		setState(52)
 		 		try classDeclaration()
 
 		 		break
@@ -321,13 +321,13 @@ open class MxsParser: Parser {
 		do {
 			var _alt:Int
 		 	try enterOuterAlt(_localctx, 1)
-		 	setState(53)
-		 	try type()
-		 	setState(54)
-		 	try match(MxsParser.Tokens.Identifier.rawValue)
 		 	setState(55)
+		 	try type()
+		 	setState(56)
+		 	try match(MxsParser.Tokens.Identifier.rawValue)
+		 	setState(57)
 		 	try match(MxsParser.Tokens.T__0.rawValue)
-		 	setState(68)
+		 	setState(70)
 		 	try _errHandler.sync(self)
 		 	_la = try _input.LA(1)
 		 	if (//closure
@@ -338,36 +338,36 @@ open class MxsParser: Parser {
 		 	}()
 		 	      return testSet
 		 	 }()) {
-		 		setState(62)
+		 		setState(64)
 		 		try _errHandler.sync(self)
 		 		_alt = try getInterpreter().adaptivePredict(_input,2,_ctx)
 		 		while (_alt != 2 && _alt != ATN.INVALID_ALT_NUMBER) {
 		 			if ( _alt==1 ) {
-		 				setState(56)
-		 				try type()
-		 				setState(57)
-		 				try match(MxsParser.Tokens.Identifier.rawValue)
 		 				setState(58)
+		 				try type()
+		 				setState(59)
+		 				try match(MxsParser.Tokens.Identifier.rawValue)
+		 				setState(60)
 		 				try match(MxsParser.Tokens.T__1.rawValue)
 
 		 		 
 		 			}
-		 			setState(64)
+		 			setState(66)
 		 			try _errHandler.sync(self)
 		 			_alt = try getInterpreter().adaptivePredict(_input,2,_ctx)
 		 		}
-		 		setState(65)
+		 		setState(67)
 		 		try type()
-		 		setState(66)
+		 		setState(68)
 		 		try match(MxsParser.Tokens.Identifier.rawValue)
 
 		 	}
 
-		 	setState(70)
+		 	setState(72)
 		 	try match(MxsParser.Tokens.T__2.rawValue)
-		 	setState(71)
+		 	setState(73)
 		 	try match(MxsParser.Tokens.T__3.rawValue)
-		 	setState(75)
+		 	setState(77)
 		 	try _errHandler.sync(self)
 		 	_la = try _input.LA(1)
 		 	while (//closure
@@ -378,15 +378,15 @@ open class MxsParser: Parser {
 		 	}()
 		 	      return testSet
 		 	 }()) {
-		 		setState(72)
+		 		setState(74)
 		 		try sentence()
 
 
-		 		setState(77)
+		 		setState(79)
 		 		try _errHandler.sync(self)
 		 		_la = try _input.LA(1)
 		 	}
-		 	setState(78)
+		 	setState(80)
 		 	try match(MxsParser.Tokens.T__4.rawValue)
 
 		}
@@ -464,11 +464,11 @@ open class MxsParser: Parser {
 		do {
 			var _alt:Int
 		 	try enterOuterAlt(_localctx, 1)
-		 	setState(80)
+		 	setState(82)
 		 	try match(MxsParser.Tokens.Identifier.rawValue)
-		 	setState(81)
+		 	setState(83)
 		 	try match(MxsParser.Tokens.T__0.rawValue)
-		 	setState(94)
+		 	setState(96)
 		 	try _errHandler.sync(self)
 		 	_la = try _input.LA(1)
 		 	if (//closure
@@ -479,36 +479,36 @@ open class MxsParser: Parser {
 		 	}()
 		 	      return testSet
 		 	 }()) {
-		 		setState(88)
+		 		setState(90)
 		 		try _errHandler.sync(self)
 		 		_alt = try getInterpreter().adaptivePredict(_input,5,_ctx)
 		 		while (_alt != 2 && _alt != ATN.INVALID_ALT_NUMBER) {
 		 			if ( _alt==1 ) {
-		 				setState(82)
-		 				try type()
-		 				setState(83)
-		 				try match(MxsParser.Tokens.Identifier.rawValue)
 		 				setState(84)
+		 				try type()
+		 				setState(85)
+		 				try match(MxsParser.Tokens.Identifier.rawValue)
+		 				setState(86)
 		 				try match(MxsParser.Tokens.T__1.rawValue)
 
 		 		 
 		 			}
-		 			setState(90)
+		 			setState(92)
 		 			try _errHandler.sync(self)
 		 			_alt = try getInterpreter().adaptivePredict(_input,5,_ctx)
 		 		}
-		 		setState(91)
+		 		setState(93)
 		 		try type()
-		 		setState(92)
+		 		setState(94)
 		 		try match(MxsParser.Tokens.Identifier.rawValue)
 
 		 	}
 
-		 	setState(96)
+		 	setState(98)
 		 	try match(MxsParser.Tokens.T__2.rawValue)
-		 	setState(97)
+		 	setState(99)
 		 	try match(MxsParser.Tokens.T__3.rawValue)
-		 	setState(101)
+		 	setState(103)
 		 	try _errHandler.sync(self)
 		 	_la = try _input.LA(1)
 		 	while (//closure
@@ -519,15 +519,15 @@ open class MxsParser: Parser {
 		 	}()
 		 	      return testSet
 		 	 }()) {
-		 		setState(98)
+		 		setState(100)
 		 		try sentence()
 
 
-		 		setState(103)
+		 		setState(105)
 		 		try _errHandler.sync(self)
 		 		_la = try _input.LA(1)
 		 	}
-		 	setState(104)
+		 	setState(106)
 		 	try match(MxsParser.Tokens.T__4.rawValue)
 
 		}
@@ -592,9 +592,9 @@ open class MxsParser: Parser {
 	    }
 		do {
 		 	try enterOuterAlt(_localctx, 1)
-		 	setState(106)
+		 	setState(108)
 		 	try match(MxsParser.Tokens.Identifier.rawValue)
-		 	setState(109)
+		 	setState(111)
 		 	try _errHandler.sync(self)
 		 	_la = try _input.LA(1)
 		 	if (//closure
@@ -602,9 +602,9 @@ open class MxsParser: Parser {
 		 	      let testSet: Bool = _la == MxsParser.Tokens.Assign.rawValue
 		 	      return testSet
 		 	 }()) {
-		 		setState(107)
+		 		setState(109)
 		 		try match(MxsParser.Tokens.Assign.rawValue)
-		 		setState(108)
+		 		setState(110)
 		 		try expression(0)
 
 		 	}
@@ -672,27 +672,27 @@ open class MxsParser: Parser {
 		do {
 			var _alt:Int
 		 	try enterOuterAlt(_localctx, 1)
-		 	setState(111)
+		 	setState(113)
 		 	try type()
-		 	setState(117)
+		 	setState(119)
 		 	try _errHandler.sync(self)
 		 	_alt = try getInterpreter().adaptivePredict(_input,9,_ctx)
 		 	while (_alt != 2 && _alt != ATN.INVALID_ALT_NUMBER) {
 		 		if ( _alt==1 ) {
-		 			setState(112)
+		 			setState(114)
 		 			try singleVarDeclaration()
-		 			setState(113)
+		 			setState(115)
 		 			try match(MxsParser.Tokens.T__1.rawValue)
 
 		 	 
 		 		}
-		 		setState(119)
+		 		setState(121)
 		 		try _errHandler.sync(self)
 		 		_alt = try getInterpreter().adaptivePredict(_input,9,_ctx)
 		 	}
-		 	setState(120)
+		 	setState(122)
 		 	try singleVarDeclaration()
-		 	setState(121)
+		 	setState(123)
 		 	try match(MxsParser.Tokens.T__5.rawValue)
 
 		}
@@ -777,13 +777,13 @@ open class MxsParser: Parser {
 	    }
 		do {
 		 	try enterOuterAlt(_localctx, 1)
-		 	setState(123)
-		 	try match(MxsParser.Tokens.Class.rawValue)
-		 	setState(124)
-		 	try match(MxsParser.Tokens.Identifier.rawValue)
 		 	setState(125)
+		 	try match(MxsParser.Tokens.Class.rawValue)
+		 	setState(126)
+		 	try match(MxsParser.Tokens.Identifier.rawValue)
+		 	setState(127)
 		 	try match(MxsParser.Tokens.T__3.rawValue)
-		 	setState(131)
+		 	setState(133)
 		 	try _errHandler.sync(self)
 		 	_la = try _input.LA(1)
 		 	while (//closure
@@ -794,34 +794,34 @@ open class MxsParser: Parser {
 		 	}()
 		 	      return testSet
 		 	 }()) {
-		 		setState(129)
+		 		setState(131)
 		 		try _errHandler.sync(self)
 		 		switch(try getInterpreter().adaptivePredict(_input,10, _ctx)) {
 		 		case 1:
-		 			setState(126)
+		 			setState(128)
 		 			try variableDeclaration()
 
 		 			break
 		 		case 2:
-		 			setState(127)
+		 			setState(129)
 		 			try functionDeclaration()
 
 		 			break
 		 		case 3:
-		 			setState(128)
+		 			setState(130)
 		 			try initialDeclaration()
 
 		 			break
 		 		default: break
 		 		}
 
-		 		setState(133)
+		 		setState(135)
 		 		try _errHandler.sync(self)
 		 		_la = try _input.LA(1)
 		 	}
-		 	setState(134)
+		 	setState(136)
 		 	try match(MxsParser.Tokens.T__4.rawValue)
-		 	setState(135)
+		 	setState(137)
 		 	try match(MxsParser.Tokens.T__5.rawValue)
 
 		}
@@ -877,7 +877,7 @@ open class MxsParser: Parser {
 	    }
 		do {
 		 	try enterOuterAlt(_localctx, 1)
-		 	setState(137)
+		 	setState(139)
 		 	try variableDeclaration()
 
 		}
@@ -949,23 +949,23 @@ open class MxsParser: Parser {
 	    }
 		do {
 		 	try enterOuterAlt(_localctx, 1)
-		 	setState(139)
-		 	try match(MxsParser.Tokens.If.rawValue)
-		 	setState(140)
-		 	try match(MxsParser.Tokens.T__0.rawValue)
 		 	setState(141)
-		 	try expression(0)
+		 	try match(MxsParser.Tokens.If.rawValue)
 		 	setState(142)
-		 	try match(MxsParser.Tokens.T__2.rawValue)
+		 	try match(MxsParser.Tokens.T__0.rawValue)
 		 	setState(143)
+		 	try expression(0)
+		 	setState(144)
+		 	try match(MxsParser.Tokens.T__2.rawValue)
+		 	setState(145)
 		 	try sentence()
-		 	setState(146)
+		 	setState(148)
 		 	try _errHandler.sync(self)
 		 	switch (try getInterpreter().adaptivePredict(_input,12,_ctx)) {
 		 	case 1:
-		 		setState(144)
+		 		setState(146)
 		 		try match(MxsParser.Tokens.Else.rawValue)
-		 		setState(145)
+		 		setState(147)
 		 		try sentence()
 
 		 		break
@@ -1033,15 +1033,15 @@ open class MxsParser: Parser {
 	    }
 		do {
 		 	try enterOuterAlt(_localctx, 1)
-		 	setState(148)
-		 	try match(MxsParser.Tokens.While.rawValue)
-		 	setState(149)
-		 	try match(MxsParser.Tokens.T__0.rawValue)
 		 	setState(150)
-		 	try expression(0)
+		 	try match(MxsParser.Tokens.While.rawValue)
 		 	setState(151)
-		 	try match(MxsParser.Tokens.T__2.rawValue)
+		 	try match(MxsParser.Tokens.T__0.rawValue)
 		 	setState(152)
+		 	try expression(0)
+		 	setState(153)
+		 	try match(MxsParser.Tokens.T__2.rawValue)
+		 	setState(154)
 		 	try sentence()
 
 		}
@@ -1121,31 +1121,31 @@ open class MxsParser: Parser {
 	    }
 		do {
 		 	try enterOuterAlt(_localctx, 1)
-		 	setState(154)
+		 	setState(156)
 		 	try match(MxsParser.Tokens.For.rawValue)
-		 	setState(155)
+		 	setState(157)
 		 	try match(MxsParser.Tokens.T__0.rawValue)
-		 	setState(159)
+		 	setState(161)
 		 	try _errHandler.sync(self)
 		 	switch(try getInterpreter().adaptivePredict(_input,13, _ctx)) {
 		 	case 1:
-		 		setState(156)
+		 		setState(158)
 		 		try expressionSentence()
 
 		 		break
 		 	case 2:
-		 		setState(157)
+		 		setState(159)
 		 		try declSentence()
 
 		 		break
 		 	case 3:
-		 		setState(158)
+		 		setState(160)
 		 		try match(MxsParser.Tokens.T__5.rawValue)
 
 		 		break
 		 	default: break
 		 	}
-		 	setState(162)
+		 	setState(164)
 		 	try _errHandler.sync(self)
 		 	_la = try _input.LA(1)
 		 	if (//closure
@@ -1156,7 +1156,7 @@ open class MxsParser: Parser {
 		 	}()
 		 	      return testSet
 		 	 }()) {
-		 		setState(161)
+		 		setState(163)
 		 		try {
 		 				let assignmentValue = try expression(0)
 		 				_localctx.castdown(ForSentenceContext.self).cod = assignmentValue
@@ -1165,9 +1165,9 @@ open class MxsParser: Parser {
 
 		 	}
 
-		 	setState(164)
-		 	try match(MxsParser.Tokens.T__5.rawValue)
 		 	setState(166)
+		 	try match(MxsParser.Tokens.T__5.rawValue)
+		 	setState(168)
 		 	try _errHandler.sync(self)
 		 	_la = try _input.LA(1)
 		 	if (//closure
@@ -1178,7 +1178,7 @@ open class MxsParser: Parser {
 		 	}()
 		 	      return testSet
 		 	 }()) {
-		 		setState(165)
+		 		setState(167)
 		 		try {
 		 				let assignmentValue = try expression(0)
 		 				_localctx.castdown(ForSentenceContext.self).inc = assignmentValue
@@ -1187,9 +1187,9 @@ open class MxsParser: Parser {
 
 		 	}
 
-		 	setState(168)
+		 	setState(170)
 		 	try match(MxsParser.Tokens.T__2.rawValue)
-		 	setState(169)
+		 	setState(171)
 		 	try {
 		 			let assignmentValue = try sentence()
 		 			_localctx.castdown(ForSentenceContext.self).body = assignmentValue
@@ -1254,9 +1254,9 @@ open class MxsParser: Parser {
 	    }
 		do {
 		 	try enterOuterAlt(_localctx, 1)
-		 	setState(171)
-		 	try match(MxsParser.Tokens.Return.rawValue)
 		 	setState(173)
+		 	try match(MxsParser.Tokens.Return.rawValue)
+		 	setState(175)
 		 	try _errHandler.sync(self)
 		 	_la = try _input.LA(1)
 		 	if (//closure
@@ -1267,12 +1267,12 @@ open class MxsParser: Parser {
 		 	}()
 		 	      return testSet
 		 	 }()) {
-		 		setState(172)
+		 		setState(174)
 		 		try expression(0)
 
 		 	}
 
-		 	setState(175)
+		 	setState(177)
 		 	try match(MxsParser.Tokens.T__5.rawValue)
 
 		}
@@ -1328,9 +1328,9 @@ open class MxsParser: Parser {
 	    }
 		do {
 		 	try enterOuterAlt(_localctx, 1)
-		 	setState(177)
+		 	setState(179)
 		 	try match(MxsParser.Tokens.Break.rawValue)
-		 	setState(178)
+		 	setState(180)
 		 	try match(MxsParser.Tokens.T__5.rawValue)
 
 		}
@@ -1386,9 +1386,9 @@ open class MxsParser: Parser {
 	    }
 		do {
 		 	try enterOuterAlt(_localctx, 1)
-		 	setState(180)
+		 	setState(182)
 		 	try match(MxsParser.Tokens.Continue.rawValue)
-		 	setState(181)
+		 	setState(183)
 		 	try match(MxsParser.Tokens.T__5.rawValue)
 
 		}
@@ -1444,9 +1444,9 @@ open class MxsParser: Parser {
 	    }
 		do {
 		 	try enterOuterAlt(_localctx, 1)
-		 	setState(183)
+		 	setState(185)
 		 	try expression(0)
-		 	setState(184)
+		 	setState(186)
 		 	try match(MxsParser.Tokens.T__5.rawValue)
 
 		}
@@ -1534,56 +1534,56 @@ open class MxsParser: Parser {
 	    }
 		do {
 		 	try enterOuterAlt(_localctx, 1)
-		 	setState(196)
+		 	setState(198)
 		 	try _errHandler.sync(self)
 		 	switch(try getInterpreter().adaptivePredict(_input,17, _ctx)) {
 		 	case 1:
-		 		setState(186)
+		 		setState(188)
 		 		try declSentence()
 
 		 		break
 		 	case 2:
-		 		setState(187)
+		 		setState(189)
 		 		try ifSentence()
 
 		 		break
 		 	case 3:
-		 		setState(188)
+		 		setState(190)
 		 		try whileSentence()
 
 		 		break
 		 	case 4:
-		 		setState(189)
+		 		setState(191)
 		 		try forSentence()
 
 		 		break
 		 	case 5:
-		 		setState(190)
+		 		setState(192)
 		 		try returnSentence()
 
 		 		break
 		 	case 6:
-		 		setState(191)
+		 		setState(193)
 		 		try breakSentence()
 
 		 		break
 		 	case 7:
-		 		setState(192)
+		 		setState(194)
 		 		try continueSentence()
 
 		 		break
 		 	case 8:
-		 		setState(193)
+		 		setState(195)
 		 		try expressionSentence()
 
 		 		break
 		 	case 9:
-		 		setState(194)
+		 		setState(196)
 		 		try codeBlock()
 
 		 		break
 		 	case 10:
-		 		setState(195)
+		 		setState(197)
 		 		try match(MxsParser.Tokens.T__5.rawValue)
 
 		 		break
@@ -1648,9 +1648,9 @@ open class MxsParser: Parser {
 	    }
 		do {
 		 	try enterOuterAlt(_localctx, 1)
-		 	setState(198)
+		 	setState(200)
 		 	try match(MxsParser.Tokens.T__3.rawValue)
-		 	setState(202)
+		 	setState(204)
 		 	try _errHandler.sync(self)
 		 	_la = try _input.LA(1)
 		 	while (//closure
@@ -1661,15 +1661,15 @@ open class MxsParser: Parser {
 		 	}()
 		 	      return testSet
 		 	 }()) {
-		 		setState(199)
+		 		setState(201)
 		 		try sentence()
 
 
-		 		setState(204)
+		 		setState(206)
 		 		try _errHandler.sync(self)
 		 		_la = try _input.LA(1)
 		 	}
-		 	setState(205)
+		 	setState(207)
 		 	try match(MxsParser.Tokens.T__4.rawValue)
 
 		}
@@ -1721,9 +1721,9 @@ open class MxsParser: Parser {
 	    }
 		do {
 		 	try enterOuterAlt(_localctx, 1)
-		 	setState(207)
+		 	setState(209)
 		 	try match(MxsParser.Tokens.T__6.rawValue)
-		 	setState(208)
+		 	setState(210)
 		 	try match(MxsParser.Tokens.T__7.rawValue)
 
 
@@ -1805,7 +1805,7 @@ open class MxsParser: Parser {
 	    }
 		do {
 		 	try enterOuterAlt(_localctx, 1)
-		 	setState(210)
+		 	setState(212)
 		 	_la = try _input.LA(1)
 		 	if (!(//closure
 		 	 { () -> Bool in
@@ -1821,7 +1821,7 @@ open class MxsParser: Parser {
 		 		_errHandler.reportMatch(self)
 		 		try consume()
 		 	}
-		 	setState(214)
+		 	setState(216)
 		 	try _errHandler.sync(self)
 		 	_la = try _input.LA(1)
 		 	while (//closure
@@ -1829,11 +1829,11 @@ open class MxsParser: Parser {
 		 	      let testSet: Bool = _la == MxsParser.Tokens.T__6.rawValue
 		 	      return testSet
 		 	 }()) {
-		 		setState(211)
+		 		setState(213)
 		 		try emptySet()
 
 
-		 		setState(216)
+		 		setState(218)
 		 		try _errHandler.sync(self)
 		 		_la = try _input.LA(1)
 		 	}
@@ -1901,11 +1901,11 @@ open class MxsParser: Parser {
 		do {
 			var _alt:Int
 		 	try enterOuterAlt(_localctx, 1)
-		 	setState(217)
+		 	setState(219)
 		 	try match(MxsParser.Tokens.Identifier.rawValue)
-		 	setState(218)
+		 	setState(220)
 		 	try match(MxsParser.Tokens.T__0.rawValue)
-		 	setState(228)
+		 	setState(230)
 		 	try _errHandler.sync(self)
 		 	_la = try _input.LA(1)
 		 	if (//closure
@@ -1916,29 +1916,104 @@ open class MxsParser: Parser {
 		 	}()
 		 	      return testSet
 		 	 }()) {
-		 		setState(224)
+		 		setState(226)
 		 		try _errHandler.sync(self)
 		 		_alt = try getInterpreter().adaptivePredict(_input,20,_ctx)
 		 		while (_alt != 2 && _alt != ATN.INVALID_ALT_NUMBER) {
 		 			if ( _alt==1 ) {
-		 				setState(219)
+		 				setState(221)
 		 				try expression(0)
-		 				setState(220)
+		 				setState(222)
 		 				try match(MxsParser.Tokens.T__1.rawValue)
 
 		 		 
 		 			}
-		 			setState(226)
+		 			setState(228)
 		 			try _errHandler.sync(self)
 		 			_alt = try getInterpreter().adaptivePredict(_input,20,_ctx)
 		 		}
-		 		setState(227)
+		 		setState(229)
 		 		try expression(0)
 
 		 	}
 
-		 	setState(230)
+		 	setState(232)
 		 	try match(MxsParser.Tokens.T__2.rawValue)
+
+		}
+		catch ANTLRException.recognition(let re) {
+			_localctx.exception = re
+			_errHandler.reportError(self, re)
+			try _errHandler.recover(self, re)
+		}
+
+		return _localctx
+	}
+
+	public class NewIndexContext: ParserRuleContext {
+			open
+			func expression() -> ExpressionContext? {
+				return getRuleContext(ExpressionContext.self, 0)
+			}
+		override open
+		func getRuleIndex() -> Int {
+			return MxsParser.RULE_newIndex
+		}
+		override open
+		func enterRule(_ listener: ParseTreeListener) {
+			if let listener = listener as? MxsListener {
+				listener.enterNewIndex(self)
+			}
+		}
+		override open
+		func exitRule(_ listener: ParseTreeListener) {
+			if let listener = listener as? MxsListener {
+				listener.exitNewIndex(self)
+			}
+		}
+		override open
+		func accept<T>(_ visitor: ParseTreeVisitor<T>) -> T? {
+			if let visitor = visitor as? MxsVisitor {
+			    return visitor.visitNewIndex(self)
+			}
+			else if let visitor = visitor as? MxsBaseVisitor {
+			    return visitor.visitNewIndex(self)
+			}
+			else {
+			     return visitor.visitChildren(self)
+			}
+		}
+	}
+	@discardableResult
+	 open func newIndex() throws -> NewIndexContext {
+		var _localctx: NewIndexContext = NewIndexContext(_ctx, getState())
+		try enterRule(_localctx, 40, MxsParser.RULE_newIndex)
+		var _la: Int = 0
+		defer {
+	    		try! exitRule()
+	    }
+		do {
+		 	try enterOuterAlt(_localctx, 1)
+		 	setState(234)
+		 	try match(MxsParser.Tokens.T__6.rawValue)
+		 	setState(236)
+		 	try _errHandler.sync(self)
+		 	_la = try _input.LA(1)
+		 	if (//closure
+		 	 { () -> Bool in
+		 	      let testSet: Bool = {  () -> Bool in
+		 	   let testArray: [Int] = [_la, MxsParser.Tokens.T__0.rawValue,MxsParser.Tokens.New.rawValue,MxsParser.Tokens.This.rawValue,MxsParser.Tokens.StringLiteral.rawValue,MxsParser.Tokens.BoolLiteral.rawValue,MxsParser.Tokens.NullLiteral.rawValue,MxsParser.Tokens.IntLiteral.rawValue,MxsParser.Tokens.Add.rawValue,MxsParser.Tokens.Sub.rawValue,MxsParser.Tokens.Negation.rawValue,MxsParser.Tokens.Bitwise.rawValue,MxsParser.Tokens.SelfAdd.rawValue,MxsParser.Tokens.SelfSub.rawValue,MxsParser.Tokens.Identifier.rawValue]
+		 	    return  Utils.testBitLeftShiftArray(testArray, 0)
+		 	}()
+		 	      return testSet
+		 	 }()) {
+		 		setState(235)
+		 		try expression(0)
+
+		 	}
+
+		 	setState(238)
+		 	try match(MxsParser.Tokens.T__7.rawValue)
 
 		}
 		catch ANTLRException.recognition(let re) {
@@ -1984,20 +2059,12 @@ open class MxsParser: Parser {
 				return getToken(MxsParser.Tokens.Identifier.rawValue, 0)
 			}
 			open
-			func expression() -> [ExpressionContext] {
-				return getRuleContexts(ExpressionContext.self)
+			func newIndex() -> [NewIndexContext] {
+				return getRuleContexts(NewIndexContext.self)
 			}
 			open
-			func expression(_ i: Int) -> ExpressionContext? {
-				return getRuleContext(ExpressionContext.self, i)
-			}
-			open
-			func emptySet() -> [EmptySetContext] {
-				return getRuleContexts(EmptySetContext.self)
-			}
-			open
-			func emptySet(_ i: Int) -> EmptySetContext? {
-				return getRuleContext(EmptySetContext.self, i)
+			func newIndex(_ i: Int) -> NewIndexContext? {
+				return getRuleContext(NewIndexContext.self, i)
 			}
 
 		public
@@ -2597,8 +2664,8 @@ open class MxsParser: Parser {
 		var _parentState: Int = getState()
 		var _localctx: ExpressionContext = ExpressionContext(_ctx, _parentState)
 		var  _prevctx: ExpressionContext = _localctx
-		var _startState: Int = 40
-		try enterRecursionRule(_localctx, 40, MxsParser.RULE_expression, _p)
+		var _startState: Int = 42
+		try enterRecursionRule(_localctx, 42, MxsParser.RULE_expression, _p)
 		var _la: Int = 0
 		defer {
 	    		try! unrollRecursionContexts(_parentctx)
@@ -2606,7 +2673,7 @@ open class MxsParser: Parser {
 		do {
 			var _alt: Int
 			try enterOuterAlt(_localctx, 1)
-			setState(264)
+			setState(263)
 			try _errHandler.sync(self)
 			switch(try getInterpreter().adaptivePredict(_input,25, _ctx)) {
 			case 1:
@@ -2614,7 +2681,7 @@ open class MxsParser: Parser {
 				_ctx = _localctx
 				_prevctx = _localctx
 
-				setState(233)
+				setState(241)
 				try match(MxsParser.Tokens.Identifier.rawValue)
 
 				break
@@ -2622,7 +2689,7 @@ open class MxsParser: Parser {
 				_localctx = LiteralExprContext(_localctx)
 				_ctx = _localctx
 				_prevctx = _localctx
-				setState(234)
+				setState(242)
 				_la = try _input.LA(1)
 				if (!(//closure
 				 { () -> Bool in
@@ -2644,15 +2711,15 @@ open class MxsParser: Parser {
 				_localctx = ParaExprContext(_localctx)
 				_ctx = _localctx
 				_prevctx = _localctx
-				setState(235)
+				setState(243)
 				try {
 						let assignmentValue = try match(MxsParser.Tokens.T__0.rawValue)
 						_localctx.castdown(ParaExprContext.self).op = assignmentValue
 				     }()
 
-				setState(236)
+				setState(244)
 				try expression(0)
-				setState(237)
+				setState(245)
 				try match(MxsParser.Tokens.T__2.rawValue)
 
 				break
@@ -2660,7 +2727,7 @@ open class MxsParser: Parser {
 				_localctx = FuncExprContext(_localctx)
 				_ctx = _localctx
 				_prevctx = _localctx
-				setState(239)
+				setState(247)
 				try functionExpression()
 
 				break
@@ -2668,9 +2735,9 @@ open class MxsParser: Parser {
 				_localctx = NewExprContext(_localctx)
 				_ctx = _localctx
 				_prevctx = _localctx
-				setState(240)
+				setState(248)
 				try match(MxsParser.Tokens.New.rawValue)
-				setState(241)
+				setState(249)
 				_localctx.castdown(NewExprContext.self).ty = try _input.LT(1)
 				_la = try _input.LA(1)
 				if (!(//closure
@@ -2687,49 +2754,31 @@ open class MxsParser: Parser {
 					_errHandler.reportMatch(self)
 					try consume()
 				}
-				setState(246); 
+				setState(251); 
 				try _errHandler.sync(self)
 				_alt = 1;
 				repeat {
 					switch (_alt) {
 					case 1:
-						setState(242)
-						try match(MxsParser.Tokens.T__6.rawValue)
-						setState(243)
-						try expression(0)
-						setState(244)
-						try match(MxsParser.Tokens.T__7.rawValue)
+						setState(250)
+						try newIndex()
 
 
 						break
 					default:
 						throw ANTLRException.recognition(e: NoViableAltException(self))
 					}
-					setState(248); 
-					try _errHandler.sync(self)
-					_alt = try getInterpreter().adaptivePredict(_input,22,_ctx)
-				} while (_alt != 2 && _alt !=  ATN.INVALID_ALT_NUMBER)
-				setState(253)
-				try _errHandler.sync(self)
-				_alt = try getInterpreter().adaptivePredict(_input,23,_ctx)
-				while (_alt != 2 && _alt != ATN.INVALID_ALT_NUMBER) {
-					if ( _alt==1 ) {
-						setState(250)
-						try emptySet()
-
-				 
-					}
-					setState(255)
+					setState(253); 
 					try _errHandler.sync(self)
 					_alt = try getInterpreter().adaptivePredict(_input,23,_ctx)
-				}
+				} while (_alt != 2 && _alt !=  ATN.INVALID_ALT_NUMBER)
 
 				break
 			case 6:
 				_localctx = UnaryExprContext(_localctx)
 				_ctx = _localctx
 				_prevctx = _localctx
-				setState(256)
+				setState(255)
 				_localctx.castdown(UnaryExprContext.self).op = try _input.LT(1)
 				_la = try _input.LA(1)
 				if (!(//closure
@@ -2746,7 +2795,7 @@ open class MxsParser: Parser {
 					_errHandler.reportMatch(self)
 					try consume()
 				}
-				setState(257)
+				setState(256)
 				try expression(13)
 
 				break
@@ -2754,17 +2803,17 @@ open class MxsParser: Parser {
 				_localctx = InstExprContext(_localctx)
 				_ctx = _localctx
 				_prevctx = _localctx
-				setState(258)
+				setState(257)
 				try match(MxsParser.Tokens.New.rawValue)
-				setState(259)
+				setState(258)
 				try match(MxsParser.Tokens.Identifier.rawValue)
-				setState(262)
+				setState(261)
 				try _errHandler.sync(self)
 				switch (try getInterpreter().adaptivePredict(_input,24,_ctx)) {
 				case 1:
-					setState(260)
+					setState(259)
 					try match(MxsParser.Tokens.T__0.rawValue)
-					setState(261)
+					setState(260)
 					try match(MxsParser.Tokens.T__2.rawValue)
 
 					break
@@ -2775,7 +2824,7 @@ open class MxsParser: Parser {
 			default: break
 			}
 			_ctx!.stop = try _input.LT(-1)
-			setState(315)
+			setState(314)
 			try _errHandler.sync(self)
 			_alt = try getInterpreter().adaptivePredict(_input,28,_ctx)
 			while (_alt != 2 && _alt != ATN.INVALID_ALT_NUMBER) {
@@ -2784,17 +2833,17 @@ open class MxsParser: Parser {
 					   try triggerExitRuleEvent()
 					}
 					_prevctx = _localctx
-					setState(313)
+					setState(312)
 					try _errHandler.sync(self)
 					switch(try getInterpreter().adaptivePredict(_input,27, _ctx)) {
 					case 1:
 						_localctx = BinaryExprContext(  ExpressionContext(_parentctx, _parentState))
 						try pushNewRecursionContext(_localctx, _startState, MxsParser.RULE_expression)
-						setState(266)
+						setState(265)
 						if (!(precpred(_ctx, 11))) {
 						    throw ANTLRException.recognition(e:FailedPredicateException(self, "precpred(_ctx, 11)"))
 						}
-						setState(267)
+						setState(266)
 						_localctx.castdown(BinaryExprContext.self).op = try _input.LT(1)
 						_la = try _input.LA(1)
 						if (!(//closure
@@ -2811,18 +2860,18 @@ open class MxsParser: Parser {
 							_errHandler.reportMatch(self)
 							try consume()
 						}
-						setState(268)
+						setState(267)
 						try expression(12)
 
 						break
 					case 2:
 						_localctx = BinaryExprContext(  ExpressionContext(_parentctx, _parentState))
 						try pushNewRecursionContext(_localctx, _startState, MxsParser.RULE_expression)
-						setState(269)
+						setState(268)
 						if (!(precpred(_ctx, 10))) {
 						    throw ANTLRException.recognition(e:FailedPredicateException(self, "precpred(_ctx, 10)"))
 						}
-						setState(270)
+						setState(269)
 						_localctx.castdown(BinaryExprContext.self).op = try _input.LT(1)
 						_la = try _input.LA(1)
 						if (!(//closure
@@ -2836,18 +2885,18 @@ open class MxsParser: Parser {
 							_errHandler.reportMatch(self)
 							try consume()
 						}
-						setState(271)
+						setState(270)
 						try expression(11)
 
 						break
 					case 3:
 						_localctx = BinaryExprContext(  ExpressionContext(_parentctx, _parentState))
 						try pushNewRecursionContext(_localctx, _startState, MxsParser.RULE_expression)
-						setState(272)
+						setState(271)
 						if (!(precpred(_ctx, 9))) {
 						    throw ANTLRException.recognition(e:FailedPredicateException(self, "precpred(_ctx, 9)"))
 						}
-						setState(273)
+						setState(272)
 						_localctx.castdown(BinaryExprContext.self).op = try _input.LT(1)
 						_la = try _input.LA(1)
 						if (!(//closure
@@ -2861,18 +2910,18 @@ open class MxsParser: Parser {
 							_errHandler.reportMatch(self)
 							try consume()
 						}
-						setState(274)
+						setState(273)
 						try expression(10)
 
 						break
 					case 4:
 						_localctx = BinaryExprContext(  ExpressionContext(_parentctx, _parentState))
 						try pushNewRecursionContext(_localctx, _startState, MxsParser.RULE_expression)
-						setState(275)
+						setState(274)
 						if (!(precpred(_ctx, 8))) {
 						    throw ANTLRException.recognition(e:FailedPredicateException(self, "precpred(_ctx, 8)"))
 						}
-						setState(276)
+						setState(275)
 						_localctx.castdown(BinaryExprContext.self).op = try _input.LT(1)
 						_la = try _input.LA(1)
 						if (!(//closure
@@ -2889,18 +2938,18 @@ open class MxsParser: Parser {
 							_errHandler.reportMatch(self)
 							try consume()
 						}
-						setState(277)
+						setState(276)
 						try expression(9)
 
 						break
 					case 5:
 						_localctx = BinaryExprContext(  ExpressionContext(_parentctx, _parentState))
 						try pushNewRecursionContext(_localctx, _startState, MxsParser.RULE_expression)
-						setState(278)
+						setState(277)
 						if (!(precpred(_ctx, 7))) {
 						    throw ANTLRException.recognition(e:FailedPredicateException(self, "precpred(_ctx, 7)"))
 						}
-						setState(279)
+						setState(278)
 						_localctx.castdown(BinaryExprContext.self).op = try _input.LT(1)
 						_la = try _input.LA(1)
 						if (!(//closure
@@ -2914,140 +2963,140 @@ open class MxsParser: Parser {
 							_errHandler.reportMatch(self)
 							try consume()
 						}
-						setState(280)
+						setState(279)
 						try expression(8)
 
 						break
 					case 6:
 						_localctx = BinaryExprContext(  ExpressionContext(_parentctx, _parentState))
 						try pushNewRecursionContext(_localctx, _startState, MxsParser.RULE_expression)
-						setState(281)
+						setState(280)
 						if (!(precpred(_ctx, 6))) {
 						    throw ANTLRException.recognition(e:FailedPredicateException(self, "precpred(_ctx, 6)"))
 						}
-						setState(282)
+						setState(281)
 						try {
 								let assignmentValue = try match(MxsParser.Tokens.BitAnd.rawValue)
 								_localctx.castdown(BinaryExprContext.self).op = assignmentValue
 						     }()
 
-						setState(283)
+						setState(282)
 						try expression(7)
 
 						break
 					case 7:
 						_localctx = BinaryExprContext(  ExpressionContext(_parentctx, _parentState))
 						try pushNewRecursionContext(_localctx, _startState, MxsParser.RULE_expression)
-						setState(284)
+						setState(283)
 						if (!(precpred(_ctx, 5))) {
 						    throw ANTLRException.recognition(e:FailedPredicateException(self, "precpred(_ctx, 5)"))
 						}
-						setState(285)
+						setState(284)
 						try {
 								let assignmentValue = try match(MxsParser.Tokens.BitXor.rawValue)
 								_localctx.castdown(BinaryExprContext.self).op = assignmentValue
 						     }()
 
-						setState(286)
+						setState(285)
 						try expression(6)
 
 						break
 					case 8:
 						_localctx = BinaryExprContext(  ExpressionContext(_parentctx, _parentState))
 						try pushNewRecursionContext(_localctx, _startState, MxsParser.RULE_expression)
-						setState(287)
+						setState(286)
 						if (!(precpred(_ctx, 4))) {
 						    throw ANTLRException.recognition(e:FailedPredicateException(self, "precpred(_ctx, 4)"))
 						}
-						setState(288)
+						setState(287)
 						try {
 								let assignmentValue = try match(MxsParser.Tokens.BitOr.rawValue)
 								_localctx.castdown(BinaryExprContext.self).op = assignmentValue
 						     }()
 
-						setState(289)
+						setState(288)
 						try expression(5)
 
 						break
 					case 9:
 						_localctx = BinaryExprContext(  ExpressionContext(_parentctx, _parentState))
 						try pushNewRecursionContext(_localctx, _startState, MxsParser.RULE_expression)
-						setState(290)
+						setState(289)
 						if (!(precpred(_ctx, 3))) {
 						    throw ANTLRException.recognition(e:FailedPredicateException(self, "precpred(_ctx, 3)"))
 						}
-						setState(291)
+						setState(290)
 						try {
 								let assignmentValue = try match(MxsParser.Tokens.LogicAnd.rawValue)
 								_localctx.castdown(BinaryExprContext.self).op = assignmentValue
 						     }()
 
-						setState(292)
+						setState(291)
 						try expression(4)
 
 						break
 					case 10:
 						_localctx = BinaryExprContext(  ExpressionContext(_parentctx, _parentState))
 						try pushNewRecursionContext(_localctx, _startState, MxsParser.RULE_expression)
-						setState(293)
+						setState(292)
 						if (!(precpred(_ctx, 2))) {
 						    throw ANTLRException.recognition(e:FailedPredicateException(self, "precpred(_ctx, 2)"))
 						}
-						setState(294)
+						setState(293)
 						try {
 								let assignmentValue = try match(MxsParser.Tokens.LogicOr.rawValue)
 								_localctx.castdown(BinaryExprContext.self).op = assignmentValue
 						     }()
 
-						setState(295)
+						setState(294)
 						try expression(3)
 
 						break
 					case 11:
 						_localctx = AssignExprContext(  ExpressionContext(_parentctx, _parentState))
 						try pushNewRecursionContext(_localctx, _startState, MxsParser.RULE_expression)
-						setState(296)
+						setState(295)
 						if (!(precpred(_ctx, 1))) {
 						    throw ANTLRException.recognition(e:FailedPredicateException(self, "precpred(_ctx, 1)"))
 						}
-						setState(297)
+						setState(296)
 						try {
 								let assignmentValue = try match(MxsParser.Tokens.Assign.rawValue)
 								_localctx.castdown(AssignExprContext.self).op = assignmentValue
 						     }()
 
-						setState(298)
+						setState(297)
 						try expression(1)
 
 						break
 					case 12:
 						_localctx = MemberExprContext(  ExpressionContext(_parentctx, _parentState))
 						try pushNewRecursionContext(_localctx, _startState, MxsParser.RULE_expression)
-						setState(299)
+						setState(298)
 						if (!(precpred(_ctx, 18))) {
 						    throw ANTLRException.recognition(e:FailedPredicateException(self, "precpred(_ctx, 18)"))
 						}
-						setState(300)
+						setState(299)
 						try {
 								let assignmentValue = try match(MxsParser.Tokens.T__8.rawValue)
 								_localctx.castdown(MemberExprContext.self).op = assignmentValue
 						     }()
 
-						setState(304)
+						setState(303)
 						try _errHandler.sync(self)
 						switch(try getInterpreter().adaptivePredict(_input,26, _ctx)) {
 						case 1:
-							setState(301)
+							setState(300)
 							try match(MxsParser.Tokens.Identifier.rawValue)
 
 							break
 						case 2:
-							setState(302)
+							setState(301)
 							try match(MxsParser.Tokens.This.rawValue)
 
 							break
 						case 3:
-							setState(303)
+							setState(302)
 							try functionExpression()
 
 							break
@@ -3059,34 +3108,34 @@ open class MxsParser: Parser {
 						_localctx = ArrayExprContext(  ExpressionContext(_parentctx, _parentState))
 						(_localctx as! ArrayExprContext).array = _prevctx
 						try pushNewRecursionContext(_localctx, _startState, MxsParser.RULE_expression)
-						setState(306)
+						setState(305)
 						if (!(precpred(_ctx, 17))) {
 						    throw ANTLRException.recognition(e:FailedPredicateException(self, "precpred(_ctx, 17)"))
 						}
-						setState(307)
+						setState(306)
 						try {
 								let assignmentValue = try match(MxsParser.Tokens.T__6.rawValue)
 								_localctx.castdown(ArrayExprContext.self).op = assignmentValue
 						     }()
 
-						setState(308)
+						setState(307)
 						try {
 								let assignmentValue = try expression(0)
 								_localctx.castdown(ArrayExprContext.self).idx = assignmentValue
 						     }()
 
-						setState(309)
+						setState(308)
 						try match(MxsParser.Tokens.T__7.rawValue)
 
 						break
 					case 14:
 						_localctx = SufExprContext(  ExpressionContext(_parentctx, _parentState))
 						try pushNewRecursionContext(_localctx, _startState, MxsParser.RULE_expression)
-						setState(311)
+						setState(310)
 						if (!(precpred(_ctx, 14))) {
 						    throw ANTLRException.recognition(e:FailedPredicateException(self, "precpred(_ctx, 14)"))
 						}
-						setState(312)
+						setState(311)
 						_localctx.castdown(SufExprContext.self).op = try _input.LT(1)
 						_la = try _input.LA(1)
 						if (!(//closure
@@ -3106,7 +3155,7 @@ open class MxsParser: Parser {
 					}
 			 
 				}
-				setState(317)
+				setState(316)
 				try _errHandler.sync(self)
 				_alt = try getInterpreter().adaptivePredict(_input,28,_ctx)
 			}
@@ -3124,7 +3173,7 @@ open class MxsParser: Parser {
 	override open
 	func sempred(_ _localctx: RuleContext?, _ ruleIndex: Int,  _ predIndex: Int)throws -> Bool {
 		switch (ruleIndex) {
-		case  20:
+		case  21:
 			return try expression_sempred(_localctx?.castdown(ExpressionContext.self), predIndex)
 	    default: return true
 		}
