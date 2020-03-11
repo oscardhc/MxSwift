@@ -34,8 +34,9 @@ class CSElimination: FunctionPass {
                 }
                 let exp = VNExpression(v: i, depth: 4)
                 let str = exp.simplified().description
-                print(i.toPrint, str)
+//                print(i.toPrint, str)
                 if let p = cseMap[str] {
+                    print(i.toPrint)
                     print(">", p.toPrint)
                     i.replaced(by: p)
                     instRemoved += 1
@@ -79,19 +80,24 @@ class GVNumberer: FunctionPass {
     private var predicateEdge   = [BasicBlock.Edge: VNExpression]()
     private var visited         = Set<BasicBlock>()
     private var belongTo        = [Inst: String]()
+    private var blockPredicate  = [BasicBlock: [VNExpression]]()
     
     override func visit(v: Function) {
         
+        func getPredicate(at cur: BasicBlock) -> VNExpression? {
+            let only = cur.preds.generated {
+                $0.reachable ? BasicBlock.Edge(from: $0, to: cur) : nil
+            }
+            if only.count == 1, let p = predicateEdge[only[0]] {
+                return p
+            }
+            return nil
+        }
         func getPredicate(from block: BasicBlock) -> [VNExpression] {
             var it: DomTree.Node? = domTree[block], pre = [VNExpression]()
             while let cur = it?.block {
-                let only = cur.preds.generated {
-                    $0.reachable ? BasicBlock.Edge(from: $0, to: cur) : nil
-                }
-                if only.count == 1 {
-                    if let p = predicateEdge[only[0]] {
-                        pre.append(p)
-                    }
+                if let p = getPredicate(at: cur) {
+                    pre.append(p)
                 }
                 it = it?.idom
             }
@@ -103,10 +109,8 @@ class GVNumberer: FunctionPass {
                 return (nil, str)
             }
             while let cur = it?.block {
-                if let i = map[cur]![str] {
-                    if i !== inst {
-                        return (i, str)
-                    }
+                if let i = map[cur]![str], i !== inst {
+                    return (i, str)
                 }
                 it = it?.idom
             }
@@ -115,43 +119,68 @@ class GVNumberer: FunctionPass {
         func evaluate(_ inst: Inst, in block: BasicBlock) -> (Inst?, String) {
             
             let exp     = VNExpression(v: inst)
-            let pres    = VNExpression(o: .and, from: getPredicate(from: block))
-            let atomMap = RefDict<String, (Bool, VNExpression)>()
-            pres.getAllBoolAtoms(to: atomMap)
-            let keys    = [String](atomMap._s.keys)
-            var preRes  = [String: Int?]()
+            let idom    = domTree[block].idom?.block
+            var fnl     = [VNExpression]()
             var reach   = Set<String>()
             
-            func findPredDomination(depth: Int) {
-                if depth >= keys.count {
-                    let flag = pres.checkSatisfied(with: atomMap)
-                    if flag > 0 {
-                        for key in keys {
-                            if preRes[key] == nil || preRes[key]! == (atomMap[key]!.0 ? 1 : 0) {
-                                preRes[key] = (atomMap[key]!.0 ? 1 : 0)
-                            } else {
-                                preRes[key] = 2
+            if blockPredicate[block] == nil, let pres = getPredicate(at: block) {
+                
+                fnl = (idom == nil && idom!.reachable) ? [] : (blockPredicate[idom!] ?? [])
+                
+                let atomMap = RefDict<String, (Bool, VNExpression)>()
+                pres.getAllBoolAtoms(to: atomMap)
+                let keys    = [String](atomMap._s.keys)
+                var preRes  = [String: Int?]()
+                
+                func findPredDomination(depth: Int) {
+                    if depth >= keys.count {
+                        let flag = pres.checkSatisfied(with: atomMap)
+//                        print("find...", flag, atomMap._s)
+                        if flag > 0 {
+                            for key in keys {
+                                if preRes[key] == nil || preRes[key]! == (atomMap[key]!.0 ? 1 : 0) {
+                                    preRes[key] = (atomMap[key]!.0 ? 1 : 0)
+                                } else {
+                                    preRes[key] = 2
+                                }
                             }
                         }
+                        return
+                    } else {
+                        atomMap[keys[depth]]!.0 = true
+                        findPredDomination(depth: depth + 1)
+                        atomMap[keys[depth]]!.0 = false
+                        findPredDomination(depth: depth + 1)
                     }
-                    return
-                } else {
-                    atomMap[keys[depth]]!.0 = true
-                    findPredDomination(depth: depth + 1)
-                    atomMap[keys[depth]]!.0 = false
-                    findPredDomination(depth: depth + 1)
                 }
+                
+                // the terrible 2^n procedure
+                findPredDomination(depth: 0)
+                for key in keys {
+                    if let k = preRes[key], k != 2 {
+                        let pred = atomMap[key]!.1
+                        if k == 0 {
+                            pred.negation()
+                        }
+                        fnl.append(pred.simplified())
+                    }
+                }
+                
+                blockPredicate[block] = fnl
+                
+            } else {
+                fnl = blockPredicate[block] ?? []
             }
+            
             func findAllCongruence(current: VNExpression) -> (Inst?, String)? {
-                print("find", current.description, current.simplified().description)
-                let str = VNExpression(current).simplified().description
-                if let i = lookup(description: str, in: block, for: inst) {
-                    print(">>>>>>", i)
+//                print("find", current.description, current.description)
+                if let i = lookup(description: current.description, in: block, for: inst) {
+//                    print(">>>>>>", i)
                     return i
                 }
-                for (pred, _) in preRes {
+                for pred in fnl {
                     let nexp = VNExpression(current)
-                    if nexp.addedPredicate(predicate: atomMap[pred]!.1) && !reach.contains(nexp.simplified().description) {
+                    if nexp.addedPredicate(predicate: pred) && !reach.contains(nexp.simplified().description) {
                         reach.insert(nexp.description)
                         if let i = findAllCongruence(current: nexp) {
                             return i
@@ -161,14 +190,10 @@ class GVNumberer: FunctionPass {
                 return nil
             }
             
-            // the terrible 2^n procedure
-            findPredDomination(depth: 0)
-            
             // another terrible 2^n procedure
             if let i = findAllCongruence(current: exp) {
                 return i
             } else {
-                print("failed", exp.description, exp.simplified().description)
                 return (nil, exp.simplified().description)
             }
             
@@ -222,9 +247,10 @@ class GVNumberer: FunctionPass {
         belongTo.removeAll();
         for b in v.blocks {b.insts.forEach {$0.constInt = nil}}
         
-        tryBlock(block: v.blocks.first!)
         
+        tryBlock(block: v.blocks.first!)
         while !workList.isEmpty || !blockList.isEmpty {
+            blockPredicate.removeAll()
             for blk in rpo {
                 blockList.remove(blk)
                 for i in blk.insts where workList.contains(i) {
@@ -244,7 +270,7 @@ class GVNumberer: FunctionPass {
                             var flag: Bool? = nil
                             if let ci = jump.operands[0] as? Inst {
                                 let condition = evaluate(ci, in: blk)
-                                print("        condition", ci.toPrint, condition)
+//                                print("        condition", ci.toPrint, condition)
                                 if let n = Int(condition.1) {
                                     flag = n == 1
                                 }
@@ -253,28 +279,24 @@ class GVNumberer: FunctionPass {
                             if flag != false {
                                 tryBlock(block: blk.succs[0])
                                 let preTrue = VNExpression(v: jump.operands[0])
-                                updatePredicate(edge: BasicBlock.Edge(from: blk, to: blk.succs[0]), exp: preTrue.simplified(toFold: false))
-                                print("        branch T", preTrue.description)
+                                updatePredicate(edge: BasicBlock.Edge(from: blk, to: blk.succs[0]), exp: preTrue.simplified())
+//                                print("        branch T", preTrue.description)
                             }
                             if flag != true {
                                 tryBlock(block: blk.succs[1])
                                 let preFalse = VNExpression(v: jump.operands[0])
                                 preFalse.negation()
-                                updatePredicate(edge: BasicBlock.Edge(from: blk, to: blk.succs[1]), exp: preFalse.simplified(toFold: false))
-                                print("        branch F", preFalse.description)
+                                updatePredicate(edge: BasicBlock.Edge(from: blk, to: blk.succs[1]), exp: preFalse.simplified())
+//                                print("        branch F", preFalse.description)
                             }
                             
                         } else {
                             tryBlock(block: blk.succs[0])
                         }
                     } else if !i.isCritical {
-
-                        print("")
-                        let res = evaluate(i, in: blk)
-                        // how to deal with conflicts between propogation predicted value and predicatedly predicted value?
-                        // answer: there should be no conflicts...
                         
-                        print(i.toPrint, res)
+                        let res = evaluate(i, in: blk)
+//                        print(i.toPrint, res)
                         
                         if let x = map[blk]![res.1] {
                             if x.blockIndexBF > i.blockIndexBF {
@@ -296,12 +318,13 @@ class GVNumberer: FunctionPass {
                                 workList.insert(u.user as! Inst)
                             }
                         }
-//                        print(">", res.1)
+                        //                        print(">", res.1)
                     }
                 }
             }
         }
         
+        blockPredicate.removeAll()
         for blk in rpo where blk.reachable {
             for i in blk.insts.reversed() where !i.isCritical {
                 let str = belongTo[i]!
@@ -313,6 +336,9 @@ class GVNumberer: FunctionPass {
                 } else if let (l, _) = lookup(description: str, in: blk, for: i) {
                     print(i.toPrint)
                     print(">", l!)
+                    if l!.inBlock != i.inBlock {
+                        map[blk]!.removeValue(forKey: str)
+                    }
                     i.replaced(by: l!)
                     instRemoved += 1
                 }
@@ -337,8 +363,8 @@ class GVNumberer: FunctionPass {
             }
             
         }
-    
-    
+        
+        
     }
     
 }
@@ -409,9 +435,9 @@ class VNExpression: CustomStringConvertible {
         vals.sort {"\($0)" < "\($1)"}
     }
     
-    static let commutative: Set<Inst.OP> = [.add, .mul]
+    static let commutative: Set<Inst.OP> = [.add, .mul, .xor]
     static let opp = [Inst.OP.sub: Inst.OP.add]
-    static let normalCompare = [CompareInst.CMP.sle: CompareInst.CMP.sge, .slt: .sgt]
+    static let normalCompare = [CompareInst.CMP.sle: CompareInst.CMP.sge, .slt: .sgt, .ne: .eq]
     static let notCompare = [CompareInst.CMP.sle: CompareInst.CMP.sgt, .sgt: .sle, .sge: .slt, .slt: .sge, .eq: .ne, .ne: .eq]
     static let comparisons = [CompareInst.CMP.eq, .ne, .sle, .sge, .slt, .sgt]
     
@@ -455,8 +481,11 @@ class VNExpression: CustomStringConvertible {
             }
         }
     }
+    
     func checkSatisfied(with dict: RefDict<String, (Bool, VNExpression)>) -> Int {
-        if op == .icmp {
+        if vals.isEmpty {
+            return Int(name) ?? 0
+        } else if op == .icmp {
             if vals.count > 0 {
                 return dict[description]!.0 ? 1 : 0
             } else {

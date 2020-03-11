@@ -56,6 +56,9 @@ func compile(useFileStream: Bool) throws {
          .MMMMMDMMMZ:,,:+++INM:,ZMZNNNDMMMMMDMNMZNOM7+++=M$DZD=MM++++M$OM77IM77777777MM++MM+???=,,?D
        .. . ....DM,:,,,++?+++=MMMMI77I7III7I7MI7IDM8M?+++MM?DDZM~=+=OM$ZM77IM77777I77M=MM+MMI++:MMM.
 """
+    let start = DispatchTime.now().uptimeNanoseconds
+    let timeLimit = Int(1 * 1000000000), iterLimit = 1
+    var iteration = 0
     
     print(welcome)
     
@@ -79,13 +82,11 @@ class s {
 """
     )
     
-    let builder = ASTBuilder()
-    let listener = ErrorListener()
+    let builder = ASTBuilder(), listener = ErrorListener()
     
     preOperation = true
     let _t = try MxsParser(CommonTokenStream(MxsLexer(builtin))).declarations()
     _ = builder.visit(_t)
-    
     preOperation = false
     
     let lexer: MxsLexer
@@ -95,7 +96,6 @@ class s {
 //        let sourceFilePath = "/Users/oscar/Documents/Classes/1920_Spring/Compiler/Compiler-2020/local-judge/testcase/sema/\(testName)-package/\(testName)-\(testNo).mx"
         let sourceFilePath = "/Users/oscar/Documents/Classes/1920_Spring/Compiler/tmp/in.mx"
         let input = try ANTLRFileStream(sourceFilePath, String.Encoding.utf8)
-//        print(input.toString())
         lexer = MxsLexer(input)
     } else {
         var source = ""
@@ -147,13 +147,16 @@ class s {
     IRPrinter(filename: "/Users/oscar/Documents/Classes/1920_Spring/Compiler/tmp/out1.ll").work(on: ir.module)
     
 
-    for _ in 0..<1 {
-        SCCPropagation().work(on: ir.module)
+    while DispatchTime.now().uptimeNanoseconds - start < timeLimit && iteration < iterLimit {
+        print("iteration \(iteration):")
+        iteration += 1
+//        SCCPropagation().work(on: ir.module)
+//        CSElimination().work(on: ir.module)
+        GVNumberer().work(on: ir.module)
         DCElimination().work(on: ir.module)
         CFGSimplifier().work(on: ir.module)
-        IRPrinter(filename: "/Users/oscar/Documents/Classes/1920_Spring/Compiler/tmp/out1.ll").work(on: ir.module)
-        GVNumberer().work(on: ir.module)
-//        CSElimination().work(on: ir.module)
+//        IRPrinter(filename: "/Users/oscar/Documents/Classes/1920_Spring/Compiler/tmp/out1.ll").work(on: ir.module)
+
         SCCPropagation().work(on: ir.module)
         DCElimination().work(on: ir.module)
         CFGSimplifier().work(on: ir.module)
@@ -161,13 +164,13 @@ class s {
 
     IRPrinter(filename: "/Users/oscar/Documents/Classes/1920_Spring/Compiler/tmp/out2.ll").work(on: ir.module)
     
-    print("Compilation exited normally.")
+    print("Compilation exited normally in \(DispatchTime.now().uptimeNanoseconds - start)ns.")
     
 }
 
 do {
-//    try compile(useFileStream: true)
-    try compile(useFileStream: false)
+    try compile(useFileStream: true)
+//    try compile(useFileStream: false)
 } catch let e as CompilationError {
     e.show()
     exit(-1)
