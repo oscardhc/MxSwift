@@ -57,7 +57,7 @@ func compile(useFileStream: Bool) throws {
        .. . ....DM,:,,,++?+++=MMMMI77I7III7I7MI7IDM8M?+++MM?DDZM~=+=OM$ZM77IM77777I77M=MM+MMI++:MMM.
 """
     let start = DispatchTime.now().uptimeNanoseconds
-    let timeLimit = Int(1 * 1000000000), iterLimit = 1
+    let timeLimit = Int(1 * 2000000000), iterLimit = 3
     var iteration = 0
     
     print(welcome)
@@ -150,21 +150,25 @@ class s {
     while DispatchTime.now().uptimeNanoseconds - start < timeLimit && iteration < iterLimit {
         print("iteration \(iteration):")
         iteration += 1
-//        SCCPropagation().work(on: ir.module)
+        SCCPropagation().work(on: ir.module)
 //        CSElimination().work(on: ir.module)
+
+        IRPrinter(filename: "/Users/oscar/Documents/Classes/1920_Spring/Compiler/tmp/out1.ll").work(on: ir.module)
         GVNumberer().work(on: ir.module)
+//        break
         DCElimination().work(on: ir.module)
         CFGSimplifier().work(on: ir.module)
-//        IRPrinter(filename: "/Users/oscar/Documents/Classes/1920_Spring/Compiler/tmp/out1.ll").work(on: ir.module)
 
         SCCPropagation().work(on: ir.module)
         DCElimination().work(on: ir.module)
         CFGSimplifier().work(on: ir.module)
     }
+    
+    PTAnalysis().work(on: ir.module)
 
     IRPrinter(filename: "/Users/oscar/Documents/Classes/1920_Spring/Compiler/tmp/out2.ll").work(on: ir.module)
     
-    print("Compilation exited normally in \(DispatchTime.now().uptimeNanoseconds - start)ns.")
+    print("Compilation exited normally in \(1.0 * Double(DispatchTime.now().uptimeNanoseconds - start) / 1000000000)s.")
     
 }
 
