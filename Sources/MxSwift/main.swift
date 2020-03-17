@@ -127,7 +127,7 @@ class s {
         throw error
     }
     
-    if CommandLine.arguments.count > 1 {
+    if CommandLine.arguments.count > 1 && CommandLine.arguments[1] == "semantic" {
         return
     }
     
@@ -173,8 +173,11 @@ class s {
 }
 
 do {
-    try compile(useFileStream: true)
-//    try compile(useFileStream: false)
+    if CommandLine.arguments.count > 1 {
+        try compile(useFileStream: false)
+    } else {
+        try compile(useFileStream: true)
+    }
 } catch let e as CompilationError {
     e.show()
     exit(-1)
