@@ -11,13 +11,7 @@ class LICHoister: FunctionPass {
     
     override func visit(v: Function) {
         
-        func checkForLoop(b: BasicBlock) {
-            
-        }
-        
-        for blk in v.blocks {
-            
-            
+        func findLoops() {
             
         }
         

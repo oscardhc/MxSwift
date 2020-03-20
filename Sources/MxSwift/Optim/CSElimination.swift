@@ -95,16 +95,6 @@ class GVNumberer: FunctionPass {
             }
             return nil
         }
-        func getPredicate(from block: BasicBlock) -> [VNExpression] {
-            var it: DomTree.Node? = domTree[block], pre = [VNExpression]()
-            while let cur = it?.block {
-                if let p = getPredicate(at: cur) {
-                    pre.append(p)
-                }
-                it = it?.idom
-            }
-            return pre
-        }
         func lookup(description str: String, in block: BasicBlock, for inst: Inst) -> (Inst?, String)? {
             var it  : DomTree.Node? = domTree[block]
             if Int(str) != nil {
@@ -268,11 +258,9 @@ class GVNumberer: FunctionPass {
                     if let jump = i as? BrInst {
                         
                         if jump.operands.count > 1 {
-//                            print("jump", jump.toPrint)
                             var flag: Bool? = nil
                             if let ci = jump.operands[0] as? Inst {
                                 let condition = evaluate(ci, in: blk)
-//                                print("        condition", ci.toPrint, condition)
                                 if let n = Int(condition.1) {
                                     flag = n == 1
                                 }
@@ -297,6 +285,7 @@ class GVNumberer: FunctionPass {
                         } else {
                             tryBlock(block: blk.succs[0])
                         }
+                        
                     } else if !i.isCritical {
                         
                         let res = evaluate(i, in: blk)
@@ -322,7 +311,7 @@ class GVNumberer: FunctionPass {
                                 workList.insert(u.user as! Inst)
                             }
                         }
-                        //                        print(">", res.1)
+                        
                     }
                 }
             }

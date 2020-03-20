@@ -14,7 +14,7 @@ extension Array where Element: CustomStringConvertible {
         }
         var ret = method(self[0])
         for i in 1..<self.count {
-            ret += "\(sep)\(self[i])"
+            ret += "\(sep)\(method(self[i]))"
         }
         return ret
     }

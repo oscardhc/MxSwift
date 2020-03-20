@@ -80,9 +80,24 @@ class IRBuilder: ASTBaseVisitor {
         Builtin.addFunc(name: "getString") {
             Function(name: "getString", type: .string, module: module)
         }
-        Builtin.addFunc(name: "parseInt") {
-            Function(name: "parseInt", type: .int, module: module)
+        Builtin.addFunc(name: "length") {
+            Function(name: "_str_length", type: .int, module: module)
                 .added(operand: Value(name: "", type: .string))
+        }
+        Builtin.addFunc(name: "parseInt") {
+            Function(name: "_str_parseInt", type: .int, module: module)
+                .added(operand: Value(name: "", type: .string))
+        }
+        Builtin.addFunc(name: "ord") {
+            Function(name: "_str_ord", type: .int, module: module)
+                .added(operand: Value(name: "", type: .string))
+                .added(operand: Value(name: "", type: .int))
+        }
+        Builtin.addFunc(name: "substring") {
+            Function(name: "_str_substring", type: .string, module: module)
+                .added(operand: Value(name: "", type: .string))
+                .added(operand: Value(name: "", type: .int))
+                .added(operand: Value(name: "", type: .int))
         }
         addStringBOP(name: "add", type: .string)
         addStringBOP(name: "eq", type: .bool)
@@ -224,6 +239,7 @@ class IRBuilder: ASTBaseVisitor {
     override func visit(node: ClassD) {
         //        super.visit(node: node)
         curClass = node.ret! as? Class
+        curBlock = nil
         node.properties.forEach {
             $0.accept(visitor: self)
         }
@@ -439,7 +455,9 @@ class IRBuilder: ASTBaseVisitor {
         super.visit(node: node)
         var f: Function?
         var sym: Symbol?
+        
         if Builtin.functions.keys.contains(node.id) {
+            print("...builtin", node.id, node.arguments.joined() {"\($0.ret!.type)"})
             f = Builtin.functions[node.id]!
         } else {
             sym = node.scope.find(name: node.id)!
@@ -557,10 +575,12 @@ class IRBuilder: ASTBaseVisitor {
             case .eq, .neq, .lt, .gt, .leq, .geq:
                 if node.lhs.type == int {
                     node.ret = CompareInst(name: "", operation: .icmp, lhs: lhs, rhs: rhs, cmp: cmpMap[node.op]!, in: curBlock)
-                } else {
+                } else if node.lhs.type == string {
                     node.ret = CallInst(name: "", function: Builtin.functions["_str_\( cmpMap[node.op]!)"]!, in: curBlock)
                         .added(operand: lhs)
                         .added(operand: rhs)
+                } else if node.rhs.type == null {
+                    node.ret = CompareInst(name: "", operation: .icmp, lhs: lhs, rhs: rhs, cmp: cmpMap[node.op]!, in: curBlock)
                 }
             case .logOr, .logAnd:
                 node.ret = BinaryInst(name: "", type: lhs.type, operation: bopMap[node.op]!, lhs: lhs, rhs: rhs, in: curBlock)
