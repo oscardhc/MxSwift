@@ -18,7 +18,7 @@ class PTAnalysis: ModulePass {
     var pts     = [Value: Set<Value>]()
     var loads   = [Value: Set<Value>]()
     var stores  = [Value: Set<Value>]()
-    var workList = [Value]()
+    var workList = Set<Value>()
     
     func mayAlias(p: Value, q: Value) -> Bool {
         let pp = pts[p]!
@@ -37,7 +37,7 @@ class PTAnalysis: ModulePass {
     func addEdge(from: Value, to: Value) {
         if !graph[from]!.contains(to) {
             graph[from]!.insert(to)
-            workList.append(from)
+            workList.insert(from)
         }
     }
     
@@ -112,11 +112,11 @@ class PTAnalysis: ModulePass {
         
         for (key, val) in pts where !val.isEmpty {
             print("worklist", key, val)
-            workList.append(key)
+            workList.insert(key)
         }
         
-        while let cur = workList.popLast() {
-            print(">", cur, pts[cur]!, loads[cur]!, stores[cur]!)
+        while let cur = workList.popFirst() {
+            print(workList.count, ">", cur, pts[cur]!, loads[cur]!, stores[cur]!)
             for a in pts[cur]! {
                 loads[cur]! .forEach {addEdge(from: a, to: $0)}
                 stores[cur]!.forEach {addEdge(from: $0, to: a)}
@@ -125,7 +125,8 @@ class PTAnalysis: ModulePass {
                 let prevCount = pts[q]!.count
                 pts[q]!.formUnion(pts[cur]!)
                 if pts[q]!.count > prevCount {
-                    workList.append(q)
+//                    print(">>", q)
+                    workList.insert(q)
                 }
             }
         }
@@ -143,7 +144,7 @@ class LSElimination: FunctionPass {
     private var instRemoved = 0
     override var resultString: String {super.resultString + "\(instRemoved) inst(s) removed."}
     
-    init(aa: PTAnalysis) {
+    init(_ aa: PTAnalysis) {
         self.aa = aa
     }
     
@@ -173,13 +174,13 @@ class LSElimination: FunctionPass {
         
     }
     
-    func getAllDominatedStores(from: Inst) -> [Inst] {
+    func getAllDominated(from: Inst, where check: (Inst) -> Bool) -> [Inst] {
         var ret = [Inst]()
-        for i in from.inBlock.insts where i is StoreInst && i.blockIndexBF > from.blockIndexBF {
+        for i in from.inBlock.insts where check(i) && i.blockIndexBF > from.blockIndexBF {
             ret.append(i)
         }
         func dfs(n: BaseDomTree.Node) {
-            for i in n.block!.insts where i is StoreInst {
+            for i in n.block!.insts where check(i) {
                 ret.append(i)
             }
             for p in n.domSons {dfs(n: p)}
@@ -204,36 +205,106 @@ class LSElimination: FunctionPass {
         reachable[from] = vis
     }
     
+    func getReachable(from i: Inst) {
+        if i is BrInst {
+            for b in i.operands where b is BasicBlock {
+                reachable[i]!.formUnion(reachable[(b as! BasicBlock).insts.first!]!)
+            }
+        } else if !i.isTerminate {
+            reachable[i]!.formUnion(reachable[i.nextInst]!)
+        }
+    }
+    
     override func visit(v: Function) {
         
         domTree = DomTree(function: v)
-        for b in v.blocks {
-            for i in b.insts {
-                getAllReachable(from: i)
-            }
-        }
+//        for b in v.blocks {
+//            for i in b.insts {
+//                getAllReachable(from: i)
+//            }
+//        }
+        
+//        var changed = true
+//        for b in v.blocks {
+//            for i in b.insts {
+//                reachable[i] = [i]
+//            }
+//        }
+//        while changed {
+//            changed = false
+//            for b in v.blocks {
+//                for i in b.insts.reversed() {
+//                    let cnt = reachable[i]!.count
+//                    if i is BrInst {
+//                        for b in i.operands where b is BasicBlock {
+//                            reachable[i]!.formUnion(reachable[(b as! BasicBlock).insts.first!]!)
+//                        }
+//                    } else if !i.isTerminate {
+//                        reachable[i]!.formUnion(reachable[i.nextInst]!)
+//                    }
+//                    if reachable[i]!.count > cnt {
+//                        changed = true
+//                    }
+//                }
+//            }
+//        }
         
         func lse(n: BaseDomTree.Node) {
-            for i in n.block!.insts where i is LoadInst {
-                if let pre = getPreviousLoad(in: n.block!, for: i) {
-                    
-                    let stores = getAllDominatedStores(from: pre)
-                    print(">>>>>", i.toPrint, stores.count)
-                    print(stores.joined() {"[\($0.operands[0]) \($0.operands[1]) \(reachable[$0]!.contains(i))]"})
-                    var flag = true
-                    for s in stores where reachable[s]!.contains(i) && aa.mayAlias(p: s.operands[1], q: i.operands[0]) {
-                        flag = false
-                    }
-                    if flag {
-                        print(i.toPrint, aa.pts[i.operands[0]]!)
-                        print(">", pre.toPrint)
-                        i.replaced(by: pre)
-                        instRemoved += 1
-                    }
-                    print("")
-                    
+            for i in n.block!.insts where i is LoadInst && i.operands.count > 0 {
+                print("check", i.toPrint)
+                let stores = getAllDominated(from: i) {$0 is StoreInst}
+                let loads = getAllDominated(from: i) {$0 is LoadInst && $0.operands[0] == i.operands[0]}
+                var unavai = Set<Inst>(), workList = [Inst]()
+                for s in stores where aa.mayAlias(p: s.operands[1], q: i.operands[0]) {
+                    unavai.insert(s.nextInst)
+                    workList.append(s.nextInst)
                 }
+                while let v = workList.popLast() {
+                    switch v {
+                    case is ReturnInst:
+                        break
+                    case is BrInst:
+                        for o in v.operands {
+                            if let b = o as? BasicBlock, domTree.checkBF(i.inBlock, dominates: b), !unavai.contains(b.insts.first!) {
+                                unavai.insert(b.insts.first!)
+                                workList.append(b.insts.first!)
+                            }
+                        }
+                    default:
+                        if !unavai.contains(v.nextInst) {
+                            unavai.insert(v.nextInst)
+                            workList.append(v.nextInst)
+                        }
+                    }
+                }
+                for l in loads where !unavai.contains(l) {
+                    print(">", l.toPrint)
+                    l.replaced(by: i)
+                    instRemoved += 1
+                }
+                
             }
+//            for i in n.block!.insts where i is LoadInst {
+//                if let pre = getPreviousLoad(in: n.block!, for: i) {
+//
+//                    let stores = getAllDominatedStores(from: pre)
+//                    print(">>>>>", i.toPrint, pre.toPrint)
+//                    print(stores.joined() {"[\($0.operands[0]) \($0.operands[1]) \(reachable[$0]!.contains(i))]"})
+//                    var flag = true
+//                    for s in stores where reachable[s]!.contains(i) && aa.mayAlias(p: s.operands[1], q: i.operands[0]) {
+//                        flag = false
+//                    }
+//
+//                    if flag {
+//                        print(i.toPrint, aa.pts[i.operands[0]]!)
+//                        print(">", pre.toPrint)
+//                        i.replaced(by: pre)
+//                        instRemoved += 1
+//                    }
+//                    print("")
+//
+//                }
+//            }
             for p in n.domSons {lse(n: p)}
         }
         

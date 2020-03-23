@@ -58,13 +58,15 @@ class CFGSimplifier: FunctionPass {
                     }
                     BrInst(name: "", des: ret, in: blk)
                 }
-                change()
+
+                changed = true
             }
             
             for b in v.blocks where b.preds.isEmpty && b !== b.inFunction.blocks.first! {
                 b.remove() {
                     $0.disconnect(delUsee: true, delUser: true)
                 }
+
                 change()
             }
             
@@ -87,8 +89,14 @@ class CFGSimplifier: FunctionPass {
                 if b.preds.count > 0 && b.insts.count == 1 && b.insts.last! is BrInst && b.insts.last!.operands.count == 1 { // only uncond br
                     
                     let t = b.insts.last!.operands[0] as! BasicBlock
-                    if t.insts.first! is PhiInst && b.preds[0].succs.count > 1 {
-                        continue
+                    if t.insts.first! is PhiInst {
+                        var flag = false
+                        for pp in b.preds where pp.succs.count > 1 {
+                            flag = true
+                        }
+                        if flag {
+                            continue
+                        }
                     }
                     for u in b.users {
                         u.reconnect(fromValue: u.user is PhiInst ? b.preds[0] : t)

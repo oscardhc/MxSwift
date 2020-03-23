@@ -66,6 +66,10 @@ class Inst: User {
         nodeInBlock!.list.getNodeIndexBF(from: nodeInBlock!)
     }
     
+    var nextInst: Inst {
+        (nodeInBlock?.next?.value)!
+    }
+    
 }
 
 class PhiInst: Inst {

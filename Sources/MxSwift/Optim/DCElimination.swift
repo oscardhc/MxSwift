@@ -13,7 +13,7 @@ class DCElimination: FunctionPass {
     private var instRemoved = 0
     override var resultString: String {super.resultString + "\(instRemoved) inst(s) removed."}
     
-    init(aa: PTAnalysis? = nil) {
+    init(_ aa: PTAnalysis? = nil) {
         self.aa = aa
     }
     
@@ -33,6 +33,7 @@ class DCElimination: FunctionPass {
                 }
             }
         }
+        
         if aa != nil {
             for para in v.operands {
                 livePos.formUnion(aa!.pts[para]!)

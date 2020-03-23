@@ -143,7 +143,6 @@ class Class: Global {
     var getSize: Int {
         var size = 0.0
         subTypes.forEach {
-//            size +=
             let space = Double($0.space)
             size = ceil(size / space) * space + space
         }

@@ -173,7 +173,7 @@ class IRBuilder: ASTBaseVisitor {
                 if globalInit {
                     let e = $0.1?.ret?.loadIfAddress(block: curBlock)
                     if e is Const {
-                        sym.value = GlobalVariable(name: $0.0, value: e as! Const, module: module)
+                        sym.value = GlobalVariable(name: $0.0, value: e as! Const, module: module, isConst: false)
                     } else {
                         var const: Const {
                             switch node.type {
@@ -214,23 +214,13 @@ class IRBuilder: ASTBaseVisitor {
         node.parameters.forEach {
             let par = Value(name: $0.variable[0].0, type: getType(type: $0.type))
             _ = ret.added(operand: par)
-            let alc = AllocaInst(name: par.name + ".p", forType: par.type, in: curBlock)
+            let alc = AllocaInst(name: "", forType: par.type, in: curBlock)
             $0.scope.find(name: $0.variable[0].0)!.value = alc
             StoreInst(name: "", alloc: alc, val: par, in: curBlock)
         }
         
         node.statements.forEach {
             $0.accept(visitor: self)
-        }
-        
-        if curBlock.insts.count == 0 || !curBlock.insts.last!.isTerminate {
-            if ret.type is VoidT {
-                ReturnInst(name: "", val: VoidC(), in: curBlock)
-            } else if node.id == "main" {
-                ReturnInst(name: "", val: IntC.zero(), in: curBlock)
-            } else {
-                error.noReturn(name: node.id)
-            }
         }
         
         curBlock = nil
