@@ -401,7 +401,6 @@ class VNExpression: CustomStringConvertible {
                 if i is PhiInst {
                     for j in 0..<i.operands.count/2 where (i.operands[j*2 + 1] as! BasicBlock).reachable {
                         vals.append(VNExpression(v: i.operands[j*2], depth: depth - 1))
-                        vals.append(VNExpression(v: i.operands[j*2 + 1], depth: depth - 1))
                     }
                 } else {
                     if let c = i as? CompareInst {
@@ -485,6 +484,8 @@ class VNExpression: CustomStringConvertible {
             }
         } else if op == .xor {
             return vals[0].checkSatisfied(with: dict) ^ 1
+        } else if op == .phi {
+            return 1
         } else {
             var ret: Int? = nil
             for v in vals {
@@ -555,8 +556,8 @@ class VNExpression: CustomStringConvertible {
             
             if toFold {
                 var res: Int? = nil, flag = true
-                for j in 0..<vals.count/2 {
-                    if let n = vals[j*2].getInt(with: op) {
+                for v in vals {
+                    if let n = v.getInt(with: op) {
                         if res == nil {
                             if flag {
                                 res = n

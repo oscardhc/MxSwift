@@ -199,8 +199,8 @@ class CallInst: Inst {
 }
 
 class AllocaInst: Inst {
-    init(name: String, forType: Type, in block: BasicBlock) {
-        super.init(name: name, type: forType.pointer, operation: .alloca, in: block)
+    init(name: String, forType: Type, in block: BasicBlock, at: Int = -1) {
+        super.init(name: name, type: forType.pointer, operation: .alloca, in: block, at: at)
     }
     override var toPrint: String {"\(name) = \(operation) \((type as! PointerT).baseType.withAlign)"}
     override func accept(visitor: IRVisitor) {visitor.visit(v: self)}

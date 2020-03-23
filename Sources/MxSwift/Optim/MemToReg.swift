@@ -158,7 +158,7 @@ class MemToReg: FunctionPass {
                     let frt = frontier.block!
                     if !phiBlocks.contains(frt) {
                         phiBlocks.insert(frt)
-                        let phi = PhiInst(name: ai.originName + ".", type: ai.type.getBase, in: frt, at: 0)
+                        let phi = PhiInst(name: ai.originName == "" ? "" : ai.originName + ".", type: ai.type.getBase, in: frt, at: 0)
                         phiToAlloc[phi] = ai
                         
                         for pre in tree[frt].antiEdge {

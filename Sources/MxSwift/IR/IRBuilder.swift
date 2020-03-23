@@ -189,7 +189,7 @@ class IRBuilder: ASTBaseVisitor {
                         }
                     }
                 } else {
-                    let ret = AllocaInst(name: $0.0 + "_" + sym.belongsTo.scopeName, forType: type, in: curBlock)
+                    let ret = AllocaInst(name: $0.0 + "_" + sym.belongsTo.scopeName, forType: type, in: curBlock.inFunction.blocks[0], at: 0)
                     sym.value = ret
                     if let e = $0.1 {
                         _ = assign(lhs: ret, rhs: e.ret!, in: curBlock)
@@ -214,7 +214,7 @@ class IRBuilder: ASTBaseVisitor {
         node.parameters.forEach {
             let par = Value(name: $0.variable[0].0, type: getType(type: $0.type))
             _ = ret.added(operand: par)
-            let alc = AllocaInst(name: "", forType: par.type, in: curBlock)
+            let alc = AllocaInst(name: par.name + ".p", forType: par.type, in: curBlock)
             $0.scope.find(name: $0.variable[0].0)!.value = alc
             StoreInst(name: "", alloc: alc, val: par, in: curBlock)
         }
@@ -555,10 +555,30 @@ class IRBuilder: ASTBaseVisitor {
     private let cmpMap: [BinaryOperator: CompareInst.CMP] = [.eq: .eq, .neq: .ne, .lt: .slt, .leq: .sle, .gt: .sgt, .geq: .sge]
     
     override func visit(node: BinaryE) {
-        super.visit(node: node)
-        if node.op == .assign {
+        if node.op == .logOr || node.op == .logAnd {
+            node.lhs.accept(visitor: self)
+            let lhs = node.lhs.ret!.loadIfAddress(block: curBlock)
+            let result = AllocaInst(name: "", forType: IntT.bool, in: curBlock.inFunction.blocks[0], at: 0)
+            let reject = BasicBlock(curfunc: curBlock.inFunction)
+            let merge = BasicBlock(curfunc: curBlock.inFunction)
+            _ = StoreInst(name: "", alloc: result, val: lhs, in: curBlock)
+            _ = BrInst(name: "", condition: lhs,
+                       accept: node.op == .logOr ? merge: reject,
+                       reject: node.op == .logOr ? reject: merge, in: curBlock)
+            
+            curBlock = reject
+            node.rhs.accept(visitor: self)
+            let rhs = node.rhs.ret!.loadIfAddress(block: curBlock)
+            _ = StoreInst(name: "", alloc: result, val: rhs, in: curBlock)
+            _ = BrInst(name: "", des: merge, in: curBlock)
+            
+            curBlock = merge
+            node.ret = result
+        } else if node.op == .assign {
+            super.visit(node: node)
             assign(lhs: node.lhs.ret!, rhs: node.rhs.ret!, in: curBlock)
         } else {
+            super.visit(node: node)
             let lhs = node.lhs.ret!.loadIfAddress(block: curBlock)
             let rhs = node.rhs.ret!.loadIfAddress(block: curBlock)
             switch node.op {
@@ -583,6 +603,7 @@ class IRBuilder: ASTBaseVisitor {
                     node.ret = CompareInst(name: "", operation: .icmp, lhs: lhs, rhs: rhs, cmp: cmpMap[node.op]!, in: curBlock)
                 }
             case .logOr, .logAnd:
+                print("log and/or", curBlock.inFunction.name, node.op, bopMap[node.op]!)
                 node.ret = BinaryInst(name: "", type: lhs.type, operation: bopMap[node.op]!, lhs: lhs, rhs: rhs, in: curBlock)
             default:
                 break

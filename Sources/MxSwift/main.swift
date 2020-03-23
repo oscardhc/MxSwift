@@ -57,7 +57,7 @@ func compile(useFileStream: Bool) throws {
        .. . ....DM,:,,,++?+++=MMMMI77I7III7I7MI7IDM8M?+++MM?DDZM~=+=OM$ZM77IM77777I77M=MM+MMI++:MMM.
 """
     let start = DispatchTime.now().uptimeNanoseconds
-    let timeLimit = Int(1 * 2000000000), iterLimit = 1
+    let timeLimit = Int(1 * 3000000000), iterLimit = 4
     var iteration = 0
     
     print(welcome)
@@ -143,7 +143,7 @@ class s {
     IRPrinter(filename: "/Users/oscar/Documents/Classes/1920_Spring/Compiler/tmp/out0.ll").work(on: ir.module)
 //    CFGSimplifier().work(on: ir.module)
     MemToReg().work(on: ir.module)
-//    IRPrinter(filename: "/Users/oscar/Documents/Classes/1920_Spring/Compiler/tmp/out1.ll").work(on: ir.module)
+    IRPrinter(filename: "/Users/oscar/Documents/Classes/1920_Spring/Compiler/tmp/out1.ll").work(on: ir.module)
     
     while DispatchTime.now().uptimeNanoseconds - start < timeLimit && iteration < iterLimit {
         
@@ -156,8 +156,6 @@ class s {
         GVNumberer().work(on: ir.module)
         DCElimination().work(on: ir.module)
         CFGSimplifier().work(on: ir.module)
-        
-        IRPrinter(filename: "/Users/oscar/Documents/Classes/1920_Spring/Compiler/tmp/out1.ll").work(on: ir.module)
 
         let aa = PTAnalysis()
         aa.work(on: ir.module)
@@ -171,7 +169,7 @@ class s {
     
     IRPrinter(filename: "/Users/oscar/Documents/Classes/1920_Spring/Compiler/tmp/out2.ll").work(on: ir.module)
     
-    print("Compilation exited normally in \(1.0 * Double(DispatchTime.now().uptimeNanoseconds - start) / 1000000000)s.")
+    print("Compilation exited normally in \(1.0 * Double(DispatchTime.now().uptimeNanoseconds - start) / 1000000000)s with \(iteration) iteration(s).")
     
 }
 

@@ -149,7 +149,6 @@ class LSElimination: FunctionPass {
     
     func getPreviousLoad(in block: BasicBlock, for load: Inst) -> Inst? {
         
-        //        print("getPrev", load.toPrint, block.insts.joined() {"\($0.operation)"})
         var flag = false
         for i in block.insts.reversed() {
             if !flag {
