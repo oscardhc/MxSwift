@@ -42,7 +42,6 @@ class Value: HashableObject, CustomStringConvertible, Hashable {
         self.type = type
     }
     
-    var isTerminate: Bool {self is BrInst || self is ReturnInst}
     func accept(visitor: IRVisitor) {}
     var isAddress: Bool {
         self is AllocaInst || self is GEPInst || self is GlobalVariable

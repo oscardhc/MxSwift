@@ -70,6 +70,10 @@ class Inst: User {
         (nodeInBlock?.next?.value)!
     }
     
+    var isTerminate: Bool {
+        self is ReturnInst || self is BrInst
+    }
+    
 }
 
 class PhiInst: Inst {
@@ -140,9 +144,9 @@ class BrInst: Inst {
 
 class GEPInst: Inst {
     let needZero: Bool
-    init(name: String, type: Type, base: Value, needZero: Bool, val: Value, in block: BasicBlock) {
+    init(name: String, type: Type, base: Value, needZero: Bool, val: Value, in block: BasicBlock, at: Int = -1) {
         self.needZero = needZero
-        super.init(name: name, type: type, operation: .getelementptr, in: block)
+        super.init(name: name, type: type, operation: .getelementptr, in: block, at: at)
         added(operand: base)
         added(operand: val)
         print("init GEP", operands.count, operands[0].type)
@@ -174,8 +178,8 @@ class LoadInst: Inst {
 }
 
 class StoreInst: Inst {
-    @discardableResult init(name: String, alloc: Value, val: Value, in block: BasicBlock) {
-        super.init(name: name, type: Type(), operation: .store, in: block)
+    @discardableResult init(name: String, alloc: Value, val: Value, in block: BasicBlock, at: Int = -1) {
+        super.init(name: name, type: Type(), operation: .store, in: block, at: at)
         added(operand: val)
         added(operand: alloc)
     }

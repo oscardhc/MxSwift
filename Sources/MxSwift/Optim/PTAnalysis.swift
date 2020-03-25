@@ -76,10 +76,10 @@ class PTAnalysis: ModulePass {
                             stores[i.operands[1]]!.insert(i.operands[0])
                         }
                     case is GEPInst, is CastInst:
-                        print("GEP/Cast", i.operands[0], "->", i)
+//                        print("GEP/Cast", i.operands[0], "->", i)
                         graph[i.operands[0]]!.insert(i)
                     case is PhiInst:
-                        print("PHI", i.operands.joined())
+//                        print("PHI", i.operands.joined())
                         for j in 0..<i.operands.count/2 where !(i.operands[j*2] is Const) {
                             graph[i.operands[j*2]]!.insert(i)
                         }
@@ -111,23 +111,30 @@ class PTAnalysis: ModulePass {
         }
         
         for (key, val) in pts where !val.isEmpty {
-            print("worklist", key, val)
+//            print("worklist", key, val)
             workList.insert(key)
         }
         
         while let cur = workList.popFirst() {
-            print(workList.count, ">", cur, pts[cur]!, loads[cur]!, stores[cur]!)
+//            print(workList.count, ">", cur, pts[cur]!, loads[cur]!, stores[cur]!)
             for a in pts[cur]! {
                 loads[cur]! .forEach {addEdge(from: a, to: $0)}
                 stores[cur]!.forEach {addEdge(from: $0, to: a)}
             }
             for q in graph[cur]! {
-                let prevCount = pts[q]!.count
-                pts[q]!.formUnion(pts[cur]!)
-                if pts[q]!.count > prevCount {
-//                    print(">>", q)
+                var flag = false
+                for nv in pts[cur]! where !pts[q]!.contains(nv) {
+                    pts[q]!.insert(nv)
+                    flag = true
+                }
+                if flag {
                     workList.insert(q)
                 }
+//                let prevCount = pts[q]!.count
+//                pts[q]!.formUnion(pts[cur]!)
+//                if pts[q]!.count > prevCount {
+//                    workList.insert(q)
+//                }
             }
         }
         
@@ -169,7 +176,7 @@ class LSElimination: FunctionPass {
         
         func lse(n: BaseDomTree.Node) {
             for i in n.block!.insts where i is LoadInst && i.operands.count > 0 {
-                print("check", i.toPrint)
+//                print("check", i.toPrint)
                 let stores = getAllDominated(from: i) {$0 is StoreInst}
                 let loads = getAllDominated(from: i) {$0 is LoadInst && $0.operands[0] == i.operands[0]}
                 var unavai = Set<Inst>(), workList = [Inst]()

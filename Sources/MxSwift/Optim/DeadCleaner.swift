@@ -35,9 +35,15 @@ class DeadCleaner: FunctionPass {
             }
         }
         
-        for b in v.blocks where !live.contains(b) {
-            b.remove {
-                $0.disconnect(delUsee: true, delUser: true)
+        for b in v.blocks {
+            if !live.contains(b) {
+                b.remove {
+                    $0.disconnect(delUsee: true, delUser: true)
+                }
+            } else if b.insts.isEmpty || !b.insts.last!.isTerminate {
+                let a = AllocaInst(name: "", forType: v.type, in: b)
+                let l = LoadInst(name: "", alloc: a, in: b)
+                ReturnInst(name: "", val: l, in: b)
             }
         }
         

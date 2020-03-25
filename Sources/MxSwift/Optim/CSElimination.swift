@@ -272,14 +272,14 @@ class GVNumberer: FunctionPass {
                                 tryBlock(block: blk.succs[0])
                                 let preTrue = VNExpression(v: jump.operands[0])
                                 updatePredicate(edge: BasicBlock.Edge(from: blk, to: blk.succs[0]), exp: preTrue.simplified())
-                                print("        branch T", preTrue.description)
+//                                print("        branch T", preTrue.description)
                             }
                             if flag != true {
                                 tryBlock(block: blk.succs[1])
                                 let preFalse = VNExpression(v: jump.operands[0])
                                 preFalse.negation()
                                 updatePredicate(edge: BasicBlock.Edge(from: blk, to: blk.succs[1]), exp: preFalse.simplified())
-                                print("        branch F", preFalse.description)
+//                                print("        branch F", preFalse.description)
                             }
                             
                         } else {
@@ -289,7 +289,7 @@ class GVNumberer: FunctionPass {
                     } else if !i.isCritical {
                         
                         let res = evaluate(i, in: blk)
-                        print(i.toPrint, res)
+//                        print(i.toPrint, res)
                         
                         if let x = map[blk]![res.1] {
                             if x.blockIndexBF > i.blockIndexBF {
@@ -306,6 +306,9 @@ class GVNumberer: FunctionPass {
                         }
                         
                         if belongTo[i] != res.1 {
+                            if let s = belongTo[i] {
+                                map[blk]?.removeValue(forKey: s)
+                            }
                             belongTo[i] = res.1
                             for u in i.users {
                                 workList.insert(u.user as! Inst)
@@ -327,7 +330,7 @@ class GVNumberer: FunctionPass {
                     i.replaced(by: IntC(name: "", type: .int, value: n))
                     instRemoved += 1
                 } else if let (l, _) = lookup(description: str, in: blk, for: i) {
-                    print(i.toPrint)
+                    print(i.toPrint, str, belongTo[l!])
                     print(">", l!)
                     if l!.inBlock != i.inBlock {
                         map[blk]!.removeValue(forKey: str)
@@ -609,11 +612,11 @@ class VNExpression: CustomStringConvertible {
             
         } else if op == .icmp && VNExpression.comparisons.contains(sop) {
             if let n = vals[0].getInt(with: .add) {
-                print(">", description)
+//                print(">", description)
                 name = "\((CompareInst.CMP.map[sop]!(n, 0) != neg) ? 1 : 0)"
                 vals = []
                 neg  = false
-                print("simplify", sop, n, name, description)
+//                print("simplify", sop, n, name, description)
             }
             
         }

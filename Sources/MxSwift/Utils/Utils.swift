@@ -33,6 +33,9 @@ class RefSet<P: Hashable> {
     func popFirst() -> P? {
         _s.popFirst()
     }
+    func formUnion(rhs: RefSet<P>) {
+        _s.formUnion(rhs._s)
+    }
 }
 class RefDict<P: Hashable, Q> {
     private(set) var _s = [P: Q]()

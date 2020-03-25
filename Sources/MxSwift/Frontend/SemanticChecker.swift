@@ -102,6 +102,8 @@ class SemanticChecker: ASTBaseVisitor {
             } else {
                 if c.type !== node.expression!.type {
                     error.returnTypeError(name: c.id, expected: c.type, received: node.expression!.type)
+                } else {
+                    node.expression!.type = c.type
                 }
             }
         } else {

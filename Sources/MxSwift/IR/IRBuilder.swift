@@ -346,6 +346,8 @@ class IRBuilder: ASTBaseVisitor {
         super.visit(node: node)
         if let e = node.expression {
             node.ret = ReturnInst(name: "", val: e.ret!.loadIfAddress(block: curBlock), in: curBlock)
+        } else if curBlock.inFunction.type is VoidT {
+            node.ret = ReturnInst(name: "", val: VoidC(), in: curBlock)
         }
     }
     
@@ -399,14 +401,15 @@ class IRBuilder: ASTBaseVisitor {
         let cons = StringC(value: node.value)
         let globS = GlobalVariable(name: "s.", value: cons, module: module)
         let globP = GlobalVariable(name: "p.", value: NullC(type: .string), module: module, isConst: false)
-        let pos = GEPInst(name: "", type: .string, base: globS, needZero: true, val: IntC.zero(), in: globalFunc.blocks[0])
-        StoreInst(name: "", alloc: globP, val: pos, in: globalFunc.blocks[0])
+        let pos = GEPInst(name: "", type: .string, base: globS, needZero: true, val: IntC.zero(), in: globalFunc.blocks[0], at: 0)
+        StoreInst(name: "", alloc: globP, val: pos, in: globalFunc.blocks[0], at: 1)
         node.ret = globP
     }
     
     override func visit(node: NullLiteralE) {
         super.visit(node: node)
-        node.ret = NullC()
+        print("return type: ", node.type)
+        node.ret = NullC(type: getType(type: node.type))
     }
     
     override func visit(node: MethodAccessE) {
