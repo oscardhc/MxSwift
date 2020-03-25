@@ -26,23 +26,18 @@ class DeadCleaner: FunctionPass {
             }
         }
         
-        v.blocks.forEach {$0.preds = []}
-        v.blocks.forEach { (b) in
-            b.succs.forEach {$0.preds.append(b)}
+        var live = Set<BasicBlock>([v.blocks.first!]), workList = [v.blocks.first!]
+        
+        while let b = workList.popLast() {
+            for s in b.succs where !live.contains(s) {
+                live.insert(s)
+                workList.append(s)
+            }
         }
         
-        for blk in v.blocks {
-            if blk.insts.count == 0 && blk.preds.isEmpty {
-                blk.remove()
-            } else if blk.insts.isEmpty || !blk.insts.last!.isTerminate {
-                if v.type is VoidT {
-                    ReturnInst(name: "", val: VoidC(), in: blk)
-                } else if v.name == "main" {
-                    ReturnInst(name: "", val: IntC.zero(), in: blk)
-                } else {
-                    error.noReturn(name: v.name)
-                    break
-                }
+        for b in v.blocks where !live.contains(b) {
+            b.remove {
+                $0.disconnect(delUsee: true, delUser: true)
             }
         }
         

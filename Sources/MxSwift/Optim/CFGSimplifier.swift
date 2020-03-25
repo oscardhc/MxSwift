@@ -63,7 +63,7 @@ class CFGSimplifier: FunctionPass {
             }
             
             for b in v.blocks where b.preds.isEmpty && b !== b.inFunction.blocks.first! {
-                b.remove() {
+                b.remove {
                     $0.disconnect(delUsee: true, delUser: true)
                 }
 

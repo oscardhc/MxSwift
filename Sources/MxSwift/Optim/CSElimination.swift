@@ -29,7 +29,7 @@ class CSElimination: FunctionPass {
                 
                 if i is CastInst && i.type == i.operands[0].type {
                     print(i.toPrint)
-                    print(">", i.operands[0])
+                    print(">>>>", i.operands[0])
                     i.replaced(by: i.operands[0])
                     instRemoved += 1
                     continue

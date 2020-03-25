@@ -145,6 +145,7 @@ class GEPInst: Inst {
         super.init(name: name, type: type, operation: .getelementptr, in: block)
         added(operand: base)
         added(operand: val)
+        print("init GEP", operands.count, operands[0].type)
     }
     override var toPrint: String {"\(name) = \(operation) \((operands[0].type as! PointerT).baseType), \(operands[0]),\(needZero ? " i32 0," : "") \(operands[1])"}
     override func accept(visitor: IRVisitor) {visitor.visit(v: self)}

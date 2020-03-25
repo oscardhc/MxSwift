@@ -149,6 +149,19 @@ class IRBuilder: ASTBaseVisitor {
         
         // return for global init
         ReturnInst(name: "", val: VoidC(), in: globalFunc.blocks[0])
+        
+        for v in module.functions {
+            if v.name == "@main" {
+                for blk in v.blocks {
+                    ReturnInst(name: "", val: IntC.zero(), in: blk)
+                }
+            }
+            if v.type is VoidT {
+                for blk in v.blocks {
+                    ReturnInst(name: "", val: VoidC(), in: blk)
+                }
+            }
+        }
     }
     
     private func assign(lhs: Value, rhs: Value, in block: BasicBlock) {
@@ -189,7 +202,7 @@ class IRBuilder: ASTBaseVisitor {
                         }
                     }
                 } else {
-                    let ret = AllocaInst(name: $0.0 + "_" + sym.belongsTo.scopeName, forType: type, in: curBlock.inFunction.blocks[0], at: 0)
+                    let ret = AllocaInst(name: "", forType: type, in: curBlock.inFunction.blocks[0], at: 0)
                     sym.value = ret
                     if let e = $0.1 {
                         _ = assign(lhs: ret, rhs: e.ret!, in: curBlock)
@@ -332,8 +345,7 @@ class IRBuilder: ASTBaseVisitor {
     override func visit(node: ReturnS) {
         super.visit(node: node)
         if let e = node.expression {
-            let ret = e.ret!.isAddress ? LoadInst(name: "", alloc: e.ret!, in: curBlock) : e.ret!
-            node.ret = ReturnInst(name: "", val: ret, in: curBlock)
+            node.ret = ReturnInst(name: "", val: e.ret!.loadIfAddress(block: curBlock), in: curBlock)
         }
     }
     
@@ -400,11 +412,12 @@ class IRBuilder: ASTBaseVisitor {
     override func visit(node: MethodAccessE) {
         //        super.visit(node: node)
         node.toAccess.accept(visitor: self)
-        let t = node.toAccess.ret!.loadIfAddress(block: curBlock)
-        node.method.accept(visitor: self)
+        var t = node.toAccess.ret!.loadIfAddress(block: curBlock)
         if node.method.id == "size" {
-            _ = CastInst(name: "", val: t, toType: Type.int.pointer, in: curBlock)
+            t = CastInst(name: "", val: t, toType: Type.int.pointer, in: curBlock)
         }
+
+        node.method.accept(visitor: self)
         node.ret = (node.method.ret! as! CallInst).inserted(operand: t)
     }
     
@@ -511,16 +524,10 @@ class IRBuilder: ASTBaseVisitor {
         }
     }
     
-    override func visit(node: NewE) {
-        super.visit(node: node)
-        // deal with the last non-zero dim
-        let type = getType(type: node.type)
-        
+    private func newArray(type: Type, num: Value) -> Value {
         let perSize = IntC(name: "",
                            type: .int,
-                           value: node.empty > 0 ? pointerSize : type.getBase.space)
-        
-        let num = node.expressions.last!.ret!.loadIfAddress(block: curBlock)
+                           value: type.getBase.space)
         
         let size = BinaryInst(name: "", type: .int, operation: .mul, lhs: perSize, rhs: num, in: curBlock)
         let real = BinaryInst(name: "", type: .int, operation: .add, lhs: size, rhs: IntC.four(), in: curBlock)
@@ -536,8 +543,57 @@ class IRBuilder: ASTBaseVisitor {
         _ = StoreInst(name: "", alloc: toint, val: num, in: curBlock)
         
         let nbase = GEPInst(name: "", type: Type.int.pointer, base: toint, needZero: false, val: IntC.one(), in: curBlock)
+        return CastInst(name: "", val: nbase, toType: type, in: curBlock)
+    }
+    
+    private func buildArray(node: NewE, idx: Int, arr: Value, type: Type) {
         
-        node.ret = CastInst(name: "", val: nbase, toType: type, in: curBlock)
+        let v = AllocaInst(name: "", forType: .int, in: curBlock.inFunction.blocks[0], at: 0)
+        _ = StoreInst(name: "", alloc: v, val: IntC.zero(), in: curBlock)
+        let b = node.expressions[idx - 1].ret!.loadIfAddress(block: curBlock)
+        let s = node.expressions[idx].ret!.loadIfAddress(block: curBlock)
+        
+        let judge = BasicBlock(curfunc: curBlock.inFunction)
+        let accept = BasicBlock(curfunc: curBlock.inFunction)
+        let merge = BasicBlock(curfunc: curBlock.inFunction)
+        
+        BrInst(name: "", des: judge, in: curBlock)
+        
+        curBlock = judge
+        let i = v.loadIfAddress(block: curBlock)
+        let r = CompareInst(name: "", operation: .icmp, lhs: i, rhs: b, cmp: .slt, in: curBlock)
+        BrInst(name: "", condition: r, accept: accept, reject: merge, in: curBlock)
+        
+        curBlock = accept
+        let p = GEPInst(name: "", type: type.pointer, base: arr, needZero: false, val: i, in: curBlock)
+        let narr = newArray(type: type, num: s)
+        _ = StoreInst(name: "", alloc: p, val: narr, in: curBlock)
+        
+        if idx < node.expressions.count - 1 {
+            buildArray(node: node, idx: idx + 1, arr: v, type: type.getBase)
+        }
+        
+        let j = BinaryInst(name: "", type: .int, operation: .add, lhs: i, rhs: IntC.one(), in: curBlock)
+        _ = StoreInst(name: "", alloc: v, val: j, in: curBlock)
+        BrInst(name: "", des: judge, in: curBlock)
+        
+        curBlock = merge
+    }
+    
+    override func visit(node: NewE) {
+        super.visit(node: node)
+        // deal with the last non-zero dim
+        let type = getType(type: node.type)
+//        node.ret = newArray(type: type, num: )
+
+        let arr = newArray(type: type, num: node.expressions[0].ret!.loadIfAddress(block: curBlock))
+        
+        if node.expressions.count > 1 {
+            buildArray(node: node, idx: 1, arr: arr, type: type.getBase)
+        }
+        
+        node.ret = arr
+        
     }
     
     //    case add, sub, mul, div, mod, gt, lt, geq, leq, eq, neq, bitAnd, bitOr, bitXor, logAnd, logOr, lShift, rShift, assign

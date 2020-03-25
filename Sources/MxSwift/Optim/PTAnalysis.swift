@@ -148,32 +148,6 @@ class LSElimination: FunctionPass {
         self.aa = aa
     }
     
-    func getPreviousLoad(in block: BasicBlock, for load: Inst) -> Inst? {
-        
-        var flag = false
-        for i in block.insts.reversed() {
-            if !flag {
-                if i === load {
-                    flag = true
-                }
-            } else if i is LoadInst && i.operands[0] === load.operands[0] {
-                return i
-            }
-        }
-        
-        var it = domTree[block].idom
-        while let cur = it?.block {
-            for i in cur.insts.reversed() {
-                if i is LoadInst && i.operands[0] == load.operands[0] {
-                    return i
-                }
-            }
-            it = it?.idom
-        }
-        return nil
-        
-    }
-    
     func getAllDominated(from: Inst, where check: (Inst) -> Bool) -> [Inst] {
         var ret = [Inst]()
         for i in from.inBlock.insts where check(i) && i.blockIndexBF > from.blockIndexBF {
@@ -189,65 +163,9 @@ class LSElimination: FunctionPass {
         return ret
     }
     
-    func getAllReachable(from: Inst) {
-        var vis = Set<Inst>(), book = Set<BasicBlock>()
-        for i in from.inBlock.insts where i.blockIndexBF > from.blockIndexBF {
-            vis.insert(i)
-        }
-        func dfs(n: BasicBlock) {
-            book.insert(n)
-            for i in n.insts {
-                vis.insert(i)
-            }
-            for p in n.succs where !book.contains(p) {dfs(n: p)}
-        }
-        for p in from.inBlock.succs {dfs(n: p)}
-        reachable[from] = vis
-    }
-    
-    func getReachable(from i: Inst) {
-        if i is BrInst {
-            for b in i.operands where b is BasicBlock {
-                reachable[i]!.formUnion(reachable[(b as! BasicBlock).insts.first!]!)
-            }
-        } else if !i.isTerminate {
-            reachable[i]!.formUnion(reachable[i.nextInst]!)
-        }
-    }
-    
     override func visit(v: Function) {
         
         domTree = DomTree(function: v)
-//        for b in v.blocks {
-//            for i in b.insts {
-//                getAllReachable(from: i)
-//            }
-//        }
-        
-//        var changed = true
-//        for b in v.blocks {
-//            for i in b.insts {
-//                reachable[i] = [i]
-//            }
-//        }
-//        while changed {
-//            changed = false
-//            for b in v.blocks {
-//                for i in b.insts.reversed() {
-//                    let cnt = reachable[i]!.count
-//                    if i is BrInst {
-//                        for b in i.operands where b is BasicBlock {
-//                            reachable[i]!.formUnion(reachable[(b as! BasicBlock).insts.first!]!)
-//                        }
-//                    } else if !i.isTerminate {
-//                        reachable[i]!.formUnion(reachable[i.nextInst]!)
-//                    }
-//                    if reachable[i]!.count > cnt {
-//                        changed = true
-//                    }
-//                }
-//            }
-//        }
         
         func lse(n: BaseDomTree.Node) {
             for i in n.block!.insts where i is LoadInst && i.operands.count > 0 {
@@ -282,29 +200,7 @@ class LSElimination: FunctionPass {
                     l.replaced(by: i)
                     instRemoved += 1
                 }
-                
             }
-//            for i in n.block!.insts where i is LoadInst {
-//                if let pre = getPreviousLoad(in: n.block!, for: i) {
-//
-//                    let stores = getAllDominatedStores(from: pre)
-//                    print(">>>>>", i.toPrint, pre.toPrint)
-//                    print(stores.joined() {"[\($0.operands[0]) \($0.operands[1]) \(reachable[$0]!.contains(i))]"})
-//                    var flag = true
-//                    for s in stores where reachable[s]!.contains(i) && aa.mayAlias(p: s.operands[1], q: i.operands[0]) {
-//                        flag = false
-//                    }
-//
-//                    if flag {
-//                        print(i.toPrint, aa.pts[i.operands[0]]!)
-//                        print(">", pre.toPrint)
-//                        i.replaced(by: pre)
-//                        instRemoved += 1
-//                    }
-//                    print("")
-//
-//                }
-//            }
             for p in n.domSons {lse(n: p)}
         }
         
