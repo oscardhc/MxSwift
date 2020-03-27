@@ -36,7 +36,7 @@ class Value: HashableObject, CustomStringConvertible, Hashable {
     var description: String {return "\(type) \(name)"}
     var toPrint: String {return "??????????????"}
     
-    init(name: String, type: Type) {
+    init(name: String = "", type: Type) {
         self.originName = name
         self.basename = self.originName
         self.type = type
@@ -169,9 +169,9 @@ class BasicBlock: Value {
     
     var nodeInFunction: List<BasicBlock>.Node?
     
-    init(name: String = "", type: Type = LabelT(), curfunc: Function) {
+    init(name: String = "", curfunc: Function) {
         self.inFunction = curfunc
-        super.init(name: "b.", type: type)
+        super.init(name: "b.", type: LabelT())
         nodeInFunction = inFunction.append(self)
     }
     
@@ -202,9 +202,9 @@ class BasicBlock: Value {
         switch insts.last! {
         case let v as BrInst:
             if v.operands.count > 1 {
-                return [v.operands[1] as! BasicBlock, v.operands[2] as! BasicBlock]
+                return [v[1] as! BasicBlock, v[2] as! BasicBlock]
             } else {
-                return [v.operands[0] as! BasicBlock]
+                return [v[0] as! BasicBlock]
             }
         default:
             return []

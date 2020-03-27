@@ -27,10 +27,10 @@ class CSElimination: FunctionPass {
         func cse(n: BaseDomTree.Node) {
             for i in n.block!.insts where !i.isCritical {
                 
-                if i is CastInst && i.type == i.operands[0].type {
+                if i is CastInst && i.type == i[0].type {
                     print(i.toPrint)
-                    print(">>>>", i.operands[0])
-                    i.replaced(by: i.operands[0])
+                    print(">>>>", i[0])
+                    i.replaced(by: i[0])
                     instRemoved += 1
                     continue
                 }
@@ -250,8 +250,8 @@ class GVNumberer: FunctionPass {
                     if !blk.reachable {
                         continue
                     }
-                    if i is CastInst && i.type == i.operands[0].type {
-                        i.replaced(by: i.operands[0])
+                    if i is CastInst && i.type == i[0].type {
+                        i.replaced(by: i[0])
                         instRemoved += 1
                         continue
                     }
@@ -259,24 +259,24 @@ class GVNumberer: FunctionPass {
                         
                         if jump.operands.count > 1 {
                             var flag: Bool? = nil
-                            if let ci = jump.operands[0] as? Inst {
+                            if let ci = jump[0] as? Inst {
                                 let condition = evaluate(ci, in: blk)
                                 if let n = Int(condition.1) {
                                     flag = n == 1
                                 }
-                            } else if let n = Int(VNExpression(v: jump.operands[0]).simplified().name) {
+                            } else if let n = Int(VNExpression(v: jump[0]).simplified().name) {
                                 flag = n == 1
                             }
                             
                             if flag != false {
                                 tryBlock(block: blk.succs[0])
-                                let preTrue = VNExpression(v: jump.operands[0])
+                                let preTrue = VNExpression(v: jump[0])
                                 updatePredicate(edge: BasicBlock.Edge(from: blk, to: blk.succs[0]), exp: preTrue.simplified())
 //                                print("        branch T", preTrue.description)
                             }
                             if flag != true {
                                 tryBlock(block: blk.succs[1])
-                                let preFalse = VNExpression(v: jump.operands[0])
+                                let preFalse = VNExpression(v: jump[0])
                                 preFalse.negation()
                                 updatePredicate(edge: BasicBlock.Edge(from: blk, to: blk.succs[1]), exp: preFalse.simplified())
 //                                print("        branch F", preFalse.description)
@@ -289,7 +289,7 @@ class GVNumberer: FunctionPass {
                     } else if !i.isCritical {
                         
                         let res = evaluate(i, in: blk)
-//                        print(i.toPrint, res)
+                        print(i.toPrint, res)
                         
                         if let x = map[blk]![res.1] {
                             if x.blockIndexBF > i.blockIndexBF {
@@ -327,7 +327,7 @@ class GVNumberer: FunctionPass {
                 if let n = Int(str) {
                     print(i.toPrint)
                     print(">", n)
-                    i.replaced(by: IntC(name: "", type: .int, value: n))
+                    i.replaced(by: IntC(type: .int, value: n))
                     instRemoved += 1
                 } else if let (l, _) = lookup(description: str, in: blk, for: i) {
                     print(i.toPrint, str, belongTo[l!])
@@ -346,9 +346,9 @@ class GVNumberer: FunctionPass {
                 var res: Value? = nil, flag = true
                 for j in 0..<i.operands.count/2 {
                     if res == nil {
-                        res = i.operands[j*2]
+                        res = i[j*2]
                     } else {
-                        if res !== i.operands[j*2] {
+                        if res !== i[j*2] {
                             flag = false
                         }
                     }
@@ -402,8 +402,8 @@ class VNExpression: CustomStringConvertible {
             } else if !(depth == 0 || i.isCritical) {
                 op = i.operation
                 if i is PhiInst {
-                    for j in 0..<i.operands.count/2 where (i.operands[j*2 + 1] as! BasicBlock).reachable {
-                        vals.append(VNExpression(v: i.operands[j*2], depth: depth - 1))
+                    for j in 0..<i.operands.count/2 where (i[j*2 + 1] as! BasicBlock).reachable {
+                        vals.append(VNExpression(v: i[j*2], depth: depth - 1))
                     }
                 } else {
                     if let c = i as? CompareInst {

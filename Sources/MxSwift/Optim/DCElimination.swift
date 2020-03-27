@@ -58,7 +58,7 @@ class DCElimination: FunctionPass {
                 }
             }
 //            if aa != nil && i is LoadInst {
-//                livePos.formUnion(aa!.result[v]!.pts[i.operands[0]]!)
+//                livePos.formUnion(aa!.result[v]!.pts[i[0]]!)
 //            }
             for o in i.operands {
                 if let oo = o as? Inst {
@@ -95,9 +95,9 @@ class DCElimination: FunctionPass {
         
         if aa != nil {
             for b in v.blocks {
-                for i in b.insts where i is StoreInst && aa!.pts[i.operands[1]]!.intersection(livePos).isEmpty {
+                for i in b.insts where i is StoreInst && aa!.pts[i[1]]!.intersection(livePos).isEmpty {
                     instRemoved += 1
-                    print("DCE", i.toPrint, i.operands[1], aa!.pts[i.operands[1]]!)
+                    print("DCE", i.toPrint, i[1], aa!.pts[i[1]]!)
                     i.disconnect(delUsee: true, delUser: true)
                 }
             }

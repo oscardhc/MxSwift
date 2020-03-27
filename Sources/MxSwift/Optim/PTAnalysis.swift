@@ -46,7 +46,7 @@ class PTAnalysis: ModulePass {
         let counter = Counter()
         _ = counter.tik()
         func getNewAddr() -> IntC {
-            let c = IntC(name: "", type: .int, value: -counter.tikInt())
+            let c = IntC(type: .int, value: -counter.tikInt())
             makeEmpty(v: c)
             return c
         }
@@ -70,18 +70,18 @@ class PTAnalysis: ModulePass {
                 for i in b.insts {
                     switch i {
                     case is LoadInst:
-                        loads[i.operands[0]]!.insert(i)
+                        loads[i[0]]!.insert(i)
                     case is StoreInst:
-                        if !(i.operands[0] is Const) {
-                            stores[i.operands[1]]!.insert(i.operands[0])
+                        if !(i[0] is Const) {
+                            stores[i[1]]!.insert(i[0])
                         }
                     case is GEPInst, is CastInst:
-//                        print("GEP/Cast", i.operands[0], "->", i)
-                        graph[i.operands[0]]!.insert(i)
+//                        print("GEP/Cast", i[0], "->", i)
+                        graph[i[0]]!.insert(i)
                     case is PhiInst:
 //                        print("PHI", i.operands.joined())
-                        for j in 0..<i.operands.count/2 where !(i.operands[j*2] is Const) {
-                            graph[i.operands[j*2]]!.insert(i)
+                        for j in 0..<i.operands.count/2 where !(i[j*2] is Const) {
+                            graph[i[j*2]]!.insert(i)
                         }
                     case is AllocaInst:
                         pts[i]!.insert(getNewAddr())
@@ -176,13 +176,12 @@ class LSElimination: FunctionPass {
         
         func lse(n: BaseDomTree.Node) {
             for i in n.block!.insts where i is LoadInst && i.operands.count > 0 {
-//                print("check", i.toPrint)
                 let stores = getAllDominated(from: i) {$0 is StoreInst}
-                let loads = getAllDominated(from: i) {$0 is LoadInst && $0.operands[0] == i.operands[0]}
+                let loads = getAllDominated(from: i) {$0 is LoadInst && $0[0] == i[0]}
                 var unavai = Set<Inst>(), workList = [Inst]()
-                for s in stores where aa.mayAlias(p: s.operands[1], q: i.operands[0]) {
-                    unavai.insert(s.nextInst)
-                    workList.append(s.nextInst)
+                for s in stores where aa.mayAlias(p: s[1], q: i[0]) {
+                    unavai.insert(s.nextInst!)
+                    workList.append(s.nextInst!)
                 }
                 while let v = workList.popLast() {
                     switch v {
@@ -196,9 +195,9 @@ class LSElimination: FunctionPass {
                             }
                         }
                     default:
-                        if !unavai.contains(v.nextInst) {
-                            unavai.insert(v.nextInst)
-                            workList.append(v.nextInst)
+                        if !unavai.contains(v.nextInst!) {
+                            unavai.insert(v.nextInst!)
+                            workList.append(v.nextInst!)
                         }
                     }
                 }

@@ -66,8 +66,8 @@ class Inst: User {
         nodeInBlock!.list.getNodeIndexBF(from: nodeInBlock!)
     }
     
-    var nextInst: Inst {
-        (nodeInBlock?.next?.value)!
+    var nextInst: Inst? {
+        nodeInBlock?.next?.next == nil ? nil : (nodeInBlock?.next?.value)!
     }
     
     var isTerminate: Bool {
@@ -77,7 +77,7 @@ class Inst: User {
 }
 
 class PhiInst: Inst {
-    init (name: String, type: Type, in block: BasicBlock, at index: Int = -1) {
+    init (name: String = "", type: Type, in block: BasicBlock, at index: Int = -1) {
         super.init(name: name, type: type, operation: .phi, in: block, at: index)
     }
     override var toPrint: String {
@@ -103,7 +103,7 @@ class PhiInst: Inst {
 }
 
 class SExtInst: Inst {
-    init (name: String, val: Value, toType: Type, in block: BasicBlock) {
+    init (name: String = "", val: Value, toType: Type, in block: BasicBlock) {
         super.init(name: name, type: toType, operation: .sext, in: block)
         added(operand: val)
     }
@@ -115,7 +115,7 @@ class SExtInst: Inst {
 }
 
 class CastInst: Inst {
-    init (name: String, val: Value, toType: Type, in block: BasicBlock) {
+    init (name: String = "", val: Value, toType: Type, in block: BasicBlock) {
         super.init(name: name, type: toType, operation: .bitcast, in: block)
         added(operand: val)
     }
@@ -127,11 +127,11 @@ class CastInst: Inst {
 }
 
 class BrInst: Inst {
-    @discardableResult init(name: String, des: Value, in block: BasicBlock) {
+    @discardableResult init(name: String = "", des: Value, in block: BasicBlock) {
         super.init(name: name, type: Type(), operation: .br, in: block)
         added(operand: des)
     }
-    @discardableResult init(name: String, condition: Value, accept: Value, reject: Value, in block: BasicBlock) {
+    @discardableResult init(name: String = "", condition: Value, accept: Value, reject: Value, in block: BasicBlock) {
         super.init(name: name, type: Type(), operation: .br, in: block)
         added(operand: condition)
         added(operand: accept)
@@ -144,7 +144,7 @@ class BrInst: Inst {
 
 class GEPInst: Inst {
     let needZero: Bool
-    init(name: String, type: Type, base: Value, needZero: Bool, val: Value, in block: BasicBlock, at: Int = -1) {
+    init(name: String = "", type: Type, base: Value, needZero: Bool, val: Value, in block: BasicBlock, at: Int = -1) {
         self.needZero = needZero
         super.init(name: name, type: type, operation: .getelementptr, in: block, at: at)
         added(operand: base)
@@ -156,7 +156,7 @@ class GEPInst: Inst {
 }
 
 class ReturnInst: Inst {
-    @discardableResult init(name: String, val: Value, in block: BasicBlock) {
+    @discardableResult init(name: String = "", val: Value, in block: BasicBlock) {
         super.init(name: name, type: VoidT(), operation: .ret, in: block)
         added(operand: val)
     }
@@ -166,7 +166,7 @@ class ReturnInst: Inst {
 }
 
 class LoadInst: Inst {
-    init(name: String, alloc: Value, in block: BasicBlock) {
+    init(name: String = "", alloc: Value, in block: BasicBlock) {
         super.init(name: name, type: (alloc.type as! PointerT).baseType, operation: .load, in: block)
         added(operand: alloc)
     }
@@ -178,7 +178,7 @@ class LoadInst: Inst {
 }
 
 class StoreInst: Inst {
-    @discardableResult init(name: String, alloc: Value, val: Value, in block: BasicBlock, at: Int = -1) {
+    @discardableResult init(name: String = "", alloc: Value, val: Value, in block: BasicBlock, at: Int = -1) {
         super.init(name: name, type: Type(), operation: .store, in: block, at: at)
         added(operand: val)
         added(operand: alloc)
@@ -190,7 +190,7 @@ class StoreInst: Inst {
 
 class CallInst: Inst {
     var function: Function
-    init(name: String, function: Function, arguments: [Value] = [], in block: BasicBlock) {
+    init(name: String = "", function: Function, arguments: [Value] = [], in block: BasicBlock) {
         self.function = function
         super.init(name: name, type: function.type, operation: .call, in: block)
         arguments.forEach {self.added(operand: $0)}
@@ -208,7 +208,7 @@ class CallInst: Inst {
 }
 
 class AllocaInst: Inst {
-    init(name: String, forType: Type, in block: BasicBlock, at: Int = -1) {
+    init(name: String = "", forType: Type, in block: BasicBlock, at: Int = -1) {
         super.init(name: name, type: forType.pointer, operation: .alloca, in: block, at: at)
     }
     override var toPrint: String {"\(name) = \(operation) \((type as! PointerT).baseType.withAlign)"}
@@ -219,7 +219,7 @@ class AllocaInst: Inst {
 }
 
 class BinaryInst: Inst {
-    init(name: String, type: Type, operation: Inst.OP, lhs: Value, rhs: Value, in block: BasicBlock) {
+    init(name: String = "", type: Type, operation: Inst.OP, lhs: Value, rhs: Value, in block: BasicBlock) {
         super.init(name: name, type: type, operation: operation, in: block)
         added(operand: lhs)
         added(operand: rhs)
@@ -243,9 +243,9 @@ class CompareInst: BinaryInst {
     }
     let cmp: CMP
     
-    init(name: String, operation: Inst.OP, lhs: Value, rhs: Value, cmp: CMP, in block: BasicBlock) {
+    init(name: String = "", lhs: Value, rhs: Value, cmp: CMP, in block: BasicBlock) {
         self.cmp = cmp
-        super.init(name: name, type: IntT.bool, operation: operation, lhs: lhs, rhs: rhs, in: block)
+        super.init(name: name, type: IntT.bool, operation: .icmp, lhs: lhs, rhs: rhs, in: block)
     }
     override var toPrint: String {return "\(name) = \(operation) \(cmp) \(operands[0].type) " + operands.joined() {"\($0.name)"}}
     override func accept(visitor: IRVisitor) {visitor.visit(v: self)}

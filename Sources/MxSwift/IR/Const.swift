@@ -14,22 +14,22 @@ class Const: User {
 class IntC: Const {
     
     static func zero() -> IntC {
-        IntC(name: "", type: .int, value: 0)
+        IntC(type: .int, value: 0)
     }
     static func one() -> IntC {
-        IntC(name: "", type: .int, value: 1)
+        IntC(type: .int, value: 1)
     }
     static func four() -> IntC {
-        IntC(name: "", type: .int, value: 4)
+        IntC(type: .int, value: 4)
     }
     static func minusOne() -> IntC {
-        IntC(name: "", type: .int, value: -1)
+        IntC(type: .int, value: -1)
     }
     
     var value: Int
-    init(name: String, type: Type, value: Int) {
+    init(type: Type, value: Int) {
         self.value = value
-        super.init(name: name, type: type)
+        super.init(name: "", type: type)
         
         ccpInfo = CCPInfo(type: .int, int: value)
         
@@ -121,6 +121,14 @@ class Function: Global {
     
     func append(_ b: BasicBlock) -> List<BasicBlock>.Node {
         blocks.append(b)
+    }
+    
+    var size: (Int, Int) {
+        var instCount = 0, blockCount = 0
+        for b in blocks {
+            instCount += b.insts.count
+        }
+        return (instCount, blockCount)
     }
     
 }

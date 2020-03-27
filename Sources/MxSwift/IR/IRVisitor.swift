@@ -87,6 +87,10 @@ class IRPrinter: IRVisitor {
     init(filename: String = "") {
         file = filename
     }
+    @discardableResult func print(on v: Module) -> String {
+        work(on: v)
+        return str
+    }
     func work(on v: Module) {
         IRNumberer().work(on: v)
         visit(v: v)

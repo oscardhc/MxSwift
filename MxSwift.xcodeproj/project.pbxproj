@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		551C3D19241A7A36009341BF /* PTAnalysis.swift in Sources */ = {isa = PBXBuildFile; fileRef = 551C3D18241A7A36009341BF /* PTAnalysis.swift */; };
+		55449BCC242D05B4001D9332 /* Inliner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55449BCB242D05B4001D9332 /* Inliner.swift */; };
 		555BF87223FFABCB00614C1C /* CFGSimplifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 555BF87123FFABCB00614C1C /* CFGSimplifier.swift */; };
 		555C57ED23E6B3BA00D9192A /* SemanticChecker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 555C57EC23E6B3BA00D9192A /* SemanticChecker.swift */; };
 		555C57EF23E7314900D9192A /* ErrorListener.swift in Sources */ = {isa = PBXBuildFile; fileRef = 555C57EE23E7314900D9192A /* ErrorListener.swift */; };
@@ -229,6 +230,7 @@
 
 /* Begin PBXFileReference section */
 		551C3D18241A7A36009341BF /* PTAnalysis.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PTAnalysis.swift; sourceTree = "<group>"; };
+		55449BCB242D05B4001D9332 /* Inliner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Inliner.swift; sourceTree = "<group>"; };
 		555BF87123FFABCB00614C1C /* CFGSimplifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CFGSimplifier.swift; sourceTree = "<group>"; };
 		555C57EC23E6B3BA00D9192A /* SemanticChecker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SemanticChecker.swift; sourceTree = "<group>"; };
 		555C57EE23E7314900D9192A /* ErrorListener.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorListener.swift; sourceTree = "<group>"; };
@@ -472,6 +474,7 @@
 				557E873C24064C07007074A5 /* CSElimination.swift */,
 				555BF87123FFABCB00614C1C /* CFGSimplifier.swift */,
 				551C3D18241A7A36009341BF /* PTAnalysis.swift */,
+				55449BCB242D05B4001D9332 /* Inliner.swift */,
 			);
 			path = Optim;
 			sourceTree = "<group>";
@@ -1101,6 +1104,7 @@
 				55EEB69C23E4919D00E9FE2C /* ASTBuilder.swift in Sources */,
 				OBJ_365 /* main.swift in Sources */,
 				557E873D24064C07007074A5 /* CSElimination.swift in Sources */,
+				55449BCC242D05B4001D9332 /* Inliner.swift in Sources */,
 				55F78B22240B6FF000CE3771 /* Counter.swift in Sources */,
 				551C3D19241A7A36009341BF /* PTAnalysis.swift in Sources */,
 				555C57ED23E6B3BA00D9192A /* SemanticChecker.swift in Sources */,

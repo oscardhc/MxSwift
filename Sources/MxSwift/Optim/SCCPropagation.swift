@@ -51,13 +51,13 @@ class SCCPropagation: FunctionPass {
                 }
                 if let b = i as? BrInst {
                     if b.operands.count == 1 {
-                        tryExecute(t: b.operands[0] as! BasicBlock)
+                        tryExecute(t: b[0] as! BasicBlock)
                     } else {
-                        if let v = b.operands[0].ccpInfo.constValue {
-                            tryExecute(t: b.operands[v == 1 ? 1 : 2] as! BasicBlock)
+                        if let v = b[0].ccpInfo.constValue {
+                            tryExecute(t: b[v == 1 ? 1 : 2] as! BasicBlock)
                         } else {
-                            tryExecute(t: b.operands[1] as! BasicBlock)
-                            tryExecute(t: b.operands[2] as! BasicBlock)
+                            tryExecute(t: b[1] as! BasicBlock)
+                            tryExecute(t: b[2] as! BasicBlock)
                         }
                     }
                 } else {
@@ -78,7 +78,7 @@ class SCCPropagation: FunctionPass {
         for b in v.blocks {
             for i in b.insts where i.ccpInfo.type == .int {
                 instRemoved += 1
-                i.replaced(by: IntC(name: "", type: i.type, value: i.ccpInfo.int!))
+                i.replaced(by: IntC(type: i.type, value: i.ccpInfo.int!))
             }
             if b.insts.last! is BrInst && b.insts.last!.operands[0] is IntC {
                 branchChanged += 1
@@ -104,8 +104,7 @@ class SCCPropagation: FunctionPass {
         }
         
         for b in v.blocks { for i in b.insts where i is PhiInst && i.operands.count <= 2 {
-            let v = i.operands[0]
-            i.replaced(by: v)
+            i.replaced(by: i[0])
         }}
         
     }

@@ -14,7 +14,7 @@ extension AllocaInst {
             case is LoadInst:
                 break
             case let i as StoreInst:
-                if i.operands[0] === self {
+                if i[0] === self {
                     return false
                 }
             default:
@@ -123,11 +123,11 @@ class MemToReg: FunctionPass {
                 for a2l in loads {
                     let l = a2l.user as! LoadInst, linfo = allBlock!.insts.findNodeBF(where: {$0 === l})!
                     let nearestStore = allBlock!.insts.findPrevBF(from: linfo.0) {
-                        $0 is StoreInst && $0.operands[1] === ai
+                        $0 is StoreInst && $0[1] === ai
                     }
                     
                     if let s = nearestStore?.value as? StoreInst {
-                        let v = s.operands[0]
+                        let v = s[0]
                         l.replaced(by: v)
                     } else {
                         // undefined loads, should not occur, just in case
@@ -185,13 +185,13 @@ class MemToReg: FunctionPass {
             for i in cur.block!.insts {
                 switch i {
                 case let l as LoadInst:
-                    if let v = stack[l.operands[0]]?.last {
+                    if let v = stack[l[0]]?.last {
                         l.replaced(by: v) // promotable
                     }
                 case let s as StoreInst:
-                    if stack[s.operands[1]] != nil {
-                        changed.append(s.operands[1])
-                        stack[s.operands[1]]!.append(s.operands[0])
+                    if stack[s[1]] != nil {
+                        changed.append(s[1])
+                        stack[s[1]]!.append(s[0])
                         s.disconnect(delUsee: true, delUser: true)
                     }
                 case let p as PhiInst:

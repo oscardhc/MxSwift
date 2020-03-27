@@ -40,8 +40,8 @@ class CFGSimplifier: FunctionPass {
                 if ret.insts.count > 1 {
                     phi = (ret.insts.first! as? PhiInst)!
                 } else {
-                    phi = PhiInst(name: "", type: ret.insts.last!.operands[0].type, in: ret, at: 0)
-                    let oriVal = ret.insts.last!.operands[0]
+                    phi = PhiInst(name: "", type: ret.insts.last![0].type, in: ret, at: 0)
+                    let oriVal = ret.insts.last![0]
                     ret.insts.last!.usees[0].reconnect(fromValue: phi)
                     for pred in ret.preds {
                         _ = phi.added(operand: oriVal)
@@ -56,7 +56,7 @@ class CFGSimplifier: FunctionPass {
                             _ = phi.added(operand: op)
                         }
                     } else {
-                        _ = phi.added(operand: blk.insts.last!.operands[0])
+                        _ = phi.added(operand: blk.insts.last![0])
                         _ = phi.added(operand: blk)
                     }
                     print(phi.toPrint)
@@ -99,8 +99,8 @@ class CFGSimplifier: FunctionPass {
                 
                 if b.preds.count > 0 && b.insts.count == 1 && b.insts.last! is BrInst && b.insts.last!.operands.count == 1 { // only uncond br
 
-                    let t = b.insts.last!.operands[0] as! BasicBlock
-                    print(b.preds)
+                    let t = b.insts.last![0] as! BasicBlock
+//                    print(b.preds)
                     if t.insts.first! is PhiInst {
                         var flag = false
                         for pp in b.preds where pp.succs.count > 1 {
@@ -110,7 +110,7 @@ class CFGSimplifier: FunctionPass {
                             continue
                         }
                     }
-                    print(">>>", b.name)
+//                    print(">>>", b.name)
                     for u in b.users {
                         if let p = u.user as? PhiInst {
                             let v = u.nodeInUser.prev!.value!
