@@ -23,6 +23,7 @@ class CSElimination: FunctionPass {
         var cseReMap = [Inst: String]()
         
         let domTree = DomTree(function: v)
+        for blk in v.blocks {blk.reachable = true}
         
         func cse(n: BaseDomTree.Node) {
             for i in n.block!.insts where !i.isCritical {
@@ -37,7 +38,7 @@ class CSElimination: FunctionPass {
                 let exp = VNExpression(v: i, depth: 4)
                 let str = exp.simplified().description
 //                print(i.toPrint, str)
-                if let p = cseMap[str] {
+                if let p = cseMap[str], !(p is PhiInst) {
                     print(i.toPrint)
                     print(">", p.toPrint)
                     i.replaced(by: p)
@@ -289,7 +290,7 @@ class GVNumberer: FunctionPass {
                     } else if !i.isCritical {
                         
                         let res = evaluate(i, in: blk)
-                        print(i.toPrint, res)
+//                        print(i.toPrint, res)
                         
                         if let x = map[blk]![res.1] {
                             if x.blockIndexBF > i.blockIndexBF {
@@ -327,9 +328,9 @@ class GVNumberer: FunctionPass {
                 if let n = Int(str) {
                     print(i.toPrint)
                     print(">", n)
-                    i.replaced(by: IntC(type: .int, value: n))
+                    i.replaced(by: IntC(type: i.type, value: n))
                     instRemoved += 1
-                } else if let (l, _) = lookup(description: str, in: blk, for: i) {
+                } else if let (l, _) = lookup(description: str, in: blk, for: i), !(l! is PhiInst) {
                     print(i.toPrint, str, belongTo[l!])
                     print(">", l!)
                     if l!.inBlock != i.inBlock {

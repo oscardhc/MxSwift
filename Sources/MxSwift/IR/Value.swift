@@ -167,13 +167,14 @@ class BasicBlock: Value {
     var inFunction: Function
     //    var terminated = false
     
-    var nodeInFunction: List<BasicBlock>.Node?
+    private var nodeInFunction: List<BasicBlock>.Node?
     
     init(name: String = "", curfunc: Function) {
         self.inFunction = curfunc
         super.init(name: "b.", type: LabelT())
         nodeInFunction = inFunction.append(self)
     }
+//    override var name: String {super.name + "|\(hashValue)"}
     
     func added(_ i: Inst) -> List<Inst>.Node {
         return insts.append(i)
@@ -184,6 +185,7 @@ class BasicBlock: Value {
     
     //    will delete all instructions and their uses
     func remove(dealWithInsts: ((Inst) -> Void) = {_ in }) {
+        print("remove BB!!!")
         succs.forEach { (s) in
             s.preds.removeAll(where: {$0 === self})
             for p in preds {

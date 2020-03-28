@@ -97,7 +97,8 @@ class CFGSimplifier: FunctionPass {
                     change()
                 }
                 
-                if b.preds.count > 0 && b.insts.count == 1 && b.insts.last! is BrInst && b.insts.last!.operands.count == 1 { // only uncond br
+                if b.preds.count > 0 && b.insts.count == 1 && b.insts.last! is BrInst && b.insts.last!.operands.count == 1 {
+                    // only uncond br
 
                     let t = b.insts.last![0] as! BasicBlock
 //                    print(b.preds)
@@ -124,7 +125,7 @@ class CFGSimplifier: FunctionPass {
                             u.reconnect(fromValue: t)
                         }
                     }
-                    b.remove() {
+                    b.remove {
                         $0.disconnect(delUsee: false, delUser: false)
                     }
                     change()

@@ -6,7 +6,7 @@ import Parser
 func compile(useFileStream: Bool) throws {
     
     let start = DispatchTime.now().uptimeNanoseconds
-    let timeLimit = Int(30 * 1e9), iterateLimit = 5
+    let timeLimit = Int(30 * 1e9), iterateLimit = 15
     var iteration = 0
     
     print(welcomeText)
@@ -98,10 +98,10 @@ class s {
         SCCPropagation()    .work(on: ir.module)
         CSElimination()     .work(on: ir.module)
         GVNumberer()        .work(on: ir.module)
-        
+
         DCElimination()     .work(on: ir.module)
         CFGSimplifier()     .work(on: ir.module)
-
+        
         let aa = PTAnalysis()
         aa.work(on: ir.module)
         LSElimination(aa)   .work(on: ir.module)

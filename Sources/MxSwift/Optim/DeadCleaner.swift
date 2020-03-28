@@ -28,8 +28,10 @@ class DeadCleaner: FunctionPass {
         
         var live = Set<BasicBlock>([v.blocks.first!]), workList = [v.blocks.first!]
         
+//        print("_____", v.name, "_____")
         while let b = workList.popLast() {
             for s in b.succs where !live.contains(s) {
+//                print(b.name, "->", s.name)
                 live.insert(s)
                 workList.append(s)
             }
@@ -37,6 +39,23 @@ class DeadCleaner: FunctionPass {
         
         for b in v.blocks {
             if !live.contains(b) {
+                print(">>>>>>", b.name, b.users.joined() {$0.user.name})
+                for u in b.users {
+                    if u.user is PhiInst {
+                        for i in 0..<u.user.operands.count/2 where u.user[i*2+1] === b {
+                            u.user.usees[i*2+1].disconnect()
+                            u.user.usees[i*2].disconnect()
+                            break
+                        }
+                    } else if u.user.operands.count > 1 {
+                        if u.user[1] === b {
+                            u.user.usees[1].disconnect()
+                        } else {
+                            u.user.usees[2].disconnect()
+                        }
+                        u.user.usees[0].disconnect()
+                    }
+                }
                 b.remove {
                     $0.disconnect(delUsee: true, delUser: true)
                 }

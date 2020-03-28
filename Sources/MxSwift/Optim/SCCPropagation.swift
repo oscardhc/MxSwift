@@ -14,6 +14,13 @@ class SCCPropagation: FunctionPass {
     
     var workList = [Inst](), blockList = [BasicBlock]()
     
+    override func work(on v: Module) {
+        visit(v: v)
+        IRPrinter(filename: "/Users/oscar/Documents/Classes/1920_Spring/Compiler/tmp/out1.ll").print(on: v)
+        DeadCleaner().work(on: v)
+        print(resultString)
+    }
+    
     override func visit(v: Function) {
         //        each edge will only be evaluated ONCE, because the first time always have the highest lattice.
         
@@ -81,12 +88,16 @@ class SCCPropagation: FunctionPass {
                 i.replaced(by: IntC(type: i.type, value: i.ccpInfo.int!))
             }
             if b.insts.last! is BrInst && b.insts.last!.operands[0] is IntC {
+                
                 branchChanged += 1
                 let toDel = (b.insts.last!.operands[0] as! IntC).value == 0
                     ? b.insts.last!.usees[1]
                     : b.insts.last!.usees[2]
+                
+                print(">", b.name, b.insts.last!.toPrint, "|", toDel.value.name, "|", b.insts.last!.usees)
                 for i in (toDel.value as! BasicBlock).insts {
                     if let p = i as? PhiInst {
+                        print(">>", p.toPrint)
                         for i in 0..<p.operands.count/2 {
                             if p.operands[i*2 + 1] === b {
                                 p.usees[i*2 + 1].disconnect()
@@ -98,7 +109,9 @@ class SCCPropagation: FunctionPass {
                         break
                     }
                 }
+                print("toDEL", toDel.value, toDel.user.toPrint, toDel.user === b.insts.last!)
                 toDel.disconnect()
+                print("toDEL", b.insts.last!.usees[0].value, b.insts.last!.usees[0].user.toPrint)
                 b.insts.last!.usees[0].disconnect()
             }
         }

@@ -21,8 +21,10 @@ class FunctionPass: IRVisitor {
     
     func work(on v: Module) {
         visit(v: v)
-        print(resultString)
+        
+        IRPrinter(filename: "/Users/oscar/Documents/Classes/1920_Spring/Compiler/tmp/out2.ll").print(on: v)
         DeadCleaner().work(on: v)
+        print(resultString)
     }
     
     func visit(v: Function) {}
@@ -53,8 +55,8 @@ class ModulePass: IRVisitor {
     
     func work(on v: Module) {
         visit(v: v)
-        print(resultString)
         DeadCleaner().work(on: v)
+        print(resultString)
     }
     
     final func visit(v: Function) {}
