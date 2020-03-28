@@ -23,8 +23,29 @@ A naive Mx* compiler implemented in Swift.
 
 
 - IR Numberer and IR Printer to output in LLVM format.
+  
+  - Use-def chains.
+  
+- Passes
 
-  - 
+  - DeadCleaner
+    To remove unreachable blocks and instructions after a terminate one.
+  
+  - Dominance analysis
+  
+  - DCElimination
+  
+  - CSElimination
+  
+  - SCCPropagation
+  
+  - CFGSimplifier
+    Actually the only two situations it can handle are blocks with single pred and single succ or blocks with single pred and is the only succ of it.
+  
+  - LSElimination
+    
+  - Inliner    
+
 
 ### Progress
 
@@ -42,6 +63,12 @@ A naive Mx* compiler implemented in Swift.
 - [x] [2.15] Size implemented by allocating 4 extra bytes.
 - [x] [2.17] Dominator trees.
 - [x] [2.18] Mem2Reg.
-- [x] [2.19] MSDCE.
-- [x] [2.24] CFG Simplifier.
+- [x] [2.19] DCEliminator.
+- [x] [2.24] CFGSimplifier.
+- [x] [2.27] SCCPropagation.
+- [x] [3.11] CSEliminator.
+- [x] [3.20] PTAnalysis.
+- [x] [3.23] Fix IR short-circuit evaluation.
+- [x] [3.25] Fix IR array construction.
+- [x] [3.27] Inliner.
 - [ ] ...
