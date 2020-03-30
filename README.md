@@ -29,6 +29,7 @@ A naive Mx* compiler implemented in Swift.
 - Passes
 
   - DeadCleaner
+  
     To remove unreachable blocks and instructions after a terminate one.
   
   - Dominance analysis
@@ -40,6 +41,7 @@ A naive Mx* compiler implemented in Swift.
   - SCCPropagation
   
   - CFGSimplifier
+  
     Actually the only two situations it can handle are blocks with single pred and single succ or blocks with single pred and is the only succ of it.
   
   - LSElimination

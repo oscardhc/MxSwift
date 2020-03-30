@@ -9,20 +9,155 @@ import Foundation
 
 class LICHoister: FunctionPass {
     
-    override func visit(v: Function) {
+    let aa: PTAnalysis
+    var tree: DomTree!
+    private var instRemoved = 0
+    override var resultString: String {super.resultString + "\(instRemoved) inst(s) removed."}
+    
+    init(_ aa: PTAnalysis) {
+        self.aa = aa
+    }
+    
+    class Loop {
+        var header: BasicBlock
+        var blocks = Set<BasicBlock>()
         
-        let tree = DomTree(function: v)
+        init (h: BasicBlock) {
+            self.header = h
+        }
+    }
+    
+    func hoist(ins: [BasicBlock: [Inst]], in loop: Loop) {
+        let preds = loop.header.preds.filter({!loop.blocks.contains($0)})
+        if preds.count == 1 {
+            print("hoist", ins, loop.header, preds)
+            let p = preds[0]
+            func hoist(cur: DomTree.Node) {
+                if var ii = ins[cur.block!] {
+                    ii.sort(by: {$0.blockIndexBF < $1.blockIndexBF})
+                    instRemoved += ii.count
+                    print("|||", ii.joined() {$0.toPrint})
+                    for i in ii {
+                        i.changeAppend(to: p)
+                        i.prevInst?.changeAppend(to: p)
+                    }
+                }
+                for son in cur.domSons where loop.blocks.contains(son.block!) {
+                    hoist(cur: son)
+                }
+            }
+            
+            hoist(cur: tree[loop.header])
+            
+        } else {
+            print("FAILED!!!!")
+        }
+    }
+    
+    override func visit(v: Function) {
+        print("=", v.name)
+        
+        tree = DomTree(function: v)
         v.blocks.forEach {$0.preds = []}
         v.blocks.forEach { (b) in
             b.succs.forEach {$0.preds.append(b)}
         }
+        
+        var loops = [Loop](), graph = [BasicBlock: Set<BasicBlock>]()
         for b in v.blocks {
-            var loop = [BasicBlock](), exits = [BasicBlock.Edge](), entries = [BasicBlock]()
             for pred in b.preds {
                 if tree.checkBF(b, dominates: pred) {
+                    let loop = Loop(h: b)
+                    loop.blocks.insert(pred)
+                    var queue = [pred]
+                    while let cur = queue.popLast() {
+                        if cur !== b {
+                            for pr in cur.preds where !loop.blocks.contains(pr) {
+                                loop.blocks.insert(pr)
+                                queue.append(pr)
+                            }
+                        }
+                    }
                     
+                    loops.append(loop)
                 }
             }
+        }
+        
+        loops.sort(by: {$0.blocks.count > $1.blocks.count})
+        
+        for loop in loops {
+            var invariable = Set<Inst>()
+            
+            func check(_ inst: Inst) -> Bool {
+                if !inst.isCritical && !(inst is PhiInst) || inst is LoadInst {
+                    let ret = inst.operands.filter({ (op) in
+                        if let i = op as? Inst {
+                            return loop.blocks.contains(i.inBlock) && !invariable.contains(i)
+                        } else {
+                            return false
+                        }
+                    }).isEmpty
+                    var flag = true
+                    if inst is LoadInst {
+                        for blk in loop.blocks {
+                            for i in blk.insts where i is StoreInst && aa.mayAlias(p: inst[0], q: i[1]) {
+                                flag = false
+                            }
+                        }
+                    }
+                    return ret && flag
+                } else {
+                    return false
+                }
+            }
+            
+            for blk in loop.blocks {
+                for inst in blk.insts where check(inst) {
+                    invariable.insert(inst)
+                }
+            }
+            
+            var workList = invariable
+            while let cur = workList.popFirst() {
+                for u in cur.users {
+                    if let inst = u.user as? Inst, check(inst) {
+                        if !invariable.contains(inst) {
+                            workList.insert(inst)
+                            invariable.insert(inst)
+                        }
+                    }
+                }
+            }
+            
+            var toHoist = [BasicBlock: [Inst]]()
+            for inv in invariable {
+                if !inv.isCritical {
+                    if toHoist[inv.inBlock] == nil {
+                        toHoist[inv.inBlock] = []
+                    }
+                    toHoist[inv.inBlock]!.append(inv)
+                } else if inv is LoadInst {
+                    var flag = true
+                    for blk in loop.blocks {
+                        for i in blk.insts where i is StoreInst && aa.mayAlias(p: inv[0], q: i[1]) {
+                            flag = false
+                        }
+                    }
+                    if flag {
+                        if toHoist[inv.inBlock] == nil {
+                            toHoist[inv.inBlock] = []
+                        }
+                        toHoist[inv.inBlock]!.append(inv)
+                    }
+                }
+            }
+            
+            if !toHoist.isEmpty {
+                print("LOOP", loop.header, loop.blocks)
+                hoist(ins: toHoist, in: loop)
+            }
+            
         }
         
     }

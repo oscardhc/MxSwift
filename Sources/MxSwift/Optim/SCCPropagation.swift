@@ -16,7 +16,6 @@ class SCCPropagation: FunctionPass {
     
     override func work(on v: Module) {
         visit(v: v)
-        IRPrinter(filename: "/Users/oscar/Documents/Classes/1920_Spring/Compiler/tmp/out1.ll").print(on: v)
         DeadCleaner().work(on: v)
         print(resultString)
     }

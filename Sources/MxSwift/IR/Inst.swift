@@ -69,6 +69,9 @@ class Inst: User {
     var nextInst: Inst? {
         nodeInBlock?.next?.next == nil ? nil : (nodeInBlock?.next?.value)!
     }
+    var prevInst: Inst? {
+        nodeInBlock?.prev?.prev == nil ? nil : (nodeInBlock?.prev?.value)!
+    }
     
     var isTerminate: Bool {
         self is ReturnInst || self is BrInst
