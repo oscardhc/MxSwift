@@ -27,7 +27,7 @@ class LICHoister: FunctionPass {
         }
     }
     
-    func hoist(ins: [BasicBlock: [Inst]], in loop: Loop) {
+    func hoist(ins: [BasicBlock: [IRInst]], in loop: Loop) {
         let preds = loop.header.preds.filter({!loop.blocks.contains($0)})
         if preds.count == 1 {
             print("hoist", ins, loop.header, preds)
@@ -46,9 +46,7 @@ class LICHoister: FunctionPass {
                     hoist(cur: son)
                 }
             }
-            
             hoist(cur: tree[loop.header])
-            
         } else {
             print("FAILED!!!!")
         }
@@ -87,32 +85,42 @@ class LICHoister: FunctionPass {
         loops.sort(by: {$0.blocks.count > $1.blocks.count})
         
         for loop in loops {
-            var invariable = Set<Inst>()
+            print("--- loop", loop.blocks)
+            var invariable = Set<IRInst>()
             
-            func check(_ inst: Inst) -> Bool {
+            func check(_ inst: IRInst) -> Bool {
                 if !inst.isCritical && !(inst is PhiInst) || inst is LoadInst {
                     let ret = inst.operands.filter({ (op) in
-                        if let i = op as? Inst {
+                        if let i = op as? IRInst {
                             return loop.blocks.contains(i.inBlock) && !invariable.contains(i)
                         } else {
                             return false
                         }
                     }).isEmpty
-                    var flag = true
+                    print("check", inst.toPrint, ret)
                     if inst is LoadInst {
                         for blk in loop.blocks {
-                            for i in blk.insts where i is StoreInst && aa.mayAlias(p: inst[0], q: i[1]) {
-                                flag = false
+                            for i in blk.insts {
+                                if i is CallInst {
+                                    let f = (i as! CallInst).function
+                                    if !IRBuilder.Builtin.functions.values.contains(f) {
+                                        return false
+                                    }
+                                } else if i is StoreInst && aa.mayAlias(p: inst[0], q: i[1]) {
+                                    print("check load", inst, i.toPrint)
+                                    return false
+                                }
                             }
                         }
                     }
-                    return ret && flag
+                    return ret
                 } else {
                     return false
                 }
             }
             
             for blk in loop.blocks {
+                print(" ", blk.name, blk.insts.count)
                 for inst in blk.insts where check(inst) {
                     invariable.insert(inst)
                 }
@@ -121,7 +129,7 @@ class LICHoister: FunctionPass {
             var workList = invariable
             while let cur = workList.popFirst() {
                 for u in cur.users {
-                    if let inst = u.user as? Inst, check(inst) {
+                    if let inst = u.user as? IRInst, check(inst) {
                         if !invariable.contains(inst) {
                             workList.insert(inst)
                             invariable.insert(inst)
@@ -130,7 +138,7 @@ class LICHoister: FunctionPass {
                 }
             }
             
-            var toHoist = [BasicBlock: [Inst]]()
+            var toHoist = [BasicBlock: [IRInst]]()
             for inv in invariable {
                 if !inv.isCritical {
                     if toHoist[inv.inBlock] == nil {

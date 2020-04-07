@@ -43,8 +43,10 @@ class Value: HashableObject, CustomStringConvertible, Hashable {
     }
     
     func accept(visitor: IRVisitor) {}
+    
+    var forceDoNotLoad: Bool = false
     var isAddress: Bool {
-        self is AllocaInst || self is GEPInst || self is GlobalVariable
+        !forceDoNotLoad && (self is AllocaInst || self is GEPInst || self is GlobalVariable)
     }
     func loadIfAddress(block: BasicBlock) -> Value {
         self.isAddress ? LoadInst(name: "", alloc: self, in: block) : self
@@ -162,7 +164,7 @@ class User: Value {
 
 class BasicBlock: Value {
     
-    public private(set) var insts = List<Inst>()
+    public private(set) var insts = List<IRInst>()
     
     var inFunction: Function
     //    var terminated = false
@@ -176,15 +178,15 @@ class BasicBlock: Value {
     }
 //    override var name: String {super.name + "|\(hashValue)"}
     
-    func added(_ i: Inst) -> List<Inst>.Node {
+    func added(_ i: IRInst) -> List<IRInst>.Node {
         return insts.append(i)
     }
-    func inserted(_ i: Inst, at idx: Int) -> List<Inst>.Node {
+    func inserted(_ i: IRInst, at idx: Int) -> List<IRInst>.Node {
         return insts.insert(i, at: idx)
     }
     
     //    will delete all instructions and their uses
-    func remove(dealWithInsts: ((Inst) -> Void) = {_ in }) {
+    func remove(dealWithInsts: ((IRInst) -> Void) = {_ in }) {
         print("remove BB!!!")
         succs.forEach { (s) in
             s.preds.removeAll(where: {$0 === self})

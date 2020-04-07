@@ -19,6 +19,7 @@ class PTAnalysis: ModulePass {
     var loads   = [Value: Set<Value>]()
     var stores  = [Value: Set<Value>]()
     var workList = Set<Value>()
+    var callers = [Function: Set<Value>]()
     
     func mayAlias(p: Value, q: Value) -> Bool {
         let pp = pts[p]!
@@ -66,6 +67,19 @@ class PTAnalysis: ModulePass {
         }
         
         for f in v.functions {
+            callers[f] = []
+        }
+        for f in v.functions {
+            for b in f.blocks {
+                for i in b.insts {
+                    if let c = i as? CallInst {
+                        callers[c.function]!.insert(c)
+                    }
+                }
+            }
+        }
+        
+        for f in v.functions {
             for b in f.blocks {
                 for i in b.insts {
                     switch i {
@@ -92,13 +106,16 @@ class PTAnalysis: ModulePass {
                             }
                         } else {
                             for (formal, actual) in zip(c.function.operands, c.operands) where !(actual is Const) {
+                                print("CALL  ", actual, formal)
                                 graph[actual]!.insert(formal)
                             }
                         }
                     case is ReturnInst:
-                        for u in i.users {
-                            let call = u.user as! CallInst
-                            graph[i]!.insert(call)
+                        if !(i[0].type is VoidT) {
+                            for call in callers[i.inBlock.inFunction]! {
+                                graph[i[0]]!.insert(call)
+                                print("RETURN", i.inBlock.inFunction, i[0], call)
+                            }
                         }
                     default:
                         break
@@ -146,7 +163,7 @@ class LSElimination: FunctionPass {
     
     let aa: PTAnalysis
     var domTree: DomTree!
-    var reachable = [Inst: Set<Inst>]()
+    var reachable = [IRInst: Set<IRInst>]()
     
     private var instRemoved = 0
     override var resultString: String {super.resultString + "\(instRemoved) inst(s) removed."}
@@ -155,8 +172,8 @@ class LSElimination: FunctionPass {
         self.aa = aa
     }
     
-    func getAllDominated(from: Inst, where check: (Inst) -> Bool) -> [Inst] {
-        var ret = [Inst]()
+    func getAllDominated(from: IRInst, where check: (IRInst) -> Bool) -> [IRInst] {
+        var ret = [IRInst]()
         for i in from.inBlock.insts where check(i) && i.blockIndexBF > from.blockIndexBF {
             ret.append(i)
         }
@@ -178,10 +195,16 @@ class LSElimination: FunctionPass {
             for i in n.block!.insts where i is LoadInst && i.operands.count > 0 {
                 let stores = getAllDominated(from: i) {$0 is StoreInst}
                 let loads = getAllDominated(from: i) {$0 is LoadInst && $0[0] == i[0]}
-                var unavai = Set<Inst>(), workList = [Inst]()
+                var unavai = Set<IRInst>(), workList = [IRInst]()
                 for s in stores where aa.mayAlias(p: s[1], q: i[0]) {
                     unavai.insert(s.nextInst!)
                     workList.append(s.nextInst!)
+                }
+                for c in getAllDominated(from: i, where: {
+                    $0 is CallInst && !IRBuilder.Builtin.functions.values.contains(($0 as! CallInst).function)
+                }) {
+                    unavai.insert(c.nextInst!)
+                    workList.append(c.nextInst!)
                 }
                 while let v = workList.popLast() {
                     switch v {
@@ -202,7 +225,8 @@ class LSElimination: FunctionPass {
                     }
                 }
                 for l in loads where !unavai.contains(l) {
-                    print(">", l.toPrint)
+                    print(i.toPrint)
+                    print(">", v.name, l.toPrint)
                     l.replaced(by: i)
                     instRemoved += 1
                 }

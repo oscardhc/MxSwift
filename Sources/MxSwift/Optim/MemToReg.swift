@@ -64,7 +64,7 @@ class MemToReg: FunctionPass {
             
 //            prepare for loads and stores
             for use in ai.users {
-                let block = (use.user as! Inst).inBlock
+                let block = (use.user as! IRInst).inBlock
                 if allBlock == nil {
                     allBlock = block
                     allInOneBlock = true

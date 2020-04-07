@@ -170,6 +170,7 @@ class SemanticChecker: ASTBaseVisitor {
         let c = node.toAccess.type
         if c.hasSuffix("[]") && node.method.id == "size" {
             node.type = int
+            node.method.id = builtinSize
         } else if let sym = node.scope.find(name: c, check: {$0.subScope?.scopeType == .CLASS}) {
             if let m = sym.subScope!.table[node.method.id] {
                 node.type = m.type
@@ -290,7 +291,6 @@ class SemanticChecker: ASTBaseVisitor {
             if node.lhs.lValuable == false {
                 error.notAssignable(id: node.lhs.description)
             } else if node.lhs.type == node.rhs.type || (node.rhs.type == null && (node.lhs.type.hasSuffix("[]") || !node.lhs.type.isBuiltinType())) {
-//                node.type =
             } else {binaryError()}
         case .add:
             if node.lhs.type === node.rhs.type && [int, string].contains(node.lhs.type) {

@@ -19,8 +19,8 @@ class CSElimination: FunctionPass {
     
     override func visit(v: Function) {
         
-        var cseMap = [String: Inst]()
-        var cseReMap = [Inst: String]()
+        var cseMap = [String: IRInst]()
+        var cseReMap = [IRInst: String]()
         
         let domTree = DomTree(function: v)
         for blk in v.blocks {blk.reachable = true}
@@ -77,12 +77,12 @@ class GVNumberer: FunctionPass {
     private var rpo     = [BasicBlock]()
     private var domTree : DomTree!, pdomTree: PostDomTree!
     
-    private var map     = [BasicBlock: [String: Inst]]()
+    private var map     = [BasicBlock: [String: IRInst]]()
     
-    private var workList        = Set<Inst>(), blockList = Set<BasicBlock>()
+    private var workList        = Set<IRInst>(), blockList = Set<BasicBlock>()
     private var predicateEdge   = [BasicBlock.Edge: VNExpression]()
     private var visited         = Set<BasicBlock>()
-    private var belongTo        = [Inst: String]()
+    private var belongTo        = [IRInst: String]()
     private var blockPredicate  = [BasicBlock: [VNExpression]]()
     
     override func visit(v: Function) {
@@ -96,7 +96,7 @@ class GVNumberer: FunctionPass {
             }
             return nil
         }
-        func lookup(description str: String, in block: BasicBlock, for inst: Inst) -> (Inst?, String)? {
+        func lookup(description str: String, in block: BasicBlock, for inst: IRInst) -> (IRInst?, String)? {
             var it  : DomTree.Node? = domTree[block]
             if Int(str) != nil {
                 return (nil, str)
@@ -109,7 +109,7 @@ class GVNumberer: FunctionPass {
             }
             return nil
         }
-        func evaluate(_ inst: Inst, in block: BasicBlock) -> (Inst?, String) {
+        func evaluate(_ inst: IRInst, in block: BasicBlock) -> (IRInst?, String) {
             
             let exp     = VNExpression(v: inst)
             let idom    = domTree[block].idom?.block
@@ -165,7 +165,7 @@ class GVNumberer: FunctionPass {
                 fnl = blockPredicate[block] ?? []
             }
             
-            func findAllCongruence(current: VNExpression) -> (Inst?, String)? {
+            func findAllCongruence(current: VNExpression) -> (IRInst?, String)? {
 //                print("find", current.description, current.description)
                 if let i = lookup(description: current.description, in: block, for: inst) {
 //                    print(">>>>>>", i)
@@ -235,7 +235,7 @@ class GVNumberer: FunctionPass {
         dfs(block: v.blocks.first!)
         rpo.reverse()
         map.removeAll()
-        for blk in v.blocks {map[blk] = [String: Inst](); blk.reachable = false;}
+        for blk in v.blocks {map[blk] = [String: IRInst](); blk.reachable = false;}
         workList.removeAll(); blockList.removeAll(); predicateEdge.removeAll();
         belongTo.removeAll();
         for b in v.blocks {b.insts.forEach {$0.constInt = nil}}
@@ -260,7 +260,7 @@ class GVNumberer: FunctionPass {
                         
                         if jump.operands.count > 1 {
                             var flag: Bool? = nil
-                            if let ci = jump[0] as? Inst {
+                            if let ci = jump[0] as? IRInst {
                                 let condition = evaluate(ci, in: blk)
                                 if let n = Int(condition.1) {
                                     flag = n == 1
@@ -312,7 +312,7 @@ class GVNumberer: FunctionPass {
                             }
                             belongTo[i] = res.1
                             for u in i.users {
-                                workList.insert(u.user as! Inst)
+                                workList.insert(u.user as! IRInst)
                             }
                         }
                         
@@ -331,7 +331,7 @@ class GVNumberer: FunctionPass {
                     i.replaced(by: IntC(type: i.type, value: n))
                     instRemoved += 1
                 } else if let (l, _) = lookup(description: str, in: blk, for: i), !(l! is PhiInst) {
-                    print(i.toPrint, str, belongTo[l!])
+                    print(i.toPrint, str, belongTo[l!]!)
                     print(">", l!)
                     if l!.inBlock != i.inBlock {
                         map[blk]!.removeValue(forKey: str)
@@ -367,7 +367,7 @@ class GVNumberer: FunctionPass {
 }
 
 class VNExpression: CustomStringConvertible {
-    var op      = Inst.OP.add, sop = CompareInst.CMP.eq // just nonsence init
+    var op      = IRInst.OP.add, sop = CompareInst.CMP.eq // just nonsence init
     var name    : String
     var neg     = false
     var vals    = [VNExpression]() // be careful that there should be NO same expression references
@@ -390,14 +390,14 @@ class VNExpression: CustomStringConvertible {
             vals.append(VNExpression(v))
         }
     }
-    init(o: Inst.OP, from vs: [VNExpression]) {
+    init(o: IRInst.OP, from vs: [VNExpression]) {
         op      = o
         vals    = vs
         name    = "_"
     }
     init(v: Value, depth: Int = VNExpression.maxInit) {
         name = v.name
-        if let i = v as? Inst {
+        if let i = v as? IRInst {
             if depth != VNExpression.maxInit && v.constInt != nil {
                 name = "\(v.constInt!)"
             } else if !(depth == 0 || i.isCritical) {
@@ -425,14 +425,14 @@ class VNExpression: CustomStringConvertible {
         }
     }
     init(i: Int) {name = "\(i)"}
-    init(n: String, o: Inst.OP) {name = n; op = o}
+    init(n: String, o: IRInst.OP) {name = n; op = o}
     
     func sort() {
         vals.sort {"\($0)" < "\($1)"}
     }
     
-    static let commutative: Set<Inst.OP> = [.add, .mul, .xor]
-    static let opp = [Inst.OP.sub: Inst.OP.add]
+    static let commutative: Set<IRInst.OP> = [.add, .mul, .xor]
+    static let opp = [IRInst.OP.sub: IRInst.OP.add]
     static let normalCompare = [CompareInst.CMP.sle: CompareInst.CMP.sgt, .slt: .sge, .ne: .eq]
     static let comparisons = [CompareInst.CMP.eq, .ne, .sle, .sge, .slt, .sgt]
     
@@ -445,7 +445,7 @@ class VNExpression: CustomStringConvertible {
         return false
     }
     
-    func inverse(i: Int, with _op: Inst.OP) -> Int {
+    func inverse(i: Int, with _op: IRInst.OP) -> Int {
         switch _op {
         case .add:
             return -i
@@ -454,7 +454,7 @@ class VNExpression: CustomStringConvertible {
         }
     }
     
-    func getInt(with _op: Inst.OP) -> Int? {
+    func getInt(with _op: IRInst.OP) -> Int? {
         if let n = Int(name) {
             return neg ? inverse(i: n, with: _op) : n
         }
@@ -493,7 +493,7 @@ class VNExpression: CustomStringConvertible {
         } else {
             var ret: Int? = nil
             for v in vals {
-                ret = ret == nil ? v.checkSatisfied(with: dict) : Inst.OP.map[op]!(ret!, v.checkSatisfied(with: dict))
+                ret = ret == nil ? v.checkSatisfied(with: dict) : IRInst.OP.map[op]!(ret!, v.checkSatisfied(with: dict))
             }
             return ret ?? 1
         }
@@ -540,7 +540,7 @@ class VNExpression: CustomStringConvertible {
         vals = vals.generated {
             if $0.vals.count > 0 {
                 $0.simplified(toFold: toFold)
-                if $0.vals.count == 1 && Inst.OP.map[$0.op] != nil {
+                if $0.vals.count == 1 && IRInst.OP.map[$0.op] != nil {
                     return $0.vals[0]
                 }
             }
@@ -581,7 +581,7 @@ class VNExpression: CustomStringConvertible {
             }
             
         } else if VNExpression.commutative.contains(op) {
-            if Inst.OP.map[op] != nil {
+            if IRInst.OP.map[op] != nil {
                 for e in vals where e.op == op && e.vals.count > 0 {
                     for subE in e.vals {
                         subE.neg = subE.neg != e.neg
@@ -595,7 +595,7 @@ class VNExpression: CustomStringConvertible {
                 var res: Int? = nil
                 vals = vals.generated {
                     if let n = $0.getInt(with: op) {
-                        res = res == nil ? n : Inst.OP.map[op]!(res!, n)
+                        res = res == nil ? n : IRInst.OP.map[op]!(res!, n)
                         return nil
                     }
                     return $0

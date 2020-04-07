@@ -12,7 +12,7 @@ class SCCPropagation: FunctionPass {
     var instRemoved = 0, branchChanged = 0
     override var resultString: String {super.resultString + "\(instRemoved) inst(s) removed, \(branchChanged) branch(es) changed."}
     
-    var workList = [Inst](), blockList = [BasicBlock]()
+    var workList = [IRInst](), blockList = [BasicBlock]()
     
     override func work(on v: Module) {
         visit(v: v)
@@ -31,7 +31,7 @@ class SCCPropagation: FunctionPass {
                 t.reachable = true
                 blockList.append(t)
                 for u in t.users where u.user is PhiInst {
-                    workList.append(u.user as! Inst)
+                    workList.append(u.user as! IRInst)
                 }
             }
         }
@@ -74,7 +74,7 @@ class SCCPropagation: FunctionPass {
                     i.propogate()
                     if !(last == i.ccpInfo) {
                         for u in i.users {
-                            workList.append(u.user as! Inst)
+                            workList.append(u.user as! IRInst)
                         }
                     }
                 }

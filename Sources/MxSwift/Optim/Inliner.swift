@@ -21,7 +21,7 @@ class Inliner: ModulePass {
         }
     }
     
-    private func copy(_ inst: Inst, in block: BasicBlock, returnBlock: BasicBlock) -> Inst {
+    private func copy(_ inst: IRInst, in block: BasicBlock, returnBlock: BasicBlock) -> IRInst {
         
         func op(_ i: Int) -> Value {
             findValue(inst[i])
@@ -54,7 +54,7 @@ class Inliner: ModulePass {
         case is BinaryInst:     return BinaryInst   (type: inst.type, operation: inst.operation, lhs: op(0), rhs: op(1), in: block)
         default:
             assert(false)
-            return Inst(name: "", type: .int, operation: .add, in: block)
+            return IRInst(name: "", type: .int, operation: .add, in: block)
         }
     }
     
@@ -63,6 +63,7 @@ class Inliner: ModulePass {
         let domTree = DomTree(function: f)
         
         let retBlock = BasicBlock(curfunc: cur)
+        
         _ = PhiInst(type: f.type, in: retBlock)
         
         for (form, real) in zip(f.operands, call.operands) {
@@ -100,7 +101,12 @@ class Inliner: ModulePass {
         for u in call.inBlock.users where u.user is PhiInst {
             u.reconnect(fromValue: retBlock)
         }
-        call.replaced(by: retBlock.insts.first!)
+        if f.type is VoidT {
+            retBlock.insts.first!.disconnect(delUsee: true, delUser: true)
+            call.disconnect(delUsee: true, delUser: true)
+        } else {
+            call.replaced(by: retBlock.insts.first!)
+        }
     }
     
     override func visit(v: Module) {

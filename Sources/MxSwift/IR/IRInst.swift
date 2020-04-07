@@ -7,7 +7,7 @@
 
 import Foundation
 
-class Inst: User {
+class IRInst: User {
     
     enum OP {
         case add, sub, mul, sdiv, srem, shl, ashr, and, or, xor, icmp, ret, alloca, call, load, store, getelementptr, br, bitcast, sext, phi
@@ -18,7 +18,7 @@ class Inst: User {
     let operation: OP
     var inBlock: BasicBlock
     
-    private var nodeInBlock: List<Inst>.Node? = nil
+    private var nodeInBlock: List<IRInst>.Node? = nil
     
     func disconnect(delUsee: Bool, delUser: Bool) {
         nodeInBlock?.remove()
@@ -66,10 +66,10 @@ class Inst: User {
         nodeInBlock!.list.getNodeIndexBF(from: nodeInBlock!)
     }
     
-    var nextInst: Inst? {
+    var nextInst: IRInst? {
         nodeInBlock?.next?.next == nil ? nil : (nodeInBlock?.next?.value)!
     }
-    var prevInst: Inst? {
+    var prevInst: IRInst? {
         nodeInBlock?.prev?.prev == nil ? nil : (nodeInBlock?.prev?.value)!
     }
     
@@ -79,7 +79,7 @@ class Inst: User {
     
 }
 
-class PhiInst: Inst {
+class PhiInst: IRInst {
     init (name: String = "", type: Type, in block: BasicBlock, at index: Int = -1) {
         super.init(name: name, type: type, operation: .phi, in: block, at: index)
     }
@@ -105,7 +105,7 @@ class PhiInst: Inst {
     }
 }
 
-class SExtInst: Inst {
+class SExtInst: IRInst {
     init (name: String = "", val: Value, toType: Type, in block: BasicBlock) {
         super.init(name: name, type: toType, operation: .sext, in: block)
         added(operand: val)
@@ -117,7 +117,7 @@ class SExtInst: Inst {
     }
 }
 
-class CastInst: Inst {
+class CastInst: IRInst {
     init (name: String = "", val: Value, toType: Type, in block: BasicBlock) {
         super.init(name: name, type: toType, operation: .bitcast, in: block)
         added(operand: val)
@@ -129,7 +129,7 @@ class CastInst: Inst {
     }
 }
 
-class BrInst: Inst {
+class BrInst: IRInst {
     @discardableResult init(name: String = "", des: Value, in block: BasicBlock) {
         super.init(name: name, type: Type(), operation: .br, in: block)
         added(operand: des)
@@ -145,20 +145,21 @@ class BrInst: Inst {
     override func accept(visitor: IRVisitor) {visitor.visit(v: self)}
 }
 
-class GEPInst: Inst {
+class GEPInst: IRInst {
     let needZero: Bool
-    init(name: String = "", type: Type, base: Value, needZero: Bool, val: Value, in block: BasicBlock, at: Int = -1) {
+    init(name: String = "", type: Type, base: Value, needZero: Bool, val: Value, in block: BasicBlock, at: Int = -1, doNotLoad: Bool = false) {
         self.needZero = needZero
         super.init(name: name, type: type, operation: .getelementptr, in: block, at: at)
         added(operand: base)
         added(operand: val)
-        print("init GEP", operands.count, operands[0].type)
+        self.forceDoNotLoad = doNotLoad
+//        print("init GEP", operands.count, operands[0].type)
     }
     override var toPrint: String {"\(name) = \(operation) \((operands[0].type as! PointerT).baseType), \(operands[0]),\(needZero ? " i32 0," : "") \(operands[1])"}
     override func accept(visitor: IRVisitor) {visitor.visit(v: self)}
 }
 
-class ReturnInst: Inst {
+class ReturnInst: IRInst {
     @discardableResult init(name: String = "", val: Value, in block: BasicBlock) {
         super.init(name: name, type: VoidT(), operation: .ret, in: block)
         added(operand: val)
@@ -168,7 +169,7 @@ class ReturnInst: Inst {
     override func accept(visitor: IRVisitor) {visitor.visit(v: self)}
 }
 
-class LoadInst: Inst {
+class LoadInst: IRInst {
     init(name: String = "", alloc: Value, in block: BasicBlock) {
         super.init(name: name, type: (alloc.type as! PointerT).baseType, operation: .load, in: block)
         added(operand: alloc)
@@ -180,7 +181,7 @@ class LoadInst: Inst {
     }
 }
 
-class StoreInst: Inst {
+class StoreInst: IRInst {
     @discardableResult init(name: String = "", alloc: Value, val: Value, in block: BasicBlock, at: Int = -1) {
         super.init(name: name, type: Type(), operation: .store, in: block, at: at)
         added(operand: val)
@@ -191,7 +192,7 @@ class StoreInst: Inst {
     override func accept(visitor: IRVisitor) {visitor.visit(v: self)}
 }
 
-class CallInst: Inst {
+class CallInst: IRInst {
     var function: Function
     init(name: String = "", function: Function, arguments: [Value] = [], in block: BasicBlock) {
         self.function = function
@@ -210,7 +211,7 @@ class CallInst: Inst {
     }
 }
 
-class AllocaInst: Inst {
+class AllocaInst: IRInst {
     init(name: String = "", forType: Type, in block: BasicBlock, at: Int = -1) {
         super.init(name: name, type: forType.pointer, operation: .alloca, in: block, at: at)
     }
@@ -221,8 +222,8 @@ class AllocaInst: Inst {
     }
 }
 
-class BinaryInst: Inst {
-    init(name: String = "", type: Type, operation: Inst.OP, lhs: Value, rhs: Value, in block: BasicBlock) {
+class BinaryInst: IRInst {
+    init(name: String = "", type: Type, operation: IRInst.OP, lhs: Value, rhs: Value, in block: BasicBlock) {
         super.init(name: name, type: type, operation: operation, in: block)
         added(operand: lhs)
         added(operand: rhs)

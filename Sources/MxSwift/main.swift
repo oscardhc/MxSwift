@@ -101,15 +101,15 @@ class s {
 
         DCElimination()     .work(on: ir.module)
         CFGSimplifier()     .work(on: ir.module)
-        
+//        lastString = IRPrinter(filename: "/Users/oscar/Documents/Classes/1920_Spring/Compiler/tmp/out1.ll").print(on: ir.module)
         let aa = PTAnalysis()
         aa.work(on: ir.module)
+        
+//        IRPrinter(filename: "/Users/oscar/Documents/Classes/1920_Spring/Compiler/tmp/out1.ll").print(on: ir.module)
         LSElimination(aa)   .work(on: ir.module)
+//        break
         DCElimination(aa)   .work(on: ir.module)
-        IRPrinter(filename: "/Users/oscar/Documents/Classes/1920_Spring/Compiler/tmp/out1.ll").print(on: ir.module)
         LICHoister(aa)      .work(on: ir.module)
-        IRPrinter(filename: "/Users/oscar/Documents/Classes/1920_Spring/Compiler/tmp/out2.ll").print(on: ir.module)
-        break
         
         DCElimination()     .work(on: ir.module)
         CFGSimplifier()     .work(on: ir.module)

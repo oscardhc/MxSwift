@@ -21,7 +21,7 @@ class DCElimination: FunctionPass {
         
         let tree = PostDomTree(function: v)
         
-        var deadInsts = Set<Inst>(), workList = Set<Inst>(), liveBlocks = Set<BasicBlock>(), livePos = Set<Value>()
+        var deadInsts = Set<IRInst>(), workList = Set<IRInst>(), liveBlocks = Set<BasicBlock>(), livePos = Set<Value>()
         
         for b in v.blocks {
             for i in b.insts {
@@ -43,7 +43,7 @@ class DCElimination: FunctionPass {
             }
         }
         
-        func insertIntoList(i: Inst) {
+        func insertIntoList(i: IRInst) {
             if deadInsts.contains(i) {
                 workList.insert(i)
                 deadInsts.remove(i)
@@ -57,11 +57,8 @@ class DCElimination: FunctionPass {
                     insertIntoList(i: (o as! BasicBlock).insts.last!)
                 }
             }
-//            if aa != nil && i is LoadInst {
-//                livePos.formUnion(aa!.result[v]!.pts[i[0]]!)
-//            }
             for o in i.operands {
-                if let oo = o as? Inst {
+                if let oo = o as? IRInst {
                     insertIntoList(i: oo)
                 }
                 if aa != nil {
