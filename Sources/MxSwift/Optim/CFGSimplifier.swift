@@ -22,10 +22,7 @@ class CFGSimplifier: FunctionPass {
             
             changed = false
             
-            v.blocks.forEach {$0.preds = []}
-            v.blocks.forEach { (b) in
-                b.succs.forEach {$0.preds.append(b)}
-            }
+            v.calPreds()
             
             var emptyReturns = [BasicBlock]()
             for b in v.blocks where b.insts.last is ReturnInst {
@@ -69,10 +66,7 @@ class CFGSimplifier: FunctionPass {
                 changed = true
             }
             
-            v.blocks.forEach {$0.preds = []}
-            v.blocks.forEach { (b) in
-                b.succs.forEach {$0.preds.append(b)}
-            }
+            v.calPreds()
             
             for b in v.blocks where b.preds.isEmpty && b !== b.inFunction.blocks.first! {
                 b.remove {

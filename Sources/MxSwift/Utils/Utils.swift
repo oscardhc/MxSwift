@@ -92,6 +92,14 @@ extension String {
     static func !== (lhs: String, rhs: String) -> Bool {
         return !(lhs === rhs)
     }
+    static let dict = ["整数": int, "布尔": bool, "字符串": string, "空": void]
+    func getType() -> String {
+        if let res = String.dict[self] {
+            return res
+        } else {
+            return self
+        }
+    }
 }
 
 extension Int {

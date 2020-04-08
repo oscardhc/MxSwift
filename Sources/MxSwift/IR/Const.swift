@@ -131,6 +131,13 @@ class Function: Global {
         return (instCount, blockCount)
     }
     
+    func calPreds() {
+        blocks.forEach {$0.preds = []}
+        blocks.forEach { (b) in
+            b.succs.forEach {$0.preds.append(b)}
+        }
+    }
+    
 }
 
 class Class: Global {

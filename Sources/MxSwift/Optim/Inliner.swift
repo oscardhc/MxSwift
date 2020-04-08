@@ -111,22 +111,23 @@ class Inliner: ModulePass {
     
     override func visit(v: Module) {
         
-        var noCalling = Set<Function>(), called = [Function: Int]()
+        var calling = [Function: Int](), called = [Function: Int]()
         for f in v.functions {
             called[f] = 0
+            calling[f] = 0
         }
         for f in v.functions {
             for b in f.blocks {
                 for i in b.insts {
                     if let c = i as? CallInst, !IRBuilder.Builtin.functions.values.contains(c.function) {
-                        noCalling.insert(f)
+                        calling[f]! += 1
                         called[c.function]! += 1
                     }
                 }
             }
         }
-        
-        for toInline in v.functions where !noCalling.contains(toInline) {
+//        print("calling", calling)
+        for toInline in v.functions where calling[toInline]! <= 1 {
             if toInline.blocks.isEmpty || toInline.name == "@main" {
                 continue
             }
@@ -135,22 +136,29 @@ class Inliner: ModulePass {
                 continue
             }
             print("TOINLINE", toInline.name, size.0, called[toInline]!)
-            for f in v.functions  {
+            var calls = [CallInst]()
+            for f in v.functions where f !== toInline {
                 for b in f.blocks {
                     for i in b.insts {
                         if let c = i as? CallInst, c.function === toInline {
-                            inline(f: c.function, in: f, for: c)
+                            calls.append(c)
                         }
                     }
                 }
             }
-            for b in toInline.blocks {
-                for i in b.insts {
-                    i.disconnect(delUsee: true, delUser: true)
-                }
+            for c in calls {
+                inline(f: c.function, in: c.inBlock.inFunction, for: c)
             }
-            v.functions.removeAll {$0 === toInline}
-//            break
+
+            if calling[toInline]! == 0 {
+                for b in toInline.blocks {
+                    for i in b.insts {
+                        i.disconnect(delUsee: true, delUser: true)
+                    }
+                }
+                v.functions.removeAll {$0 === toInline}
+            }
+            
         }
         
     }

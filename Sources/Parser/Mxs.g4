@@ -5,36 +5,48 @@ grammar Mxs;
 declarations: declaration*;
 declaration: functionDeclaration | variableDeclaration | classDeclaration;
 
-functionDeclaration: type Identifier '(' ((type Identifier ',')* type Identifier)? ')' '{' sentence* '}';
+functionDeclaration
+    : type Identifier '(' ((type Identifier ',')* type Identifier)? ')' LeftBr sentence* RightBr
+    | '普通老百姓都懂的' Identifier '得到' type ('根据' (type Identifier ',')* type Identifier)? sentence* '但我不想讲证明'
+    ;
 
-initialDeclaration: Identifier '(' ((type Identifier ',')* type Identifier)? ')' '{' sentence* '}';
+initialDeclaration: Identifier '(' ((type Identifier ',')* type Identifier)? ')' LeftBr sentence* RightBr;
 
-singleVarDeclaration: Identifier ('=' expression)?;
-variableDeclaration: type (singleVarDeclaration ',')* singleVarDeclaration ';';
+singleVarDeclaration: Identifier (Assign expression)?;
+variableDeclaration: type (singleVarDeclaration ',')* singleVarDeclaration Semicolon;
 
 classDeclaration
-    : Class Identifier '{' (variableDeclaration | functionDeclaration | initialDeclaration)* '}' ';'
+    : Class Identifier LeftBr (variableDeclaration | functionDeclaration | initialDeclaration)* RightBr Semicolon
     ;
 
 declSentence: variableDeclaration;
-ifSentence: If '(' expression ')' sentence (Else sentence)?;
-whileSentence: While '(' expression ')' sentence;
-forSentence: For '(' (expressionSentence | declSentence | ';') cod=expression? ';' inc=expression? ')' body=sentence;
-returnSentence: Return expression? ';';
-breakSentence: Break ';';
-continueSentence: Continue ';';
-expressionSentence: expression ';';
+ifSentence
+    : If '(' expression ')' sentence (Else sentence)?
+    | '如果' expression sentence ('或者' sentence)?
+    ;
+whileSentence
+    : While '(' expression ')' sentence
+    | '只要' expression sentence
+    ;
+forSentence: For '(' (expressionSentence | declSentence | Semicolon) cod=expression? Semicolon inc=expression? ')' body=sentence;
+returnSentence: Return expression? Semicolon;
+breakSentence: Break Semicolon;
+continueSentence: Continue Semicolon;
+expressionSentence: expression Semicolon;
 
-sentence: (declSentence | ifSentence | whileSentence | forSentence | returnSentence | breakSentence | continueSentence | expressionSentence | codeBlock | ';');
+sentence: (declSentence | ifSentence | whileSentence | forSentence | returnSentence | breakSentence | continueSentence | expressionSentence | codeBlock | Semicolon);
 
 codeBlock
-    : '{' sentence* '}'
+    : LeftBr sentence* RightBr
     ;
 
 emptySet        : ('[' ']');
 type: (Bool | Int | String | Void | Identifier) emptySet*;
 
-functionExpression: Identifier '(' ((expression ',')* expression)? ')';
+functionExpression
+    : Identifier '(' ((expression ',')* expression)? ')'
+    | '完成习题' Identifier ('根据' (expression ',')* expression)?
+    ;
 
 newIndex: '[' expression? ']';
 
@@ -62,17 +74,17 @@ expression
     | <assoc=right> expression op=Assign expression                                 #assignExpr
     ;
 
-Bool            : 'bool';
-Int             : 'int';
+Bool            : 'bool' | '布尔';
+Int             : 'int' | '整数';
 String          : 'string';
-Void            : 'void';
+Void            : 'void' | '空';
 If              : 'if';
 Else            : 'else';
 For             : 'for';
 While           : 'while';
 Break           : 'break';
 Continue        : 'continue';
-Return          : 'return';
+Return          : 'return' | '就得到了';
 New             : 'new';
 Class           : 'class';
 This            : 'this';
@@ -81,31 +93,34 @@ BoolLiteral     : 'true' | 'false';
 NullLiteral     : 'null';
 IntLiteral      : [1-9][0-9]* | '0';
 
-Assign      : '=';
-Mul         : '*';
-Div         : '/';
-Add         : '+';
-Sub         : '-';
-Mod         : '%';
-Negation    : '!';
-Bitwise     : '~';
-SelfAdd     : '++';
-SelfSub     : '--';
-RightShift  : '>>';
-LeftShift   : '<<';
-GreaterEq   : '>=';
-LessEq      : '<=';
-Greater     : '>';
-Less        : '<';
-Equal       : '==';
-Inequal     : '!=';
-BitAnd      : '&';
-BitOr       : '|';
-BitXor      : '^';
-LogicAnd    : '&&';
-LogicOr     : '||';
+Assign      : '=' | '是';
+Mul         : '*' | '乘';
+Div         : '/' | '除以';
+Add         : '+' | '加';
+Sub         : '-' | '减';
+Mod         : '%' | '模';
+Negation    : '!' | '不';
+Bitwise     : '~' | '取反';
+SelfAdd     : '++' | '自增';
+SelfSub     : '--' | '自减';
+RightShift  : '>>' | '右移';
+LeftShift   : '<<' | '左移';
+GreaterEq   : '>=' | '大于等于';
+LessEq      : '<=' | '小于等于';
+Greater     : '>' | '大于';
+Less        : '<' | '小于';
+Equal       : '==' | '等于';
+Inequal     : '!=' | '不等于';
+BitAnd      : '&' | '按位与';
+BitOr       : '|' | '按位或';
+BitXor      : '^' | '按位异或';
+LogicAnd    : '&&' | '而且';
+LogicOr     : '||' | '或者';
 
-Identifier      : [a-zA-Z][a-zA-Z0-9_]*;
+LeftBr          : '{' | '采取行动';
+RightBr         : '}' | '期待下次表现';
+Semicolon       : ';' | '啊是';
+Identifier      : [a-zA-Z][a-zA-Z0-9_]* | [\u4e00-\u9fa5]+;
 
 Whitespace      : [ \t]+ -> skip;
 Newline         : ('\r' '\n'? | '\n') -> skip;

@@ -200,8 +200,16 @@ class LSElimination: FunctionPass {
                     unavai.insert(s.nextInst!)
                     workList.append(s.nextInst!)
                 }
+                let dangerous = v.currentModule.functions.filter {
+                    for blk in $0.blocks { for ins in blk.insts where ins is StoreInst {
+                        if aa.mayAlias(p: ins[1], q: i[0]) {
+                            return true
+                        }
+                    }}
+                    return false
+                }
                 for c in getAllDominated(from: i, where: {
-                    $0 is CallInst && !IRBuilder.Builtin.functions.values.contains(($0 as! CallInst).function)
+                    $0 is CallInst && dangerous.contains(($0 as! CallInst).function)
                 }) {
                     unavai.insert(c.nextInst!)
                     workList.append(c.nextInst!)
@@ -224,8 +232,11 @@ class LSElimination: FunctionPass {
                         }
                     }
                 }
+//                if v.name != "@Array_Node_push_back" {
+//                    continue
+//                }
                 for l in loads where !unavai.contains(l) {
-                    print(i.toPrint)
+//                    print(i.toPrint, dangerous)
                     print(">", v.name, l.toPrint)
                     l.replaced(by: i)
                     instRemoved += 1

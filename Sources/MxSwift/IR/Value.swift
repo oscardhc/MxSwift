@@ -37,7 +37,11 @@ class Value: HashableObject, CustomStringConvertible, Hashable {
     var toPrint: String {return "??????????????"}
     
     init(name: String = "", type: Type) {
-        self.originName = name
+        if name.unicodeScalars.filter({$0.isASCII}).count == name.count {
+            self.originName = name
+        } else {
+            self.originName = "unicode." + instNamingCounter.tik()
+        }
         self.basename = self.originName
         self.type = type
     }
@@ -214,8 +218,7 @@ class BasicBlock: Value {
             return []
         }
     }
-//    var domNode: DomTree.Node? = nil
-//    var pdomNode: DomTree.Node? = nil
+    
     var preds = [BasicBlock]()
     
     //    ************** for SCCP ***************

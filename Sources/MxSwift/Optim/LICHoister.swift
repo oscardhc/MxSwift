@@ -56,10 +56,7 @@ class LICHoister: FunctionPass {
         print("=", v.name)
         
         tree = DomTree(function: v)
-        v.blocks.forEach {$0.preds = []}
-        v.blocks.forEach { (b) in
-            b.succs.forEach {$0.preds.append(b)}
-        }
+        v.calPreds()
         
         var loops = [Loop](), graph = [BasicBlock: Set<BasicBlock>]()
         for b in v.blocks {

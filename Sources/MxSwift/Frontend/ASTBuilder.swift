@@ -42,7 +42,7 @@ class ASTBuilder: MxsBaseVisitor<ASTNode> {
     }
     
     override func visitFunctionDeclaration(_ ctx: MxsParser.FunctionDeclarationContext) -> ASTNode? {
-        let id = ctx.Identifier(0)!.getText(), type = ctx.type(0)!.getText()
+        let id = ctx.Identifier(0)!.getText(), type = ctx.type(0)!.getText().getType()
         
         let _s = current.newSubscope(withName: id, withType: .FUNCTION)
         current.newSymbol(name: id, value: Symbol(_type: type, _bel: current, _subScope: _s))
@@ -51,7 +51,7 @@ class ASTBuilder: MxsBaseVisitor<ASTNode> {
         let node = FunctionD(id: id, scope: current, type: type, parameters: [], statements: [])
         
         for i in 1..<ctx.type().count {
-            let pid = ctx.Identifier(i)!.getText(), ptype = ctx.type(i)!.getText()
+            let pid = ctx.Identifier(i)!.getText(), ptype = ctx.type(i)!.getText().getType()
             current.newSymbol(name: pid, value: Symbol(_type: ptype, _bel: current))
             node.parameters.append(VariableD(scope: current, type: ptype, variable: [(pid, nil)]))
         }
@@ -122,7 +122,7 @@ class ASTBuilder: MxsBaseVisitor<ASTNode> {
     }
     
     override func visitVariableDeclaration(_ ctx: MxsParser.VariableDeclarationContext) -> ASTNode? {
-        let type = ctx.type()!.getText(), node = VariableD(scope: current, type: type)
+        let type = ctx.type()!.getText().getType(), node = VariableD(scope: current, type: type)
         for sing in ctx.singleVarDeclaration() {
             node.variable.append((sing.Identifier()!.getText(), sing.expression() != nil ? visit(sing.expression()!) as? Expression : nil))
             current.newSymbol(name: sing.Identifier()!.getText(), value: Symbol(_type: type, _bel: current))
@@ -178,7 +178,13 @@ class ASTBuilder: MxsBaseVisitor<ASTNode> {
     }
     
     override func visitFunctionExpression(_ ctx: MxsParser.FunctionExpressionContext) -> ASTNode? {
-        let node = FunctionCallE(id: ctx.Identifier()!.getText(), scope: current, arguments: [])
+        var name = ctx.Identifier()!.getText()
+        if name == "很想听" {
+            name = "getInt"
+        } else if name == "输出" {
+            name = "printlnInt"
+        }
+        let node = FunctionCallE(id: name, scope: current, arguments: [])
         ctx.expression().forEach{node.arguments.append(visit($0) as! Expression)}
         return node
     }

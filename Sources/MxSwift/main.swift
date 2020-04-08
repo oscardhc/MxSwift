@@ -6,7 +6,7 @@ import Parser
 func compile(useFileStream: Bool) throws {
     
     let start = DispatchTime.now().uptimeNanoseconds
-    let timeLimit = Int(30 * 1e9), iterateLimit = 15
+    let timeLimit = Int(30 * 1e9), iterateLimit = 10
     var iteration = 0
     
     print(welcomeText)
@@ -14,6 +14,9 @@ func compile(useFileStream: Bool) throws {
     let builtin = ANTLRInputStream(
 """
 void putchar(int x) {}
+
+int 很想听 () {}
+void 输出 (int n) {}
 
 void print(string str) {}
 void println(string str) {}
@@ -105,9 +108,7 @@ class s {
         let aa = PTAnalysis()
         aa.work(on: ir.module)
         
-//        IRPrinter(filename: "/Users/oscar/Documents/Classes/1920_Spring/Compiler/tmp/out1.ll").print(on: ir.module)
         LSElimination(aa)   .work(on: ir.module)
-//        break
         DCElimination(aa)   .work(on: ir.module)
         LICHoister(aa)      .work(on: ir.module)
         
@@ -122,13 +123,11 @@ class s {
         } else {
             break
         }
-
+//        break
     }
-    
-//    IRPrinter(filename: "/Users/oscar/Documents/Classes/1920_Spring/Compiler/tmp/out1.ll").print(on: ir.module)
-//    let aa = PTAnalysis()
-//    aa.work(on: ir.module)
-//    LICHoister(aa)      .work(on: ir.module)
+
+    IRPrinter(filename: "/Users/oscar/Documents/Classes/1920_Spring/Compiler/tmp/out1.ll").print(on: ir.module)
+    RegToMem().work(on: ir.module)
     
     IRPrinter(filename: "/Users/oscar/Documents/Classes/1920_Spring/Compiler/tmp/out2.ll").print(on: ir.module)
     
