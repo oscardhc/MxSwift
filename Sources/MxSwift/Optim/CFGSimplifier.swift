@@ -11,29 +11,32 @@ class CFGSimplifier: FunctionPass {
     
     private var blocksChanged = 0
     override var resultString: String {super.resultString + "\(blocksChanged) block(s) changed."}
+    var noPhi: Bool
     
-    override func visit(v: Function) {
+    init(_ noPhi: Bool) {
+        self.noPhi = noPhi
+    }
+    
+    override func visit(v: IRFunction) {
         var changed = true
         func change() {
             changed = true
             blocksChanged += 1
         }
-        while changed {
-            
+        while changed && !noPhi {
             changed = false
             
             v.calPreds()
-            
-            var emptyReturns = [BasicBlock]()
+            var emptyReturns = [BlockIR]()
             for b in v.blocks where b.insts.last is ReturnInst {
                 if b.insts.count == 1 || (b.insts.count == 2 && b.insts.first is PhiInst) {
                     emptyReturns.append(b)
                 }
             }
-            print(v.name, emptyReturns)
+//            print(v.name, emptyReturns)
             if !(v.type is VoidT) && emptyReturns.count > 1 {
                 let ret = emptyReturns.removeFirst(), phi: PhiInst!
-                print("empty!!!", ret.name)
+//                print("empty!!!", ret.name)
                 if ret.insts.count > 1 {
                     phi = (ret.insts.first! as? PhiInst)!
                 } else {
@@ -46,7 +49,7 @@ class CFGSimplifier: FunctionPass {
                     }
                 }
                 for blk in emptyReturns {
-                    print("merge!!!", blk.name)
+//                    print("merge!!!", blk.name)
                     print(phi.toPrint)
                     if blk.insts.count > 1 {
                         for op in blk.insts.first!.operands {
@@ -94,7 +97,7 @@ class CFGSimplifier: FunctionPass {
                 if b.preds.count > 0 && b.insts.count == 1 && b.insts.last! is BrInst && b.insts.last!.operands.count == 1 {
                     // only uncond br
 
-                    let t = b.insts.last![0] as! BasicBlock
+                    let t = b.insts.last![0] as! BlockIR
 //                    print(b.preds)
                     if t.insts.first! is PhiInst {
                         var flag = false

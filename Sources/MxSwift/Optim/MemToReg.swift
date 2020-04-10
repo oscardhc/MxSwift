@@ -34,7 +34,7 @@ class MemToReg: FunctionPass {
     var instRemoved = 0
     override var resultString: String {super.resultString + "\(instRemoved) inst(s) removed."}
     
-    override func visit(v: Function) {
+    override func visit(v: IRFunction) {
         let toPromote = List<AllocaInst>()
         let insts = v.blocks.first!.insts
         
@@ -59,12 +59,12 @@ class MemToReg: FunctionPass {
             }
             
             let loads = List<Use>(), stores = List<Use>()
-            var allBlock: BasicBlock? = nil
+            var allBlock: BlockIR? = nil
             var allInOneBlock = false
             
 //            prepare for loads and stores
             for use in ai.users {
-                let block = (use.user as! IRInst).inBlock
+                let block = (use.user as! InstIR).inBlock
                 if allBlock == nil {
                     allBlock = block
                     allInOneBlock = true
@@ -146,7 +146,7 @@ class MemToReg: FunctionPass {
                 }
             }
             
-            var oriBlocks = Set<BasicBlock>(), workList = Set<BasicBlock>(), phiBlocks = Set<BasicBlock>()
+            var oriBlocks = Set<BlockIR>(), workList = Set<BlockIR>(), phiBlocks = Set<BlockIR>()
             stores.forEach {oriBlocks.insert(($0.user as! StoreInst).inBlock)}
             oriBlocks.forEach {workList.insert($0)}
             
@@ -177,7 +177,7 @@ class MemToReg: FunctionPass {
 
         var stack = [Value: [Value]]() // 1st is actually AllocInst, 2nd is actually Phi or value to Store
         for ai in toPromote {
-            stack[ai] = [IntC.minusOne()]
+            stack[ai] = [ai.type.getBase is IntT ? IntC.minusOne() : NullC()]
         }
         
         func rename(cur: DomTree.Node) {

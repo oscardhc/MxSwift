@@ -10,13 +10,13 @@ import Foundation
 class BaseDomTree {
     
     var root: Node!
-    private let f: Function, dfnCounter = Counter()
-    private var dfnList = [Node](), map = [BasicBlock: Node]()
+    private let f: IRFunction, dfnCounter = Counter()
+    private var dfnList = [Node](), map = [BlockIR: Node]()
     
     class Node: CustomStringConvertible {
         var description: String {block?.description ?? ""}
         
-        let block: BasicBlock?
+        let block: BlockIR?
         var dfn = -1
         var father: Node?
         var edge = List<Node>()
@@ -35,7 +35,7 @@ class BaseDomTree {
         var domSons = [Node]()
         var domFrontiers = [Node]()
         
-        init(block: BasicBlock?) {
+        init(block: BlockIR?) {
             self.block = block
             self.minDfn = self
             self.sdom = self
@@ -66,7 +66,7 @@ class BaseDomTree {
         
     }
     
-    init(function: Function) {
+    init(function: IRFunction) {
         self.f = function
     }
     
@@ -136,14 +136,14 @@ class BaseDomTree {
         }
     }
     
-    func checkBF(_ _x: BasicBlock, dominates _y: BasicBlock) -> Bool {
+    func checkBF(_ _x: BlockIR, dominates _y: BlockIR) -> Bool {
         let x = self[_x], y = self[_y]
         return x === y.findDomFatherBF() {
             $0.depth == x.depth
         }
     }
     
-    subscript(b: BasicBlock) -> Node {
+    subscript(b: BlockIR) -> Node {
         get {
             map[b]!
         }
@@ -156,7 +156,7 @@ class BaseDomTree {
 
 class DomTree: BaseDomTree {
     
-    init(function: Function, check: (BasicBlock) -> Bool = {_ in true}) {
+    init(function: IRFunction, check: (BlockIR) -> Bool = {_ in true}) {
         
         super.init(function: function)
         
@@ -177,7 +177,7 @@ class DomTree: BaseDomTree {
 
 class PostDomTree: BaseDomTree {
     
-    init(function: Function, check: (BasicBlock) -> Bool = {_ in true}) {
+    init(function: IRFunction, check: (BlockIR) -> Bool = {_ in true}) {
         
         super.init(function: function)
         

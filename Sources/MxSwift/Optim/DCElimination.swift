@@ -17,11 +17,11 @@ class DCElimination: FunctionPass {
         self.aa = aa
     }
     
-    override func visit(v: Function) {
+    override func visit(v: IRFunction) {
         
         let tree = PostDomTree(function: v)
         
-        var deadInsts = Set<IRInst>(), workList = Set<IRInst>(), liveBlocks = Set<BasicBlock>(), livePos = Set<Value>()
+        var deadInsts = Set<InstIR>(), workList = Set<InstIR>(), liveBlocks = Set<BlockIR>(), livePos = Set<Value>()
         
         for b in v.blocks {
             for i in b.insts {
@@ -43,7 +43,7 @@ class DCElimination: FunctionPass {
             }
         }
         
-        func insertIntoList(i: IRInst) {
+        func insertIntoList(i: InstIR) {
             if deadInsts.contains(i) {
                 workList.insert(i)
                 deadInsts.remove(i)
@@ -53,12 +53,12 @@ class DCElimination: FunctionPass {
         while !workList.isEmpty {
             let i = workList.popFirst()!
             if let p = i as? PhiInst {
-                for o in p.operands where o is BasicBlock {
-                    insertIntoList(i: (o as! BasicBlock).insts.last!)
+                for o in p.operands where o is BlockIR {
+                    insertIntoList(i: (o as! BlockIR).insts.last!)
                 }
             }
             for o in i.operands {
-                if let oo = o as? IRInst {
+                if let oo = o as? InstIR {
                     insertIntoList(i: oo)
                 }
                 if aa != nil {

@@ -9,7 +9,7 @@ import Foundation
 
 class Module {
     
-    var functions = [Function]()
+    var functions = [IRFunction]()
     var globalVar = [GlobalVariable]()
     var classes = [Class]()
     
@@ -17,7 +17,7 @@ class Module {
     
     func accept(visitor: IRVisitor) {visitor.visit(v: self)}
     
-    func add(_ f: Function) {
+    func add(_ f: IRFunction) {
         self.functions.append(f)
     }
     func add(_ c: Class) {

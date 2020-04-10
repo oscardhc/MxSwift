@@ -21,17 +21,16 @@ class FunctionPass: IRVisitor {
     
     func work(on v: Module) {
         visit(v: v)
-        
-        IRPrinter(filename: "/Users/oscar/Documents/Classes/1920_Spring/Compiler/tmp/out2.ll").print(on: v)
+        UseRebuilder().work(on: v)
         DeadCleaner().work(on: v)
         print(resultString)
     }
     
-    func visit(v: Function) {}
+    func visit(v: IRFunction) {}
     
     final func visit(v: Class) {}
     final func visit(v: GlobalVariable) {}
-    final func visit(v: BasicBlock) {}
+    final func visit(v: BlockIR) {}
     final func visit(v: PhiInst) {}
     final func visit(v: SExtInst) {}
     final func visit(v: CastInst) {}
@@ -55,14 +54,15 @@ class ModulePass: IRVisitor {
     
     func work(on v: Module) {
         visit(v: v)
+        UseRebuilder().work(on: v)
         DeadCleaner().work(on: v)
         print(resultString)
     }
     
-    final func visit(v: Function) {}
+    final func visit(v: IRFunction) {}
     final func visit(v: Class) {}
     final func visit(v: GlobalVariable) {}
-    final func visit(v: BasicBlock) {}
+    final func visit(v: BlockIR) {}
     final func visit(v: PhiInst) {}
     final func visit(v: SExtInst) {}
     final func visit(v: CastInst) {}

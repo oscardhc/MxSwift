@@ -13,10 +13,10 @@ protocol IRVisitor {
     
     func work(on v: Module)
     func visit(v: Module)
-    func visit(v: Function)
+    func visit(v: IRFunction)
     func visit(v: Class)
     func visit(v: GlobalVariable)
-    func visit(v: BasicBlock)
+    func visit(v: BlockIR)
     func visit(v: PhiInst)
     func visit(v: SExtInst)
     func visit(v: CastInst)
@@ -44,7 +44,7 @@ class IRNumberer: IRVisitor {
         v.globalVar.forEach {$0.accept(visitor: self)}
         v.functions.forEach {$0.accept(visitor: self)}
     }
-    func visit(v: Function) {
+    func visit(v: IRFunction) {
         instNamingCounter.reset()
         v.operands.forEach {$0.initName()}
         v.blocks.forEach {
@@ -58,7 +58,7 @@ class IRNumberer: IRVisitor {
     func visit(v: GlobalVariable) {
         v.initName()
     }
-    func visit(v: BasicBlock) {
+    func visit(v: BlockIR) {
         v.insts.forEach {
             $0.accept(visitor: self)
         }
@@ -124,7 +124,7 @@ class IRPrinter: IRVisitor {
             $0.accept(visitor: self)
         }
     }
-    func visit(v: Function) {
+    func visit(v: IRFunction) {
         print(v.toPrint)
         if v.blocks.count > 0 {
             indent += 1
@@ -144,7 +144,7 @@ class IRPrinter: IRVisitor {
     func visit(v: GlobalVariable) {
         print(v.toPrint)
     }
-    func visit(v: BasicBlock) {
+    func visit(v: BlockIR) {
         v.insts.forEach {
 //            print("[\($0.ccpInfo.type)] ", end: "")
             $0.accept(visitor: self)

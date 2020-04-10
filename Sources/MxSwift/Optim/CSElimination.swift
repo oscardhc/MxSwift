@@ -17,10 +17,10 @@ class CSElimination: FunctionPass {
     private var instRemoved = 0
     override var resultString: String {super.resultString + "\(instRemoved) inst(s) removed."}
     
-    override func visit(v: Function) {
+    override func visit(v: IRFunction) {
         
-        var cseMap = [String: IRInst]()
-        var cseReMap = [IRInst: String]()
+        var cseMap = [String: InstIR]()
+        var cseReMap = [InstIR: String]()
         
         let domTree = DomTree(function: v)
         for blk in v.blocks {blk.reachable = true}
@@ -74,29 +74,29 @@ class GVNumberer: FunctionPass {
     private var instRemoved = 0
     override var resultString: String {super.resultString + "\(instRemoved) inst(s) removed."}
     
-    private var rpo     = [BasicBlock]()
+    private var rpo     = [BlockIR]()
     private var domTree : DomTree!, pdomTree: PostDomTree!
     
-    private var map     = [BasicBlock: [String: IRInst]]()
+    private var map     = [BlockIR: [String: InstIR]]()
     
-    private var workList        = Set<IRInst>(), blockList = Set<BasicBlock>()
-    private var predicateEdge   = [BasicBlock.Edge: VNExpression]()
-    private var visited         = Set<BasicBlock>()
-    private var belongTo        = [IRInst: String]()
-    private var blockPredicate  = [BasicBlock: [VNExpression]]()
+    private var workList        = Set<InstIR>(), blockList = Set<BlockIR>()
+    private var predicateEdge   = [BlockIR.Edge: VNExpression]()
+    private var visited         = Set<BlockIR>()
+    private var belongTo        = [InstIR: String]()
+    private var blockPredicate  = [BlockIR: [VNExpression]]()
     
-    override func visit(v: Function) {
+    override func visit(v: IRFunction) {
         
-        func getPredicate(at cur: BasicBlock) -> VNExpression? {
+        func getPredicate(at cur: BlockIR) -> VNExpression? {
             let only = cur.preds.generated {
-                $0.reachable ? BasicBlock.Edge(from: $0, to: cur) : nil
+                $0.reachable ? BlockIR.Edge(from: $0, to: cur) : nil
             }
             if only.count == 1, let p = predicateEdge[only[0]] {
                 return p
             }
             return nil
         }
-        func lookup(description str: String, in block: BasicBlock, for inst: IRInst) -> (IRInst?, String)? {
+        func lookup(description str: String, in block: BlockIR, for inst: InstIR) -> (InstIR?, String)? {
             var it  : DomTree.Node? = domTree[block]
             if Int(str) != nil {
                 return (nil, str)
@@ -109,7 +109,7 @@ class GVNumberer: FunctionPass {
             }
             return nil
         }
-        func evaluate(_ inst: IRInst, in block: BasicBlock) -> (IRInst?, String) {
+        func evaluate(_ inst: InstIR, in block: BlockIR) -> (InstIR?, String) {
             
             let exp     = VNExpression(v: inst)
             let idom    = domTree[block].idom?.block
@@ -165,7 +165,7 @@ class GVNumberer: FunctionPass {
                 fnl = blockPredicate[block] ?? []
             }
             
-            func findAllCongruence(current: VNExpression) -> (IRInst?, String)? {
+            func findAllCongruence(current: VNExpression) -> (InstIR?, String)? {
 //                print("find", current.description, current.description)
                 if let i = lookup(description: current.description, in: block, for: inst) {
 //                    print(">>>>>>", i)
@@ -191,14 +191,14 @@ class GVNumberer: FunctionPass {
             }
             
         }
-        func dfs(block: BasicBlock) {
+        func dfs(block: BlockIR) {
             visited.insert(block)
             for son in block.succs where !visited.contains(son) {
                 dfs(block: son)
             }
             rpo.append(block)
         }
-        func changeIfNeeded(edge: BasicBlock.Edge, exp: VNExpression) -> Bool {
+        func changeIfNeeded(edge: BlockIR.Edge, exp: VNExpression) -> Bool {
             if let p = predicateEdge[edge] {
                 if p != exp {
                     predicateEdge[edge] = exp
@@ -210,7 +210,7 @@ class GVNumberer: FunctionPass {
                 return true
             }
         }
-        func updatePredicate(edge: BasicBlock.Edge, exp: VNExpression) {
+        func updatePredicate(edge: BlockIR.Edge, exp: VNExpression) {
             if changeIfNeeded(edge: edge, exp: exp) {
                 for blk in v.blocks where blk.reachable && domTree.checkBF(edge.to, dominates: blk) {
                     for i in blk.insts {workList.insert(i)}
@@ -220,7 +220,7 @@ class GVNumberer: FunctionPass {
                 }
             }
         }
-        func tryBlock(block: BasicBlock) {
+        func tryBlock(block: BlockIR) {
             if !block.reachable {
                 block.reachable = true
                 domTree = DomTree(function: v, check: {$0.reachable})
@@ -235,7 +235,7 @@ class GVNumberer: FunctionPass {
         dfs(block: v.blocks.first!)
         rpo.reverse()
         map.removeAll()
-        for blk in v.blocks {map[blk] = [String: IRInst](); blk.reachable = false;}
+        for blk in v.blocks {map[blk] = [String: InstIR](); blk.reachable = false;}
         workList.removeAll(); blockList.removeAll(); predicateEdge.removeAll();
         belongTo.removeAll();
         for b in v.blocks {b.insts.forEach {$0.constInt = nil}}
@@ -260,7 +260,7 @@ class GVNumberer: FunctionPass {
                         
                         if jump.operands.count > 1 {
                             var flag: Bool? = nil
-                            if let ci = jump[0] as? IRInst {
+                            if let ci = jump[0] as? InstIR {
                                 let condition = evaluate(ci, in: blk)
                                 if let n = Int(condition.1) {
                                     flag = n == 1
@@ -272,14 +272,14 @@ class GVNumberer: FunctionPass {
                             if flag != false {
                                 tryBlock(block: blk.succs[0])
                                 let preTrue = VNExpression(v: jump[0])
-                                updatePredicate(edge: BasicBlock.Edge(from: blk, to: blk.succs[0]), exp: preTrue.simplified())
+                                updatePredicate(edge: BlockIR.Edge(from: blk, to: blk.succs[0]), exp: preTrue.simplified())
 //                                print("        branch T", preTrue.description)
                             }
                             if flag != true {
                                 tryBlock(block: blk.succs[1])
                                 let preFalse = VNExpression(v: jump[0])
                                 preFalse.negation()
-                                updatePredicate(edge: BasicBlock.Edge(from: blk, to: blk.succs[1]), exp: preFalse.simplified())
+                                updatePredicate(edge: BlockIR.Edge(from: blk, to: blk.succs[1]), exp: preFalse.simplified())
 //                                print("        branch F", preFalse.description)
                             }
                             
@@ -312,7 +312,7 @@ class GVNumberer: FunctionPass {
                             }
                             belongTo[i] = res.1
                             for u in i.users {
-                                workList.insert(u.user as! IRInst)
+                                workList.insert(u.user as! InstIR)
                             }
                         }
                         
@@ -367,7 +367,7 @@ class GVNumberer: FunctionPass {
 }
 
 class VNExpression: CustomStringConvertible {
-    var op      = IRInst.OP.add, sop = CompareInst.CMP.eq // just nonsence init
+    var op      = InstIR.OP.add, sop = CompareInst.CMP.eq // just nonsence init
     var name    : String
     var neg     = false
     var vals    = [VNExpression]() // be careful that there should be NO same expression references
@@ -390,20 +390,20 @@ class VNExpression: CustomStringConvertible {
             vals.append(VNExpression(v))
         }
     }
-    init(o: IRInst.OP, from vs: [VNExpression]) {
+    init(o: InstIR.OP, from vs: [VNExpression]) {
         op      = o
         vals    = vs
         name    = "_"
     }
     init(v: Value, depth: Int = VNExpression.maxInit) {
         name = v.name
-        if let i = v as? IRInst {
+        if let i = v as? InstIR {
             if depth != VNExpression.maxInit && v.constInt != nil {
                 name = "\(v.constInt!)"
             } else if !(depth == 0 || i.isCritical) {
                 op = i.operation
                 if i is PhiInst {
-                    for j in 0..<i.operands.count/2 where (i[j*2 + 1] as! BasicBlock).reachable {
+                    for j in 0..<i.operands.count/2 where (i[j*2 + 1] as! BlockIR).reachable {
                         vals.append(VNExpression(v: i[j*2], depth: depth - 1))
                     }
                 } else {
@@ -425,14 +425,14 @@ class VNExpression: CustomStringConvertible {
         }
     }
     init(i: Int) {name = "\(i)"}
-    init(n: String, o: IRInst.OP) {name = n; op = o}
+    init(n: String, o: InstIR.OP) {name = n; op = o}
     
     func sort() {
         vals.sort {"\($0)" < "\($1)"}
     }
     
-    static let commutative: Set<IRInst.OP> = [.add, .mul, .xor]
-    static let opp = [IRInst.OP.sub: IRInst.OP.add]
+    static let commutative: Set<InstIR.OP> = [.add, .mul, .xor]
+    static let opp = [InstIR.OP.sub: InstIR.OP.add]
     static let normalCompare = [CompareInst.CMP.sle: CompareInst.CMP.sgt, .slt: .sge, .ne: .eq]
     static let comparisons = [CompareInst.CMP.eq, .ne, .sle, .sge, .slt, .sgt]
     
@@ -445,7 +445,7 @@ class VNExpression: CustomStringConvertible {
         return false
     }
     
-    func inverse(i: Int, with _op: IRInst.OP) -> Int {
+    func inverse(i: Int, with _op: InstIR.OP) -> Int {
         switch _op {
         case .add:
             return -i
@@ -454,7 +454,7 @@ class VNExpression: CustomStringConvertible {
         }
     }
     
-    func getInt(with _op: IRInst.OP) -> Int? {
+    func getInt(with _op: InstIR.OP) -> Int? {
         if let n = Int(name) {
             return neg ? inverse(i: n, with: _op) : n
         }
@@ -493,7 +493,7 @@ class VNExpression: CustomStringConvertible {
         } else {
             var ret: Int? = nil
             for v in vals {
-                ret = ret == nil ? v.checkSatisfied(with: dict) : IRInst.OP.map[op]!(ret!, v.checkSatisfied(with: dict))
+                ret = ret == nil ? v.checkSatisfied(with: dict) : InstIR.OP.map[op]!(ret!, v.checkSatisfied(with: dict))
             }
             return ret ?? 1
         }
@@ -540,7 +540,7 @@ class VNExpression: CustomStringConvertible {
         vals = vals.generated {
             if $0.vals.count > 0 {
                 $0.simplified(toFold: toFold)
-                if $0.vals.count == 1 && IRInst.OP.map[$0.op] != nil {
+                if $0.vals.count == 1 && InstIR.OP.map[$0.op] != nil {
                     return $0.vals[0]
                 }
             }
@@ -581,7 +581,7 @@ class VNExpression: CustomStringConvertible {
             }
             
         } else if VNExpression.commutative.contains(op) {
-            if IRInst.OP.map[op] != nil {
+            if InstIR.OP.map[op] != nil {
                 for e in vals where e.op == op && e.vals.count > 0 {
                     for subE in e.vals {
                         subE.neg = subE.neg != e.neg
@@ -595,7 +595,7 @@ class VNExpression: CustomStringConvertible {
                 var res: Int? = nil
                 vals = vals.generated {
                     if let n = $0.getInt(with: op) {
-                        res = res == nil ? n : IRInst.OP.map[op]!(res!, n)
+                        res = res == nil ? n : InstIR.OP.map[op]!(res!, n)
                         return nil
                     }
                     return $0

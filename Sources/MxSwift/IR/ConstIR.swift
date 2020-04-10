@@ -7,11 +7,11 @@
 
 import Foundation
 
-class Const: User {
+class ConstIR: User {
     
 }
 
-class IntC: Const {
+class IntC: ConstIR {
     
     static func zero() -> IntC {
         IntC(type: .int, value: 0)
@@ -27,7 +27,7 @@ class IntC: Const {
     }
     
     var value: Int
-    init(type: Type, value: Int) {
+    init(type: TypeIR, value: Int) {
         self.value = value
         super.init(name: "", type: type)
         
@@ -38,7 +38,7 @@ class IntC: Const {
     override var name: String {"\(value)"}
     override var description: String {"\(type) \(value)"}
 }
-class VoidC: Const {
+class VoidC: ConstIR {
     init() {
         super.init(name: "", type: .void)
     }
@@ -46,15 +46,15 @@ class VoidC: Const {
     override var name: String {"void"}
     override var description: String {"void"}
 }
-class NullC: Const {
-    init(type: Type = Type()) {
+class NullC: ConstIR {
+    init(type: TypeIR = TypeIR()) {
         super.init(name: "", type: type)
     }
     override func initName() {}
     override var name: String {"null"}
 //    override var description: String {"\(type) null"}
 }
-class StringC: Const {
+class StringC: ConstIR {
     var value: String
     var length = 0
     init(value: String) {
@@ -89,21 +89,21 @@ class StringC: Const {
     }
 }
 
-class Global: Const {
+class Global: ConstIR {
     
     var currentModule: Module
     override var prefix: String {return "@"}
     
-    init(name: String, type: Type, module: Module) {
+    init(name: String, type: TypeIR, module: Module) {
         self.currentModule = module
         super.init(name: name, type: type)
     }
     
 }
 
-class Function: Global {
+class IRFunction: Global {
     
-    var blocks = List<BasicBlock>()
+    var blocks = List<BlockIR>()
     var attribute: String
     
     override func accept(visitor: IRVisitor) {visitor.visit(v: self)}
@@ -113,13 +113,13 @@ class Function: Global {
     }
     override var description: String {return "\(type) \(name)"}
     
-    init(name: String, type: Type, module: Module, attr: String = "") {
+    init(name: String, type: TypeIR, module: Module, attr: String = "") {
         self.attribute = attr
         super.init(name: name, type: type, module: module)
         module.add(self)
     }
     
-    func append(_ b: BasicBlock) -> List<BasicBlock>.Node {
+    func append(_ b: BlockIR) -> List<BlockIR>.Node {
         blocks.append(b)
     }
     
@@ -143,14 +143,14 @@ class Function: Global {
 class Class: Global {
     
     var subNames = [String]()
-    var subTypes = [Type]()
-    func added(subType: (String, Type)) -> Self {
+    var subTypes = [TypeIR]()
+    func added(subType: (String, TypeIR)) -> Self {
         self.subNames.append(subType.0)
         self.subTypes.append(subType.1)
         return self
     }
     
-    override init(name: String, type: Type, module: Module) {
+    override init(name: String, type: TypeIR, module: Module) {
         super.init(name: name, type: type, module: module)
         _ = module.add(self)
     }
@@ -171,10 +171,10 @@ class Class: Global {
 
 class GlobalVariable: Global {
     
-    var value: Const
+    var value: ConstIR
     var const: Bool
     
-    init(name: String, value: Const, module: Module, isConst: Bool = true) {
+    init(name: String, value: ConstIR, module: Module, isConst: Bool = true) {
         self.value = value
         self.const = isConst
         super.init(name: name, type: value.type.pointer, module: module)

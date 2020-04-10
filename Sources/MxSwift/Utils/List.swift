@@ -115,6 +115,14 @@ class List<T: CustomStringConvertible>: CustomStringConvertible, Sequence {
         tail.prev = head
     }
     
+    func removeAll() {
+        head = VirtualNode(in: self)
+        tail = VirtualNode(in: self)
+        head.next = tail
+        tail.prev = head
+        count = 0
+    }
+    
     func node(at index: Int) -> Node {
         var cur = head.next
         for _ in 0..<index {

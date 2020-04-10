@@ -7,13 +7,13 @@
 
 import Foundation
 
-class Type: CustomStringConvertible {
+class TypeIR: CustomStringConvertible {
     init() {}
     var description: String {"???"}
     var bit: Int {1}
     var space: Int {Int(ceil(Double(bit) / 8))}
     var withAlign: String {description + ", align \(space)"}
-    var getBase: Type {(self as! PointerT).baseType}
+    var getBase: TypeIR {(self as! PointerT).baseType}
     
     var pointer: PointerT {
         PointerT(base: self)
@@ -26,34 +26,34 @@ class Type: CustomStringConvertible {
     static let long = IntT(.long)
     static let string = PointerT(base: char)
     
-    static func == (lhs: Type, rhs: Type) -> Bool {
+    static func == (lhs: TypeIR, rhs: TypeIR) -> Bool {
         return lhs.description == rhs.description && lhs.description != "???"
     }
     
 }
 
-class LabelT: Type {
+class LabelT: TypeIR {
     override var description: String {"label"}
 }
 
-class FunctionT: Type {
-    var retType: Type
-    var parType: [Type]
+class FunctionT: TypeIR {
+    var retType: TypeIR
+    var parType: [TypeIR]
     override var description: String {"\(retType)"}
     
-    init(ret: Type, par: [Type]) {
+    init(ret: TypeIR, par: [TypeIR]) {
         self.retType = ret
         self.parType = par
         super.init()
     }
 }
 
-class VoidT: Type {
+class VoidT: TypeIR {
 //    static let void = IRVoid()
     override var description: String {"void"}
 }
 
-class IntT: Type {
+class IntT: TypeIR {
     enum BitWidth {
         case bool, char, int, long
     }
@@ -80,11 +80,11 @@ class IntT: Type {
     }
 }
 
-class PointerT: Type {
+class PointerT: TypeIR {
     
-    var baseType: Type
+    var baseType: TypeIR
     
-    init(base: Type) {
+    init(base: TypeIR) {
         self.baseType = base
         super.init()
     }
@@ -94,7 +94,7 @@ class PointerT: Type {
     
 }
 
-class ClassT: Type {
+class ClassT: TypeIR {
 //    let properties: [Type]
 //    override var bit: Int {
 //        var r = 0
@@ -113,11 +113,11 @@ class ClassT: Type {
     override var description: String {"%\(name)"}
 }
 
-class ArrayT: Type {
-    var elementType: Type
+class ArrayT: TypeIR {
+    var elementType: TypeIR
     var count: Int
     
-    init(type: Type, count: Int) {
+    init(type: TypeIR, count: Int) {
         self.elementType = type
         self.count = count
         super.init()

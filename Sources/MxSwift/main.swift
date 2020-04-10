@@ -3,37 +3,110 @@ import Foundation
 import Antlr4
 import Parser
 
+
 func compile(useFileStream: Bool) throws {
-    
-    let start = DispatchTime.now().uptimeNanoseconds
-    let timeLimit = Int(30 * 1e9), iterateLimit = 10
-    var iteration = 0
     
     print(welcomeText)
     
-    let builtin = ANTLRInputStream(
-"""
-void putchar(int x) {}
-
-int 很想听 () {}
-void 输出 (int n) {}
-
-void print(string str) {}
-void println(string str) {}
-void printInt(int n) {}
-void printlnInt(int n) {}
-string getString() {}
-int getInt() {}
-string toString(int i) {}
-class s {
-    int length() {}
-    string substring(int left, int right) {}
-    int parseInt() {}
-    int ord(int pos) {}
-};
-"""
-    )
+    let prog = try antlr(useFileStream: useFileStream)
     
+    if CommandLine.arguments.count > 1 && CommandLine.arguments[1] == "semantic" {
+        return
+    }
+    
+    let ir = IRBuilder()
+    ir.visit(node: prog)
+    DeadCleaner().work(on: ir.module)
+    
+    if error.message.count > 0 {
+        throw error
+    }
+    
+    IRPrinter(filename: "/Users/oscar/Documents/Classes/1920_Spring/Compiler/tmp/out0.ll").print(on: ir.module)
+    MemToReg().work(on: ir.module)
+        
+    optimize(v: ir.module, timeLimit: Int(3e9), iterationLimit: 5)
+    
+    RegToMem().work(on: ir.module)
+    IRPrinter(filename: "/Users/oscar/Documents/Classes/1920_Spring/Compiler/tmp/out1.ll").print(on: ir.module)
+    
+    optimize(v: ir.module, timeLimit: Int(3e9), iterationLimit: 5, noPhi: true)
+    
+    MemToReg().work(on: ir.module)
+    optimize(v: ir.module, timeLimit: Int(3e9), iterationLimit: 2, noCopy: true)
+    IRPrinter(filename: "/Users/oscar/Documents/Classes/1920_Spring/Compiler/tmp/out2.ll").print(on: ir.module)
+    
+    print("Compilation exited normally.")
+    
+    print("RV32", RV32.regs.count)
+}
+
+func optimize(v: Module, timeLimit: Int, iterationLimit: Int, noPhi: Bool = false, noCopy: Bool = false) {
+    let start = DispatchTime.now().uptimeNanoseconds
+    var lastString = ""
+    
+    for iteration in 1...iterationLimit {
+        print("iteration \(iteration):")
+        
+        SCCPropagation()    .work(on: v)
+        if !noCopy {
+            CSElimination()     .work(on: v)
+            GVNumberer()        .work(on: v)
+        }
+        DCElimination()     .work(on: v)
+        CFGSimplifier(noPhi).work(on: v)
+        
+        let aa = PTAnalysis()
+        aa.work(on: v)
+        if !noCopy {
+            LSElimination(aa)   .work(on: v)
+        }
+        DCElimination(aa)   .work(on: v)
+        LICHoister(aa)      .work(on: v)
+        
+        DCElimination()     .work(on: v)
+        CFGSimplifier(noPhi).work(on: v)
+        
+        if !noPhi && !noCopy {
+            Inliner().work(on: v)
+        }
+        
+        let curString = IRPrinter().print(on: v)
+        if lastString != curString {
+            lastString = curString
+        } else {
+            break
+        }
+        
+        if DispatchTime.now().uptimeNanoseconds - start > timeLimit {
+            break
+        }
+    }
+}
+
+func antlr(useFileStream: Bool) throws -> Program {
+    let builtin = ANTLRInputStream(
+        """
+    void putchar(int x) {}
+
+    int 很想听 () {}
+    void 输出 (int n) {}
+
+    void print(string str) {}
+    void println(string str) {}
+    void printInt(int n) {}
+    void printlnInt(int n) {}
+    string getString() {}
+    int getInt() {}
+    string toString(int i) {}
+    class s {
+        int length() {}
+        string substring(int left, int right) {}
+        int parseInt() {}
+        int ord(int pos) {}
+    };
+    """
+    )
     let builder = ASTBuilder(), listener = ErrorListener()
     
     preOperation = true
@@ -75,63 +148,7 @@ class s {
         throw error
     }
     
-    if CommandLine.arguments.count > 1 && CommandLine.arguments[1] == "semantic" {
-        return
-    }
-    
-    let ir = IRBuilder()
-    ir.visit(node: prog)
-    DeadCleaner().work(on: ir.module)
-    
-    if error.message.count > 0 {
-        throw error
-    }
-    
-    var lastString = ""
-    
-    IRPrinter(filename: "/Users/oscar/Documents/Classes/1920_Spring/Compiler/tmp/out0.ll").print(on: ir.module)
-    MemToReg().work(on: ir.module)
-    lastString = IRPrinter(filename: "/Users/oscar/Documents/Classes/1920_Spring/Compiler/tmp/out1.ll").print(on: ir.module)
-    
-    while DispatchTime.now().uptimeNanoseconds - start < timeLimit && iteration < iterateLimit {
-        
-        print("iteration \(iteration):")
-        iteration += 1
-        
-        SCCPropagation()    .work(on: ir.module)
-        CSElimination()     .work(on: ir.module)
-        GVNumberer()        .work(on: ir.module)
-
-        DCElimination()     .work(on: ir.module)
-        CFGSimplifier()     .work(on: ir.module)
-//        lastString = IRPrinter(filename: "/Users/oscar/Documents/Classes/1920_Spring/Compiler/tmp/out1.ll").print(on: ir.module)
-        let aa = PTAnalysis()
-        aa.work(on: ir.module)
-        
-        LSElimination(aa)   .work(on: ir.module)
-        DCElimination(aa)   .work(on: ir.module)
-        LICHoister(aa)      .work(on: ir.module)
-        
-        DCElimination()     .work(on: ir.module)
-        CFGSimplifier()     .work(on: ir.module)
-        
-        Inliner()           .work(on: ir.module)
-        
-        let curString = IRPrinter().print(on: ir.module)
-        if lastString != curString {
-            lastString = curString
-        } else {
-            break
-        }
-//        break
-    }
-
-    IRPrinter(filename: "/Users/oscar/Documents/Classes/1920_Spring/Compiler/tmp/out1.ll").print(on: ir.module)
-    RegToMem().work(on: ir.module)
-    
-    IRPrinter(filename: "/Users/oscar/Documents/Classes/1920_Spring/Compiler/tmp/out2.ll").print(on: ir.module)
-    
-    print("Compilation exited normally in \((DispatchTime.now().uptimeNanoseconds - start) / 1000000) ms with \(iteration) iteration(s).")
+    return prog
 }
 
 do {

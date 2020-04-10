@@ -19,15 +19,15 @@ class LICHoister: FunctionPass {
     }
     
     class Loop {
-        var header: BasicBlock
-        var blocks = Set<BasicBlock>()
+        var header: BlockIR
+        var blocks = Set<BlockIR>()
         
-        init (h: BasicBlock) {
+        init (h: BlockIR) {
             self.header = h
         }
     }
     
-    func hoist(ins: [BasicBlock: [IRInst]], in loop: Loop) {
+    func hoist(ins: [BlockIR: [InstIR]], in loop: Loop) {
         let preds = loop.header.preds.filter({!loop.blocks.contains($0)})
         if preds.count == 1 {
             print("hoist", ins, loop.header, preds)
@@ -52,13 +52,13 @@ class LICHoister: FunctionPass {
         }
     }
     
-    override func visit(v: Function) {
-        print("=", v.name)
+    override func visit(v: IRFunction) {
+//        print("=", v.name)
         
         tree = DomTree(function: v)
         v.calPreds()
         
-        var loops = [Loop](), graph = [BasicBlock: Set<BasicBlock>]()
+        var loops = [Loop]()
         for b in v.blocks {
             for pred in b.preds {
                 if tree.checkBF(b, dominates: pred) {
@@ -82,19 +82,19 @@ class LICHoister: FunctionPass {
         loops.sort(by: {$0.blocks.count > $1.blocks.count})
         
         for loop in loops {
-            print("--- loop", loop.blocks)
-            var invariable = Set<IRInst>()
+//            print("--- loop", loop.blocks)
+            var invariable = Set<InstIR>()
             
-            func check(_ inst: IRInst) -> Bool {
+            func check(_ inst: InstIR) -> Bool {
                 if !inst.isCritical && !(inst is PhiInst) || inst is LoadInst {
                     let ret = inst.operands.filter({ (op) in
-                        if let i = op as? IRInst {
+                        if let i = op as? InstIR {
                             return loop.blocks.contains(i.inBlock) && !invariable.contains(i)
                         } else {
                             return false
                         }
                     }).isEmpty
-                    print("check", inst.toPrint, ret)
+//                    print("check", inst.toPrint, ret)
                     if inst is LoadInst {
                         for blk in loop.blocks {
                             for i in blk.insts {
@@ -104,7 +104,7 @@ class LICHoister: FunctionPass {
                                         return false
                                     }
                                 } else if i is StoreInst && aa.mayAlias(p: inst[0], q: i[1]) {
-                                    print("check load", inst, i.toPrint)
+//                                    print("check load", inst, i.toPrint)
                                     return false
                                 }
                             }
@@ -117,7 +117,7 @@ class LICHoister: FunctionPass {
             }
             
             for blk in loop.blocks {
-                print(" ", blk.name, blk.insts.count)
+//                print(" ", blk.name, blk.insts.count)
                 for inst in blk.insts where check(inst) {
                     invariable.insert(inst)
                 }
@@ -126,7 +126,7 @@ class LICHoister: FunctionPass {
             var workList = invariable
             while let cur = workList.popFirst() {
                 for u in cur.users {
-                    if let inst = u.user as? IRInst, check(inst) {
+                    if let inst = u.user as? InstIR, check(inst) {
                         if !invariable.contains(inst) {
                             workList.insert(inst)
                             invariable.insert(inst)
@@ -135,7 +135,7 @@ class LICHoister: FunctionPass {
                 }
             }
             
-            var toHoist = [BasicBlock: [IRInst]]()
+            var toHoist = [BlockIR: [InstIR]]()
             for inv in invariable {
                 if !inv.isCritical {
                     if toHoist[inv.inBlock] == nil {
@@ -159,7 +159,7 @@ class LICHoister: FunctionPass {
             }
             
             if !toHoist.isEmpty {
-                print("LOOP", loop.header, loop.blocks)
+//                print("LOOP", loop.header, loop.blocks)
                 hoist(ins: toHoist, in: loop)
             }
             

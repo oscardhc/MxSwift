@@ -8,9 +8,11 @@
 
 /* Begin PBXBuildFile section */
 		551C3D19241A7A36009341BF /* PTAnalysis.swift in Sources */ = {isa = PBXBuildFile; fileRef = 551C3D18241A7A36009341BF /* PTAnalysis.swift */; };
-		5528373D2438DB72001D69C0 /* RVInst.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5528373C2438DB72001D69C0 /* RVInst.swift */; };
+		5528373D2438DB72001D69C0 /* InstRV.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5528373C2438DB72001D69C0 /* InstRV.swift */; };
 		5528373F2438DCC6001D69C0 /* Register.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5528373E2438DCC6001D69C0 /* Register.swift */; };
 		552B2B12243DC37200BF62E1 /* RegToMem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 552B2B11243DC37200BF62E1 /* RegToMem.swift */; };
+		552B2B14243E14DD00BF62E1 /* UseRebuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 552B2B13243E14DD00BF62E1 /* UseRebuilder.swift */; };
+		552B2B16243E2A0000BF62E1 /* InstSelect.swift in Sources */ = {isa = PBXBuildFile; fileRef = 552B2B15243E2A0000BF62E1 /* InstSelect.swift */; };
 		55449BCC242D05B4001D9332 /* Inliner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55449BCB242D05B4001D9332 /* Inliner.swift */; };
 		555BF87223FFABCB00614C1C /* CFGSimplifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 555BF87123FFABCB00614C1C /* CFGSimplifier.swift */; };
 		555C57ED23E6B3BA00D9192A /* SemanticChecker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 555C57EC23E6B3BA00D9192A /* SemanticChecker.swift */; };
@@ -24,11 +26,11 @@
 		55ABA11C23FD17F90030D790 /* DCElimination.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55ABA11B23FD17F90030D790 /* DCElimination.swift */; };
 		55D1C0CA23EA962C0057E80A /* Value.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55D1C0C923EA962C0057E80A /* Value.swift */; };
 		55D1C0CC23EAE30E0057E80A /* IRBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55D1C0CB23EAE30E0057E80A /* IRBuilder.swift */; };
-		55D1C0CE23EAE4B20057E80A /* Type.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55D1C0CD23EAE4B20057E80A /* Type.swift */; };
-		55D1C0D023EAE5830057E80A /* IRInst.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55D1C0CF23EAE5830057E80A /* IRInst.swift */; };
+		55D1C0CE23EAE4B20057E80A /* TypeIR.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55D1C0CD23EAE4B20057E80A /* TypeIR.swift */; };
+		55D1C0D023EAE5830057E80A /* InstIR.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55D1C0CF23EAE5830057E80A /* InstIR.swift */; };
 		55D1C0D623EB17700057E80A /* List.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55D1C0D523EB17700057E80A /* List.swift */; };
 		55D1C0D823EB2F1C0057E80A /* IRVisitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55D1C0D723EB2F1C0057E80A /* IRVisitor.swift */; };
-		55D1C0DA23EBD42A0057E80A /* Const.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55D1C0D923EBD42A0057E80A /* Const.swift */; };
+		55D1C0DA23EBD42A0057E80A /* ConstIR.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55D1C0D923EBD42A0057E80A /* ConstIR.swift */; };
 		55D1C0DC23EBDF070057E80A /* Module.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55D1C0DB23EBDF070057E80A /* Module.swift */; };
 		55EEB69423E41ABC00E9FE2C /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55EEB69323E41ABC00E9FE2C /* Utils.swift */; };
 		55EEB69723E4225D00E9FE2C /* MxsBaseVisitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55EEB69523E4225D00E9FE2C /* MxsBaseVisitor.swift */; };
@@ -233,9 +235,11 @@
 
 /* Begin PBXFileReference section */
 		551C3D18241A7A36009341BF /* PTAnalysis.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PTAnalysis.swift; sourceTree = "<group>"; };
-		5528373C2438DB72001D69C0 /* RVInst.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RVInst.swift; sourceTree = "<group>"; };
+		5528373C2438DB72001D69C0 /* InstRV.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InstRV.swift; sourceTree = "<group>"; };
 		5528373E2438DCC6001D69C0 /* Register.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Register.swift; sourceTree = "<group>"; };
 		552B2B11243DC37200BF62E1 /* RegToMem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RegToMem.swift; sourceTree = "<group>"; };
+		552B2B13243E14DD00BF62E1 /* UseRebuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UseRebuilder.swift; sourceTree = "<group>"; };
+		552B2B15243E2A0000BF62E1 /* InstSelect.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InstSelect.swift; sourceTree = "<group>"; };
 		55449BCB242D05B4001D9332 /* Inliner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Inliner.swift; sourceTree = "<group>"; };
 		555BF87123FFABCB00614C1C /* CFGSimplifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CFGSimplifier.swift; sourceTree = "<group>"; };
 		555C57EC23E6B3BA00D9192A /* SemanticChecker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SemanticChecker.swift; sourceTree = "<group>"; };
@@ -250,11 +254,11 @@
 		55ACD0CE23E309EC0087376F /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		55D1C0C923EA962C0057E80A /* Value.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Value.swift; sourceTree = "<group>"; };
 		55D1C0CB23EAE30E0057E80A /* IRBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IRBuilder.swift; sourceTree = "<group>"; };
-		55D1C0CD23EAE4B20057E80A /* Type.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Type.swift; sourceTree = "<group>"; };
-		55D1C0CF23EAE5830057E80A /* IRInst.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IRInst.swift; sourceTree = "<group>"; };
+		55D1C0CD23EAE4B20057E80A /* TypeIR.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TypeIR.swift; sourceTree = "<group>"; };
+		55D1C0CF23EAE5830057E80A /* InstIR.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InstIR.swift; sourceTree = "<group>"; };
 		55D1C0D523EB17700057E80A /* List.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = List.swift; sourceTree = "<group>"; };
 		55D1C0D723EB2F1C0057E80A /* IRVisitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IRVisitor.swift; sourceTree = "<group>"; };
-		55D1C0D923EBD42A0057E80A /* Const.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Const.swift; sourceTree = "<group>"; };
+		55D1C0D923EBD42A0057E80A /* ConstIR.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConstIR.swift; sourceTree = "<group>"; };
 		55D1C0DB23EBDF070057E80A /* Module.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Module.swift; sourceTree = "<group>"; };
 		55EEB69323E41ABC00E9FE2C /* Utils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utils.swift; sourceTree = "<group>"; };
 		55EEB69523E4225D00E9FE2C /* MxsBaseVisitor.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MxsBaseVisitor.swift; sourceTree = "<group>"; };
@@ -470,8 +474,9 @@
 		5528373B2438DA90001D69C0 /* Backend */ = {
 			isa = PBXGroup;
 			children = (
-				5528373C2438DB72001D69C0 /* RVInst.swift */,
+				5528373C2438DB72001D69C0 /* InstRV.swift */,
 				5528373E2438DCC6001D69C0 /* Register.swift */,
+				552B2B15243E2A0000BF62E1 /* InstSelect.swift */,
 			);
 			path = Backend;
 			sourceTree = "<group>";
@@ -484,6 +489,7 @@
 				55ABA11523F90C3C0030D790 /* MemToReg.swift */,
 				552B2B11243DC37200BF62E1 /* RegToMem.swift */,
 				55ABA11923FC1CBB0030D790 /* DeadCleaner.swift */,
+				552B2B13243E14DD00BF62E1 /* UseRebuilder.swift */,
 				55ABA11723FA624C0030D790 /* DomTree.swift */,
 				55ABA11B23FD17F90030D790 /* DCElimination.swift */,
 				55F78B1F2408082A00CE3771 /* LICHoister.swift */,
@@ -500,9 +506,9 @@
 			children = (
 				55D1C0DB23EBDF070057E80A /* Module.swift */,
 				55D1C0C923EA962C0057E80A /* Value.swift */,
-				55D1C0CF23EAE5830057E80A /* IRInst.swift */,
-				55D1C0D923EBD42A0057E80A /* Const.swift */,
-				55D1C0CD23EAE4B20057E80A /* Type.swift */,
+				55D1C0CF23EAE5830057E80A /* InstIR.swift */,
+				55D1C0D923EBD42A0057E80A /* ConstIR.swift */,
+				55D1C0CD23EAE4B20057E80A /* TypeIR.swift */,
 				55D1C0CB23EAE30E0057E80A /* IRBuilder.swift */,
 				55D1C0D723EB2F1C0057E80A /* IRVisitor.swift */,
 			);
@@ -1099,7 +1105,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 0;
 			files = (
-				55D1C0CE23EAE4B20057E80A /* Type.swift in Sources */,
+				55D1C0CE23EAE4B20057E80A /* TypeIR.swift in Sources */,
+				552B2B16243E2A0000BF62E1 /* InstSelect.swift in Sources */,
 				OBJ_359 /* CompilationError.swift in Sources */,
 				555C57EF23E7314900D9192A /* ErrorListener.swift in Sources */,
 				55EEB69423E41ABC00E9FE2C /* Utils.swift in Sources */,
@@ -1108,13 +1115,13 @@
 				557E873B2404B51E007074A5 /* SCCPropagation.swift in Sources */,
 				55EEB69A23E4311B00E9FE2C /* ASTNode.swift in Sources */,
 				OBJ_362 /* Scope.swift in Sources */,
-				55D1C0D023EAE5830057E80A /* IRInst.swift in Sources */,
+				55D1C0D023EAE5830057E80A /* InstIR.swift in Sources */,
 				55EEB69E23E55D5500E9FE2C /* ASTPrinter.swift in Sources */,
 				55ABA11423F90A740030D790 /* Pass.swift in Sources */,
 				5528373F2438DCC6001D69C0 /* Register.swift in Sources */,
 				552B2B12243DC37200BF62E1 /* RegToMem.swift in Sources */,
 				OBJ_363 /* Symbol.swift in Sources */,
-				5528373D2438DB72001D69C0 /* RVInst.swift in Sources */,
+				5528373D2438DB72001D69C0 /* InstRV.swift in Sources */,
 				55D1C0DC23EBDF070057E80A /* Module.swift in Sources */,
 				55D1C0D823EB2F1C0057E80A /* IRVisitor.swift in Sources */,
 				55ABA11A23FC1CBB0030D790 /* DeadCleaner.swift in Sources */,
@@ -1122,13 +1129,14 @@
 				55D1C0CC23EAE30E0057E80A /* IRBuilder.swift in Sources */,
 				55EEB6A023E562A700E9FE2C /* ASTVisitor.swift in Sources */,
 				55EEB69C23E4919D00E9FE2C /* ASTBuilder.swift in Sources */,
+				552B2B14243E14DD00BF62E1 /* UseRebuilder.swift in Sources */,
 				OBJ_365 /* main.swift in Sources */,
 				557E873D24064C07007074A5 /* CSElimination.swift in Sources */,
 				55449BCC242D05B4001D9332 /* Inliner.swift in Sources */,
 				55F78B22240B6FF000CE3771 /* Counter.swift in Sources */,
 				551C3D19241A7A36009341BF /* PTAnalysis.swift in Sources */,
 				555C57ED23E6B3BA00D9192A /* SemanticChecker.swift in Sources */,
-				55D1C0DA23EBD42A0057E80A /* Const.swift in Sources */,
+				55D1C0DA23EBD42A0057E80A /* ConstIR.swift in Sources */,
 				55D1C0CA23EA962C0057E80A /* Value.swift in Sources */,
 				55ABA11623F90C3D0030D790 /* MemToReg.swift in Sources */,
 				55ABA11C23FD17F90030D790 /* DCElimination.swift in Sources */,

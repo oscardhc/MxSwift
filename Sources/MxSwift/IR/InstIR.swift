@@ -7,7 +7,7 @@
 
 import Foundation
 
-class IRInst: User {
+class InstIR: User {
     
     enum OP {
         case add, sub, mul, sdiv, srem, shl, ashr, and, or, xor, icmp, ret, alloca, call, load, store, getelementptr, br, bitcast, sext, phi
@@ -16,9 +16,9 @@ class IRInst: User {
         ]
     }
     let operation: OP
-    var inBlock: BasicBlock
+    var inBlock: BlockIR
     
-    private var nodeInBlock: List<IRInst>.Node? = nil
+    private var nodeInBlock: List<InstIR>.Node? = nil
     
     func disconnect(delUsee: Bool, delUser: Bool) {
         nodeInBlock?.remove()
@@ -41,13 +41,13 @@ class IRInst: User {
         disconnect(delUsee: true, delUser: false)
     }
     
-    func changeAppend(to b: BasicBlock) {
+    func changeAppend(to b: BlockIR) {
         nodeInBlock?.remove()
         nodeInBlock = b.added(self)
         inBlock = b
     }
     
-    init(name: String, type: Type, operation: OP, in block: BasicBlock, at index: Int = -1) {
+    init(name: String, type: TypeIR, operation: OP, in block: BlockIR, at index: Int = -1) {
         self.operation = operation
         self.inBlock = block
         super.init(name: name, type: type)
@@ -66,10 +66,10 @@ class IRInst: User {
         nodeInBlock!.list.getNodeIndexBF(from: nodeInBlock!)
     }
     
-    var nextInst: IRInst? {
+    var nextInst: InstIR? {
         nodeInBlock?.next?.next == nil ? nil : (nodeInBlock?.next?.value)!
     }
-    var prevInst: IRInst? {
+    var prevInst: InstIR? {
         nodeInBlock?.prev?.prev == nil ? nil : (nodeInBlock?.prev?.value)!
     }
     
@@ -79,8 +79,8 @@ class IRInst: User {
     
 }
 
-class PhiInst: IRInst {
-    init (name: String = "", type: Type, in block: BasicBlock, at index: Int = -1) {
+class PhiInst: InstIR {
+    init (name: String = "", type: TypeIR, in block: BlockIR, at index: Int = -1) {
         super.init(name: name, type: type, operation: .phi, in: block, at: index)
     }
     override var toPrint: String {
@@ -97,7 +97,7 @@ class PhiInst: IRInst {
     override func accept(visitor: IRVisitor) {visitor.visit(v: self)}
     override func propogate() {
         ccpInfo = CCPInfo()
-        for i in 0..<operands.count / 2 where (operands[i * 2 + 1] as! BasicBlock).reachable {
+        for i in 0..<operands.count / 2 where (operands[i * 2 + 1] as! BlockIR).reachable {
             ccpInfo = ccpInfo.add(rhs: operands[i * 2].ccpInfo) {
                 $0.int! == $1.int! ? $0 : nil
             }
@@ -105,8 +105,8 @@ class PhiInst: IRInst {
     }
 }
 
-class SExtInst: IRInst {
-    init (name: String = "", val: Value, toType: Type, in block: BasicBlock) {
+class SExtInst: InstIR {
+    init (name: String = "", val: Value, toType: TypeIR, in block: BlockIR) {
         super.init(name: name, type: toType, operation: .sext, in: block)
         added(operand: val)
     }
@@ -117,8 +117,8 @@ class SExtInst: IRInst {
     }
 }
 
-class CastInst: IRInst {
-    init (name: String = "", val: Value, toType: Type, in block: BasicBlock) {
+class CastInst: InstIR {
+    init (name: String = "", val: Value, toType: TypeIR, in block: BlockIR) {
         super.init(name: name, type: toType, operation: .bitcast, in: block)
         added(operand: val)
     }
@@ -129,13 +129,13 @@ class CastInst: IRInst {
     }
 }
 
-class BrInst: IRInst {
-    @discardableResult init(name: String = "", des: Value, in block: BasicBlock) {
-        super.init(name: name, type: Type(), operation: .br, in: block)
+class BrInst: InstIR {
+    @discardableResult init(name: String = "", des: Value, in block: BlockIR) {
+        super.init(name: name, type: TypeIR(), operation: .br, in: block)
         added(operand: des)
     }
-    @discardableResult init(name: String = "", condition: Value, accept: Value, reject: Value, in block: BasicBlock) {
-        super.init(name: name, type: Type(), operation: .br, in: block)
+    @discardableResult init(name: String = "", condition: Value, accept: Value, reject: Value, in block: BlockIR) {
+        super.init(name: name, type: TypeIR(), operation: .br, in: block)
         added(operand: condition)
         added(operand: accept)
         added(operand: reject)
@@ -145,9 +145,9 @@ class BrInst: IRInst {
     override func accept(visitor: IRVisitor) {visitor.visit(v: self)}
 }
 
-class GEPInst: IRInst {
+class GEPInst: InstIR {
     let needZero: Bool
-    init(name: String = "", type: Type, base: Value, needZero: Bool, val: Value, in block: BasicBlock, at: Int = -1, doNotLoad: Bool = false) {
+    init(name: String = "", type: TypeIR, base: Value, needZero: Bool, val: Value, in block: BlockIR, at: Int = -1, doNotLoad: Bool = false) {
         self.needZero = needZero
         super.init(name: name, type: type, operation: .getelementptr, in: block, at: at)
         added(operand: base)
@@ -159,8 +159,8 @@ class GEPInst: IRInst {
     override func accept(visitor: IRVisitor) {visitor.visit(v: self)}
 }
 
-class ReturnInst: IRInst {
-    @discardableResult init(name: String = "", val: Value, in block: BasicBlock) {
+class ReturnInst: InstIR {
+    @discardableResult init(name: String = "", val: Value, in block: BlockIR) {
         super.init(name: name, type: VoidT(), operation: .ret, in: block)
         added(operand: val)
     }
@@ -169,9 +169,9 @@ class ReturnInst: IRInst {
     override func accept(visitor: IRVisitor) {visitor.visit(v: self)}
 }
 
-class LoadInst: IRInst {
-    init(name: String = "", alloc: Value, in block: BasicBlock) {
-        super.init(name: name, type: (alloc.type as! PointerT).baseType, operation: .load, in: block)
+class LoadInst: InstIR {
+    init(name: String = "", alloc: Value, in block: BlockIR, at: Int = -1) {
+        super.init(name: name, type: (alloc.type as! PointerT).baseType, operation: .load, in: block, at: at)
         added(operand: alloc)
     }
     override var toPrint: String {"\(name) = \(operation) \(type), \(operands[0]), align \((operands[0].type as! PointerT).baseType.space)"}
@@ -181,9 +181,9 @@ class LoadInst: IRInst {
     }
 }
 
-class StoreInst: IRInst {
-    @discardableResult init(name: String = "", alloc: Value, val: Value, in block: BasicBlock, at: Int = -1) {
-        super.init(name: name, type: Type(), operation: .store, in: block, at: at)
+class StoreInst: InstIR {
+    @discardableResult init(name: String = "", alloc: Value, val: Value, in block: BlockIR, at: Int = -1) {
+        super.init(name: name, type: TypeIR(), operation: .store, in: block, at: at)
         added(operand: val)
         added(operand: alloc)
     }
@@ -192,9 +192,9 @@ class StoreInst: IRInst {
     override func accept(visitor: IRVisitor) {visitor.visit(v: self)}
 }
 
-class CallInst: IRInst {
-    var function: Function
-    init(name: String = "", function: Function, arguments: [Value] = [], in block: BasicBlock) {
+class CallInst: InstIR {
+    var function: IRFunction
+    init(name: String = "", function: IRFunction, arguments: [Value] = [], in block: BlockIR) {
         self.function = function
         super.init(name: name, type: function.type, operation: .call, in: block)
         arguments.forEach {self.added(operand: $0)}
@@ -211,8 +211,8 @@ class CallInst: IRInst {
     }
 }
 
-class AllocaInst: IRInst {
-    init(name: String = "", forType: Type, in block: BasicBlock, at: Int = -1) {
+class AllocaInst: InstIR {
+    init(name: String = "", forType: TypeIR, in block: BlockIR, at: Int = -1) {
         super.init(name: name, type: forType.pointer, operation: .alloca, in: block, at: at)
     }
     override var toPrint: String {"\(name) = \(operation) \((type as! PointerT).baseType.withAlign)"}
@@ -222,8 +222,8 @@ class AllocaInst: IRInst {
     }
 }
 
-class BinaryInst: IRInst {
-    init(name: String = "", type: Type, operation: IRInst.OP, lhs: Value, rhs: Value, in block: BasicBlock) {
+class BinaryInst: InstIR {
+    init(name: String = "", type: TypeIR, operation: InstIR.OP, lhs: Value, rhs: Value, in block: BlockIR) {
         super.init(name: name, type: type, operation: operation, in: block)
         added(operand: lhs)
         added(operand: rhs)
@@ -247,7 +247,7 @@ class CompareInst: BinaryInst {
     }
     let cmp: CMP
     
-    init(name: String = "", lhs: Value, rhs: Value, cmp: CMP, in block: BasicBlock) {
+    init(name: String = "", lhs: Value, rhs: Value, cmp: CMP, in block: BlockIR) {
         self.cmp = cmp
         super.init(name: name, type: IntT.bool, operation: .icmp, lhs: lhs, rhs: rhs, in: block)
     }

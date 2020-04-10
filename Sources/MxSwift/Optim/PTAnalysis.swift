@@ -19,7 +19,7 @@ class PTAnalysis: ModulePass {
     var loads   = [Value: Set<Value>]()
     var stores  = [Value: Set<Value>]()
     var workList = Set<Value>()
-    var callers = [Function: Set<Value>]()
+    var callers = [IRFunction: Set<Value>]()
     
     func mayAlias(p: Value, q: Value) -> Bool {
         let pp = pts[p]!
@@ -86,7 +86,7 @@ class PTAnalysis: ModulePass {
                     case is LoadInst:
                         loads[i[0]]!.insert(i)
                     case is StoreInst:
-                        if !(i[0] is Const) {
+                        if !(i[0] is ConstIR) {
                             stores[i[1]]!.insert(i[0])
                         }
                     case is GEPInst, is CastInst:
@@ -94,7 +94,7 @@ class PTAnalysis: ModulePass {
                         graph[i[0]]!.insert(i)
                     case is PhiInst:
 //                        print("PHI", i.operands.joined())
-                        for j in 0..<i.operands.count/2 where !(i[j*2] is Const) {
+                        for j in 0..<i.operands.count/2 where !(i[j*2] is ConstIR) {
                             graph[i[j*2]]!.insert(i)
                         }
                     case is AllocaInst:
@@ -105,13 +105,13 @@ class PTAnalysis: ModulePass {
                                 pts[i]!.insert(getNewAddr())
                             }
                         } else {
-                            for (formal, actual) in zip(c.function.operands, c.operands) where !(actual is Const) {
+                            for (formal, actual) in zip(c.function.operands, c.operands) where !(actual is ConstIR) {
                                 print("CALL  ", actual, formal)
                                 graph[actual]!.insert(formal)
                             }
                         }
                     case is ReturnInst:
-                        if !(i[0].type is VoidT) {
+                        if !(i[0] is ConstIR) {
                             for call in callers[i.inBlock.inFunction]! {
                                 graph[i[0]]!.insert(call)
                                 print("RETURN", i.inBlock.inFunction, i[0], call)
@@ -147,11 +147,6 @@ class PTAnalysis: ModulePass {
                 if flag {
                     workList.insert(q)
                 }
-//                let prevCount = pts[q]!.count
-//                pts[q]!.formUnion(pts[cur]!)
-//                if pts[q]!.count > prevCount {
-//                    workList.insert(q)
-//                }
             }
         }
         
@@ -163,7 +158,7 @@ class LSElimination: FunctionPass {
     
     let aa: PTAnalysis
     var domTree: DomTree!
-    var reachable = [IRInst: Set<IRInst>]()
+    var reachable = [InstIR: Set<InstIR>]()
     
     private var instRemoved = 0
     override var resultString: String {super.resultString + "\(instRemoved) inst(s) removed."}
@@ -172,8 +167,8 @@ class LSElimination: FunctionPass {
         self.aa = aa
     }
     
-    func getAllDominated(from: IRInst, where check: (IRInst) -> Bool) -> [IRInst] {
-        var ret = [IRInst]()
+    func getAllDominated(from: InstIR, where check: (InstIR) -> Bool) -> [InstIR] {
+        var ret = [InstIR]()
         for i in from.inBlock.insts where check(i) && i.blockIndexBF > from.blockIndexBF {
             ret.append(i)
         }
@@ -187,7 +182,7 @@ class LSElimination: FunctionPass {
         return ret
     }
     
-    override func visit(v: Function) {
+    override func visit(v: IRFunction) {
         
         domTree = DomTree(function: v)
         
@@ -195,7 +190,7 @@ class LSElimination: FunctionPass {
             for i in n.block!.insts where i is LoadInst && i.operands.count > 0 {
                 let stores = getAllDominated(from: i) {$0 is StoreInst}
                 let loads = getAllDominated(from: i) {$0 is LoadInst && $0[0] == i[0]}
-                var unavai = Set<IRInst>(), workList = [IRInst]()
+                var unavai = Set<InstIR>(), workList = [InstIR]()
                 for s in stores where aa.mayAlias(p: s[1], q: i[0]) {
                     unavai.insert(s.nextInst!)
                     workList.append(s.nextInst!)
@@ -220,7 +215,7 @@ class LSElimination: FunctionPass {
                         break
                     case is BrInst:
                         for o in v.operands {
-                            if let b = o as? BasicBlock, domTree.checkBF(i.inBlock, dominates: b), !unavai.contains(b.insts.first!) {
+                            if let b = o as? BlockIR, domTree.checkBF(i.inBlock, dominates: b), !unavai.contains(b.insts.first!) {
                                 unavai.insert(b.insts.first!)
                                 workList.append(b.insts.first!)
                             }
@@ -232,11 +227,7 @@ class LSElimination: FunctionPass {
                         }
                     }
                 }
-//                if v.name != "@Array_Node_push_back" {
-//                    continue
-//                }
                 for l in loads where !unavai.contains(l) {
-//                    print(i.toPrint, dangerous)
                     print(">", v.name, l.toPrint)
                     l.replaced(by: i)
                     instRemoved += 1

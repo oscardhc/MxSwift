@@ -21,7 +21,7 @@ class Value: HashableObject, CustomStringConvertible, Hashable {
     
     public private(set) var users = List<Use>()
     
-    var type: Type
+    var type: TypeIR
     var prefix: String {return "%"}
     
     var originName: String
@@ -36,7 +36,7 @@ class Value: HashableObject, CustomStringConvertible, Hashable {
     var description: String {return "\(type) \(name)"}
     var toPrint: String {return "??????????????"}
     
-    init(name: String = "", type: Type) {
+    init(name: String = "", type: TypeIR) {
         if name.unicodeScalars.filter({$0.isASCII}).count == name.count {
             self.originName = name
         } else {
@@ -52,7 +52,7 @@ class Value: HashableObject, CustomStringConvertible, Hashable {
     var isAddress: Bool {
         !forceDoNotLoad && (self is AllocaInst || self is GEPInst || self is GlobalVariable)
     }
-    func loadIfAddress(block: BasicBlock) -> Value {
+    func loadIfAddress(block: BlockIR) -> Value {
         self.isAddress ? LoadInst(name: "", alloc: self, in: block) : self
     }
     
@@ -166,31 +166,31 @@ class User: Value {
     
 }
 
-class BasicBlock: Value {
+class BlockIR: Value {
     
-    public private(set) var insts = List<IRInst>()
+    public private(set) var insts = List<InstIR>()
     
-    var inFunction: Function
+    var inFunction: IRFunction
     //    var terminated = false
     
-    private var nodeInFunction: List<BasicBlock>.Node?
+    private var nodeInFunction: List<BlockIR>.Node?
     
-    init(name: String = "", curfunc: Function) {
+    init(name: String = "", curfunc: IRFunction) {
         self.inFunction = curfunc
         super.init(name: "b.", type: LabelT())
         nodeInFunction = inFunction.append(self)
     }
 //    override var name: String {super.name + "|\(hashValue)"}
     
-    func added(_ i: IRInst) -> List<IRInst>.Node {
+    func added(_ i: InstIR) -> List<InstIR>.Node {
         return insts.append(i)
     }
-    func inserted(_ i: IRInst, at idx: Int) -> List<IRInst>.Node {
+    func inserted(_ i: InstIR, at idx: Int) -> List<InstIR>.Node {
         return insts.insert(i, at: idx)
     }
     
     //    will delete all instructions and their uses
-    func remove(dealWithInsts: ((IRInst) -> Void) = {_ in }) {
+    func remove(dealWithInsts: ((InstIR) -> Void) = {_ in }) {
         print("remove BB!!!")
         succs.forEach { (s) in
             s.preds.removeAll(where: {$0 === self})
@@ -203,23 +203,23 @@ class BasicBlock: Value {
     }
     
     //    *************** for domtree use ****************
-    var succs: [BasicBlock] {
+    var succs: [BlockIR] {
         if insts.last == nil {
             return []
         }
         switch insts.last! {
         case let v as BrInst:
             if v.operands.count > 1 {
-                return [v[1] as! BasicBlock, v[2] as! BasicBlock]
+                return [v[1] as! BlockIR, v[2] as! BlockIR]
             } else {
-                return [v[0] as! BasicBlock]
+                return [v[0] as! BlockIR]
             }
         default:
             return []
         }
     }
     
-    var preds = [BasicBlock]()
+    var preds = [BlockIR]()
     
     //    ************** for SCCP ***************
     var reachable: Bool = false
@@ -228,7 +228,7 @@ class BasicBlock: Value {
     
 //    *************** for VN **************
     struct Edge: Hashable {
-        var from, to: BasicBlock
+        var from, to: BlockIR
 //        var 
     }
     

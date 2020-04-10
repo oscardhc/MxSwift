@@ -13,7 +13,7 @@ class DeadCleaner: FunctionPass {
         visit(v: v)
     }
     
-    override func visit(v: Function) {
+    override func visit(v: IRFunction) {
         
         for blk in v.blocks {
             var term = false
@@ -26,10 +26,11 @@ class DeadCleaner: FunctionPass {
             }
         }
         
-        var live = Set<BasicBlock>([v.blocks.first!]), workList = [v.blocks.first!]
+        var live = Set<BlockIR>([v.blocks.first!]), workList = [v.blocks.first!]
         
 //        print("_____", v.name, "_____")
         while let b = workList.popLast() {
+//            print(">>", v.name, b.name)
             for s in b.succs where !live.contains(s) {
 //                print(b.name, "->", s.name)
                 live.insert(s)

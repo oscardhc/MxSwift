@@ -9,19 +9,19 @@ import Foundation
 
 class Inliner: ModulePass {
     
-    var inlinable = [Function]()
+    var inlinable = [IRFunction]()
     var valueMap = [Value: Value]()
     
     func findValue(_ v: Value) -> Value {
         if let ret = valueMap[v] {
             return ret
         } else {
-            assert(v is Const)
+            assert(v is ConstIR)
             return v
         }
     }
     
-    private func copy(_ inst: IRInst, in block: BasicBlock, returnBlock: BasicBlock) -> IRInst {
+    private func copy(_ inst: InstIR, in block: BlockIR, returnBlock: BlockIR) -> InstIR {
         
         func op(_ i: Int) -> Value {
             findValue(inst[i])
@@ -54,15 +54,15 @@ class Inliner: ModulePass {
         case is BinaryInst:     return BinaryInst   (type: inst.type, operation: inst.operation, lhs: op(0), rhs: op(1), in: block)
         default:
             assert(false)
-            return IRInst(name: "", type: .int, operation: .add, in: block)
+            return InstIR(name: "", type: .int, operation: .add, in: block)
         }
     }
     
-    private func inline(f: Function, in cur: Function, for call: CallInst) {
+    private func inline(f: IRFunction, in cur: IRFunction, for call: CallInst) {
         valueMap.removeAll()
         let domTree = DomTree(function: f)
         
-        let retBlock = BasicBlock(curfunc: cur)
+        let retBlock = BlockIR(curfunc: cur)
         
         _ = PhiInst(type: f.type, in: retBlock)
         
@@ -70,12 +70,12 @@ class Inliner: ModulePass {
             valueMap[form] = real
         }
         for blk in f.blocks {
-            valueMap[blk] = BasicBlock(curfunc: cur)
+            valueMap[blk] = BlockIR(curfunc: cur)
         }
         
         func dfs(cur: DomTree.Node) {
             for i in cur.block!.insts {
-                let newInst = copy(i, in: findValue(cur.block!) as! BasicBlock , returnBlock: retBlock)
+                let newInst = copy(i, in: findValue(cur.block!) as! BlockIR , returnBlock: retBlock)
                 valueMap[i] = newInst
             }
             for son in cur.domSons {
@@ -111,7 +111,7 @@ class Inliner: ModulePass {
     
     override func visit(v: Module) {
         
-        var calling = [Function: Int](), called = [Function: Int]()
+        var calling = [IRFunction: Int](), called = [IRFunction: Int]()
         for f in v.functions {
             called[f] = 0
             calling[f] = 0

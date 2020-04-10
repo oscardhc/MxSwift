@@ -12,7 +12,7 @@ class SCCPropagation: FunctionPass {
     var instRemoved = 0, branchChanged = 0
     override var resultString: String {super.resultString + "\(instRemoved) inst(s) removed, \(branchChanged) branch(es) changed."}
     
-    var workList = [IRInst](), blockList = [BasicBlock]()
+    var workList = [InstIR](), blockList = [BlockIR]()
     
     override func work(on v: Module) {
         visit(v: v)
@@ -20,18 +20,18 @@ class SCCPropagation: FunctionPass {
         print(resultString)
     }
     
-    override func visit(v: Function) {
+    override func visit(v: IRFunction) {
         //        each edge will only be evaluated ONCE, because the first time always have the highest lattice.
         
         workList.removeAll(); blockList.removeAll();
         
-        func tryExecute(t: BasicBlock) {
+        func tryExecute(t: BlockIR) {
             if !t.reachable {
 //                print("EXE", t.name)
                 t.reachable = true
                 blockList.append(t)
                 for u in t.users where u.user is PhiInst {
-                    workList.append(u.user as! IRInst)
+                    workList.append(u.user as! InstIR)
                 }
             }
         }
@@ -57,13 +57,13 @@ class SCCPropagation: FunctionPass {
                 }
                 if let b = i as? BrInst {
                     if b.operands.count == 1 {
-                        tryExecute(t: b[0] as! BasicBlock)
+                        tryExecute(t: b[0] as! BlockIR)
                     } else {
                         if let v = b[0].ccpInfo.constValue {
-                            tryExecute(t: b[v == 1 ? 1 : 2] as! BasicBlock)
+                            tryExecute(t: b[v == 1 ? 1 : 2] as! BlockIR)
                         } else {
-                            tryExecute(t: b[1] as! BasicBlock)
-                            tryExecute(t: b[2] as! BasicBlock)
+                            tryExecute(t: b[1] as! BlockIR)
+                            tryExecute(t: b[2] as! BlockIR)
                         }
                     }
                 } else {
@@ -74,7 +74,7 @@ class SCCPropagation: FunctionPass {
                     i.propogate()
                     if !(last == i.ccpInfo) {
                         for u in i.users {
-                            workList.append(u.user as! IRInst)
+                            workList.append(u.user as! InstIR)
                         }
                     }
                 }
@@ -94,7 +94,7 @@ class SCCPropagation: FunctionPass {
                     : b.insts.last!.usees[2]
                 
                 print(">", b.name, b.insts.last!.toPrint, "|", toDel.value.name, "|", b.insts.last!.usees)
-                for i in (toDel.value as! BasicBlock).insts {
+                for i in (toDel.value as! BlockIR).insts {
                     if let p = i as? PhiInst {
                         print(">>", p.toPrint)
                         for i in 0..<p.operands.count/2 {
