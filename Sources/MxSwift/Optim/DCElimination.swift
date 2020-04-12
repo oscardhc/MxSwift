@@ -17,7 +17,7 @@ class DCElimination: FunctionPass {
         self.aa = aa
     }
     
-    override func visit(v: IRFunction) {
+    override func visit(v: FunctionIR) {
         
         let tree = PostDomTree(function: v)
         

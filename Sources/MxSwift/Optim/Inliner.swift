@@ -9,7 +9,7 @@ import Foundation
 
 class Inliner: ModulePass {
     
-    var inlinable = [IRFunction]()
+    var inlinable = [FunctionIR]()
     var valueMap = [Value: Value]()
     
     func findValue(_ v: Value) -> Value {
@@ -58,7 +58,7 @@ class Inliner: ModulePass {
         }
     }
     
-    private func inline(f: IRFunction, in cur: IRFunction, for call: CallInst) {
+    private func inline(f: FunctionIR, in cur: FunctionIR, for call: CallInst) {
         valueMap.removeAll()
         let domTree = DomTree(function: f)
         
@@ -111,7 +111,7 @@ class Inliner: ModulePass {
     
     override func visit(v: Module) {
         
-        var calling = [IRFunction: Int](), called = [IRFunction: Int]()
+        var calling = [FunctionIR: Int](), called = [FunctionIR: Int]()
         for f in v.functions {
             called[f] = 0
             calling[f] = 0

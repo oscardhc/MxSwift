@@ -17,7 +17,7 @@ class CSElimination: FunctionPass {
     private var instRemoved = 0
     override var resultString: String {super.resultString + "\(instRemoved) inst(s) removed."}
     
-    override func visit(v: IRFunction) {
+    override func visit(v: FunctionIR) {
         
         var cseMap = [String: InstIR]()
         var cseReMap = [InstIR: String]()
@@ -85,7 +85,7 @@ class GVNumberer: FunctionPass {
     private var belongTo        = [InstIR: String]()
     private var blockPredicate  = [BlockIR: [VNExpression]]()
     
-    override func visit(v: IRFunction) {
+    override func visit(v: FunctionIR) {
         
         func getPredicate(at cur: BlockIR) -> VNExpression? {
             let only = cur.preds.generated {

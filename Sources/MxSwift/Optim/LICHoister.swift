@@ -52,7 +52,7 @@ class LICHoister: FunctionPass {
         }
     }
     
-    override func visit(v: IRFunction) {
+    override func visit(v: FunctionIR) {
 //        print("=", v.name)
         
         tree = DomTree(function: v)

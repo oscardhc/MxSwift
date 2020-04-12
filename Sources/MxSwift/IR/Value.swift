@@ -170,12 +170,12 @@ class BlockIR: Value {
     
     public private(set) var insts = List<InstIR>()
     
-    var inFunction: IRFunction
+    var inFunction: FunctionIR
     //    var terminated = false
     
     private var nodeInFunction: List<BlockIR>.Node?
     
-    init(name: String = "", curfunc: IRFunction) {
+    init(name: String = "", curfunc: FunctionIR) {
         self.inFunction = curfunc
         super.init(name: "b.", type: LabelT())
         nodeInFunction = inFunction.append(self)

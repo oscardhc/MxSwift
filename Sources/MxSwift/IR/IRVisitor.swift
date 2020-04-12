@@ -13,7 +13,7 @@ protocol IRVisitor {
     
     func work(on v: Module)
     func visit(v: Module)
-    func visit(v: IRFunction)
+    func visit(v: FunctionIR)
     func visit(v: Class)
     func visit(v: GlobalVariable)
     func visit(v: BlockIR)
@@ -44,7 +44,7 @@ class IRNumberer: IRVisitor {
         v.globalVar.forEach {$0.accept(visitor: self)}
         v.functions.forEach {$0.accept(visitor: self)}
     }
-    func visit(v: IRFunction) {
+    func visit(v: FunctionIR) {
         instNamingCounter.reset()
         v.operands.forEach {$0.initName()}
         v.blocks.forEach {
@@ -124,7 +124,7 @@ class IRPrinter: IRVisitor {
             $0.accept(visitor: self)
         }
     }
-    func visit(v: IRFunction) {
+    func visit(v: FunctionIR) {
         print(v.toPrint)
         if v.blocks.count > 0 {
             indent += 1

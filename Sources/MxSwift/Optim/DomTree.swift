@@ -10,7 +10,7 @@ import Foundation
 class BaseDomTree {
     
     var root: Node!
-    private let f: IRFunction, dfnCounter = Counter()
+    private let f: FunctionIR, dfnCounter = Counter()
     private var dfnList = [Node](), map = [BlockIR: Node]()
     
     class Node: CustomStringConvertible {
@@ -66,7 +66,7 @@ class BaseDomTree {
         
     }
     
-    init(function: IRFunction) {
+    init(function: FunctionIR) {
         self.f = function
     }
     
@@ -156,7 +156,7 @@ class BaseDomTree {
 
 class DomTree: BaseDomTree {
     
-    init(function: IRFunction, check: (BlockIR) -> Bool = {_ in true}) {
+    init(function: FunctionIR, check: (BlockIR) -> Bool = {_ in true}) {
         
         super.init(function: function)
         
@@ -177,7 +177,7 @@ class DomTree: BaseDomTree {
 
 class PostDomTree: BaseDomTree {
     
-    init(function: IRFunction, check: (BlockIR) -> Bool = {_ in true}) {
+    init(function: FunctionIR, check: (BlockIR) -> Bool = {_ in true}) {
         
         super.init(function: function)
         

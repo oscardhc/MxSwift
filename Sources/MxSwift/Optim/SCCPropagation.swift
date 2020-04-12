@@ -20,7 +20,7 @@ class SCCPropagation: FunctionPass {
         print(resultString)
     }
     
-    override func visit(v: IRFunction) {
+    override func visit(v: FunctionIR) {
         //        each edge will only be evaluated ONCE, because the first time always have the highest lattice.
         
         workList.removeAll(); blockList.removeAll();

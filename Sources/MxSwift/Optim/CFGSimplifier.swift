@@ -17,7 +17,7 @@ class CFGSimplifier: FunctionPass {
         self.noPhi = noPhi
     }
     
-    override func visit(v: IRFunction) {
+    override func visit(v: FunctionIR) {
         var changed = true
         func change() {
             changed = true

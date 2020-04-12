@@ -13,7 +13,7 @@ class DeadCleaner: FunctionPass {
         visit(v: v)
     }
     
-    override func visit(v: IRFunction) {
+    override func visit(v: FunctionIR) {
         
         for blk in v.blocks {
             var term = false

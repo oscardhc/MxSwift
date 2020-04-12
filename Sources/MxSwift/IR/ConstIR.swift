@@ -101,7 +101,7 @@ class Global: ConstIR {
     
 }
 
-class IRFunction: Global {
+class FunctionIR: Global {
     
     var blocks = List<BlockIR>()
     var attribute: String

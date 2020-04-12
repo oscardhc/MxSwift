@@ -193,8 +193,8 @@ class StoreInst: InstIR {
 }
 
 class CallInst: InstIR {
-    var function: IRFunction
-    init(name: String = "", function: IRFunction, arguments: [Value] = [], in block: BlockIR) {
+    var function: FunctionIR
+    init(name: String = "", function: FunctionIR, arguments: [Value] = [], in block: BlockIR) {
         self.function = function
         super.init(name: name, type: function.type, operation: .call, in: block)
         arguments.forEach {self.added(operand: $0)}
@@ -215,7 +215,7 @@ class AllocaInst: InstIR {
     init(name: String = "", forType: TypeIR, in block: BlockIR, at: Int = -1) {
         super.init(name: name, type: forType.pointer, operation: .alloca, in: block, at: at)
     }
-    override var toPrint: String {"\(name) = \(operation) \((type as! PointerT).baseType.withAlign)"}
+    override var toPrint: String {"\(name) = \(operation) \(type.getBase.withAlign)"}
     override func accept(visitor: IRVisitor) {visitor.visit(v: self)}
     override func propogate() {
         ccpInfo = CCPInfo(type: .variable)

@@ -15,7 +15,7 @@ class IRBuilder: ASTBaseVisitor {
     var controlBlock = [(BlockIR, BlockIR)]() // (breakTo, continueTo)
     
     var globalInit = true
-    var globalFunc: IRFunction!
+    var globalFunc: FunctionIR!
     
     let pointerSize = 8
     
@@ -37,8 +37,8 @@ class IRBuilder: ASTBaseVisitor {
     }
     
     enum Builtin {
-        static var functions = [String: IRFunction]()
-        static func addFunc(name: String, f: (() -> IRFunction)) {
+        static var functions = [String: FunctionIR]()
+        static func addFunc(name: String, f: (() -> FunctionIR)) {
             functions[name] = f()
         }
     }
@@ -46,51 +46,51 @@ class IRBuilder: ASTBaseVisitor {
     override init() {
         super.init()
         Builtin.addFunc(name: "malloc") {
-            IRFunction(name: "malloc", type: .string,
+            FunctionIR(name: "malloc", type: .string,
                      module: module)
                 .added(operand: Value(type: .long))
         }
         Builtin.addFunc(name: "print") {
-            IRFunction(name: "print", type: .void, module: module)
+            FunctionIR(name: "print", type: .void, module: module)
                 .added(operand: Value(type: .string))
         }
         Builtin.addFunc(name: "println") {
-            IRFunction(name: "println", type: .void, module: module)
+            FunctionIR(name: "println", type: .void, module: module)
                 .added(operand: Value(type: .string))
         }
         Builtin.addFunc(name: "printInt") {
-            IRFunction(name: "printInt", type: .void, module: module)
+            FunctionIR(name: "printInt", type: .void, module: module)
                 .added(operand: Value(type: .int))
         }
         Builtin.addFunc(name: "printlnInt") {
-            IRFunction(name: "printlnInt", type: .void, module: module)
+            FunctionIR(name: "printlnInt", type: .void, module: module)
                 .added(operand: Value(type: .int))
         }
         Builtin.addFunc(name: "toString") {
-            IRFunction(name: "toString", type: .string, module: module)
+            FunctionIR(name: "toString", type: .string, module: module)
                 .added(operand: Value(type: .int))
         }
         Builtin.addFunc(name: "getInt") {
-            IRFunction(name: "getInt", type: .int, module: module)
+            FunctionIR(name: "getInt", type: .int, module: module)
         }
         Builtin.addFunc(name: "getString") {
-            IRFunction(name: "getString", type: .string, module: module)
+            FunctionIR(name: "getString", type: .string, module: module)
         }
         Builtin.addFunc(name: "length") {
-            IRFunction(name: "_str_length", type: .int, module: module)
+            FunctionIR(name: "_str_length", type: .int, module: module)
                 .added(operand: Value(type: .string))
         }
         Builtin.addFunc(name: "parseInt") {
-            IRFunction(name: "_str_parseInt", type: .int, module: module)
+            FunctionIR(name: "_str_parseInt", type: .int, module: module)
                 .added(operand: Value(type: .string))
         }
         Builtin.addFunc(name: "ord") {
-            IRFunction(name: "_str_ord", type: .int, module: module)
+            FunctionIR(name: "_str_ord", type: .int, module: module)
                 .added(operand: Value(type: .string))
                 .added(operand: Value(type: .int))
         }
         Builtin.addFunc(name: "substring") {
-            IRFunction(name: "_str_substring", type: .string, module: module)
+            FunctionIR(name: "_str_substring", type: .string, module: module)
                 .added(operand: Value(type: .string))
                 .added(operand: Value(type: .int))
                 .added(operand: Value(type: .int))
@@ -106,7 +106,7 @@ class IRBuilder: ASTBaseVisitor {
     
     private func addStringBOP(name: String, type: TypeIR) {
         Builtin.addFunc(name: "_str_" + name) {
-            IRFunction(name: "_str_" + name, type: type, module: module)
+            FunctionIR(name: "_str_" + name, type: type, module: module)
                 .added(operand: Value(type: .string))
                 .added(operand: Value(type: .string))
         }
@@ -117,21 +117,21 @@ class IRBuilder: ASTBaseVisitor {
         // step 1: make all functions "callable" by adding a empty Function node
         for _d in node.declarations {
             if let f = _d as? FunctionD {
-                f.ret = IRFunction(name: f.id, type: getType(type: f.type), module: module)
+                f.ret = FunctionIR(name: f.id, type: getType(type: f.type), module: module)
             }
             if let c = _d as? ClassD {
                 c.ret = Class(name: c.id, type: ClassT(name: c.id), module: module)
                 c.initial.forEach {
-                    $0.ret = IRFunction(name: c.id + "_" + $0.id, type: getType(type: void), module: module)
+                    $0.ret = FunctionIR(name: c.id + "_" + $0.id, type: getType(type: void), module: module)
                 }
                 c.methods.forEach {
-                    $0.ret = IRFunction(name: c.id + "_" + $0.id, type: getType(type: $0.type), module: module)
+                    $0.ret = FunctionIR(name: c.id + "_" + $0.id, type: getType(type: $0.type), module: module)
                 }
             }
         }
         
         // step 2: global variable declarations
-        globalFunc = IRFunction(name: "global_init", type: getType(type: void), module: module)
+        globalFunc = FunctionIR(name: "global_init", type: getType(type: void), module: module)
         curBlock = BlockIR(curfunc: globalFunc)
         for i in node.declarations where i is VariableD {
             i.accept(visitor: self)
@@ -212,7 +212,7 @@ class IRBuilder: ASTBaseVisitor {
     }
     
     override func visit(node: FunctionD) {
-        let ret = node.ret as! IRFunction
+        let ret = node.ret as! FunctionIR
         curBlock = BlockIR(curfunc: ret)
         
         if node.id == "main" {
@@ -470,7 +470,7 @@ class IRBuilder: ASTBaseVisitor {
     
     override func visit(node: FunctionCallE) {
         super.visit(node: node)
-        var f: IRFunction?
+        var f: FunctionIR?
         var sym: Symbol?
         
         print(">>>", node.id)
@@ -479,7 +479,7 @@ class IRBuilder: ASTBaseVisitor {
             f = Builtin.functions[node.id]!
         } else {
             sym = node.scope.find(name: node.id)!
-            f = sym!.subScope!.correspondingNode!.ret as? IRFunction
+            f = sym!.subScope!.correspondingNode!.ret as? FunctionIR
         }
         
         var arg = [Value]()

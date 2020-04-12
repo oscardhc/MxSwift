@@ -26,7 +26,7 @@ class FunctionPass: IRVisitor {
         print(resultString)
     }
     
-    func visit(v: IRFunction) {}
+    func visit(v: FunctionIR) {}
     
     final func visit(v: Class) {}
     final func visit(v: GlobalVariable) {}
@@ -59,7 +59,7 @@ class ModulePass: IRVisitor {
         print(resultString)
     }
     
-    final func visit(v: IRFunction) {}
+    final func visit(v: FunctionIR) {}
     final func visit(v: Class) {}
     final func visit(v: GlobalVariable) {}
     final func visit(v: BlockIR) {}

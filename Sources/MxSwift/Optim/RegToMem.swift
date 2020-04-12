@@ -9,7 +9,7 @@ import Foundation
 
 class RegToMem: FunctionPass {
     
-    override func visit(v: IRFunction) {
+    override func visit(v: FunctionIR) {
         
         v.calPreds()
         for b in v.blocks where b.insts.first! is PhiInst {

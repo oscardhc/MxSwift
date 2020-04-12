@@ -34,7 +34,7 @@ class MemToReg: FunctionPass {
     var instRemoved = 0
     override var resultString: String {super.resultString + "\(instRemoved) inst(s) removed."}
     
-    override func visit(v: IRFunction) {
+    override func visit(v: FunctionIR) {
         let toPromote = List<AllocaInst>()
         let insts = v.blocks.first!.insts
         

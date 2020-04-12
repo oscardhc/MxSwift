@@ -19,7 +19,7 @@ class PTAnalysis: ModulePass {
     var loads   = [Value: Set<Value>]()
     var stores  = [Value: Set<Value>]()
     var workList = Set<Value>()
-    var callers = [IRFunction: Set<Value>]()
+    var callers = [FunctionIR: Set<Value>]()
     
     func mayAlias(p: Value, q: Value) -> Bool {
         let pp = pts[p]!
@@ -182,7 +182,7 @@ class LSElimination: FunctionPass {
         return ret
     }
     
-    override func visit(v: IRFunction) {
+    override func visit(v: FunctionIR) {
         
         domTree = DomTree(function: v)
         
