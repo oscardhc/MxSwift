@@ -163,6 +163,17 @@ class Class: Global {
         }
         return Int(size)
     }
+    func offset(at i: Int) -> Int {
+        var size = 0.0
+        for (idx, ty) in subTypes.enumerated() {
+            if idx == i {
+                break
+            }
+            let space = Double(ty.space)
+            size = ceil(size / space) * space + space
+        }
+        return Int(size)
+    }
     
     override var toPrint: String {"\(type) = type {\(subTypes.joined())}"}
     override func accept(visitor: IRVisitor) {visitor.visit(v: self)}

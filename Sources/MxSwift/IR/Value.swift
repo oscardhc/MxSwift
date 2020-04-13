@@ -12,7 +12,7 @@ let instNamingCounter = Counter()
 class Value: HashableObject, CustomStringConvertible, Hashable {
     
     static func == (lhs: Value, rhs: Value) -> Bool {
-        lhs.hashValue == rhs.hashValue
+        lhs === rhs
     }
     
     func hash(into hasher: inout Hasher) {

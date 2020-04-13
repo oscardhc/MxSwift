@@ -108,8 +108,7 @@ class IRPrinter: IRVisitor {
             str += "\t"
         }
         for it in items {
-            str += "\(it)"
-            str += " "
+            str += "\(it) "
         }
         str += end
     }

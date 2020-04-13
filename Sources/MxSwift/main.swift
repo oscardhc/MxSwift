@@ -8,7 +8,7 @@ func compile(useFileStream: Bool) throws {
     
     print(welcomeText)
     
-    let prog = try antlr(useFileStream: useFileStream)
+    let prog = try semantic(useFileStream: useFileStream)
     
     if CommandLine.arguments.count > 1 && CommandLine.arguments[1] == "semantic" {
         return
@@ -33,12 +33,26 @@ func compile(useFileStream: Bool) throws {
     optimize(v: ir.module, timeLimit: Int(3e9), iterationLimit: 5, noPhi: true)
     
     MemToReg().work(on: ir.module)
-    optimize(v: ir.module, timeLimit: Int(3e9), iterationLimit: 2, noCopy: true)
+    optimize(v: ir.module, timeLimit: Int(3e9), iterationLimit: 4, noCopy: true)
     IRPrinter(filename: "/Users/oscar/Documents/Classes/1920_Spring/Compiler/tmp/out2.ll").print(on: ir.module)
     
     print("Compilation exited normally.")
     
-    print("RV32", RV32.regs.count)
+    print("RV32", RV32.regs.count, RV32.regs)
+    print(RV32["s0"])
+    
+    let asm = InstSelect()
+    asm.work(on: ir.module)
+    RVPrinter(filename: "/Users/oscar/Documents/Classes/1920_Spring/Compiler/tmp/out.s").print(on: asm.program)
+    
+    for r in allRegs {
+        print(r, ":")
+        print("  <", r.defs.joined(with: " | "))
+        print("  >", r.uses.joined(with: " | "))
+    }
+    
+    LAnalysis().work(on: asm.program)
+    
 }
 
 func optimize(v: Module, timeLimit: Int, iterationLimit: Int, noPhi: Bool = false, noCopy: Bool = false) {
@@ -84,7 +98,7 @@ func optimize(v: Module, timeLimit: Int, iterationLimit: Int, noPhi: Bool = fals
     }
 }
 
-func antlr(useFileStream: Bool) throws -> Program {
+func semantic(useFileStream: Bool) throws -> Program {
     let builtin = ANTLRInputStream(
         """
     void putchar(int x) {}

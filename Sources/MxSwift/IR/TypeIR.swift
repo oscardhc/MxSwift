@@ -10,7 +10,7 @@ import Foundation
 class TypeIR: CustomStringConvertible {
     init() {}
     var description: String {"???"}
-    var bit: Int {1}
+    var bit: Int {0}
     var space: Int {Int(ceil(Double(bit) / 8))}
     var withAlign: String {description + ", align \(space)"}
     var getBase: TypeIR {(self as! PointerT).baseType}
@@ -88,9 +88,8 @@ class PointerT: TypeIR {
         self.baseType = base
         super.init()
     }
-    override var bit: Int {8}
+    override var bit: Int {64}
     override var description: String {"\(baseType)*"}
-    override var space: Int {8}
     
 }
 
