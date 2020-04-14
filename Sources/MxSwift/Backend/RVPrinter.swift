@@ -39,6 +39,9 @@ class RVPrinter {
             }
             pr("")
         }
+        for g in v.globals {
+            pr(g.toPrint)
+        }
         if file != "" {
             flushToFile(name: file)
         }

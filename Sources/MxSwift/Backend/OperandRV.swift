@@ -7,6 +7,11 @@
 
 import Foundation
 
+class Assmebly {
+    var functions = List<FunctionRV>()
+    var globals = List<GlobalRV>()
+}
+
 protocol OperandConvertable {
     var getOP: OperandRV {get}
 }
@@ -44,20 +49,21 @@ class InstRV: CustomStringConvertible, OperandConvertable {
     
     var op: OP
     private(set) var dst : Register!
-    private(set) var src = List<OperandRV>()
+    private(set) var src = [OperandRV]()
     var getOP: OperandRV {dst}
     subscript(idx: Int) -> OperandRV {src[idx]}
     
     var inBlock: BlockRV
     var nodeInBlock: List<InstRV>.Node!
     
-    var use: [Register] {
-        src.filter{$0 is Register}.map{$0 as! Register}
-    }
-    var def: [Register] {
-        dst == nil ? [] : [dst]
-    }
+    var use = [Register]()
+    var def = [Register]()
     
+    var ii = Set<Register>()
+    var oo = Set<Register>()
+    var succs: [InstRV] {
+        self === inBlock.insts.last! ? inBlock.succs.map{$0.insts.first!} : [nodeInBlock.next!.value]
+    }
     
     @discardableResult init(_ op: OP, in block: BlockRV, at index: Int = -1, to dst: Register? = nil, _ src: OperandConvertable...) {
         self.op = op
@@ -65,12 +71,14 @@ class InstRV: CustomStringConvertible, OperandConvertable {
         
         self.dst = dst
         if dst != nil {
+            def.append(dst!)
             dst!.defs.append(self)
         }
         
         for s in src {
             self.src.append(s.getOP)
             if let r = s.getOP as? Register {
+                use.append(r)
                 r.uses.append(self)
             }
         }
@@ -97,6 +105,7 @@ class BlockRV: OperandRV {
     var inFunction: FunctionRV
     var nodeInFunction: List<BlockRV>.Node!
     
+    var pcopy = [(Register, Register)]()
     var gen = Set<Register>()
     var kill = Set<Register>()
     var ii = Set<Register>()
@@ -136,15 +145,8 @@ class FunctionRV: OperandRV {
     
     func newVar() -> OffsetReg {
         stackSize += 4
-        return OffsetReg(RV32["sp"], offset: stackSize-4)
+        return OffsetReg(RV32["sp"], offset: Imm(stackSize-4))
     }
-    
-}
-
-class Assmebly {
-    
-    var functions = List<FunctionRV>()
-    var globals = List<GlobalRV>()
     
 }
 
@@ -152,7 +154,12 @@ class GlobalRV: OperandRV {
     
     let name: String
     let space: Int
-    override var description: String {".comm \(name), \(space), \(space)"}
+    var high: String {"%hi(\(name))"}
+    var low: String {"%lo(\(name))"}
+    
+    override var description: String {high}
+    var toPrint: String {".comm \(name), \(space), \(space)"}
+    
     init(name: String, space: Int, in prog: Assmebly) {
         self.name = name
         self.space = space
@@ -162,18 +169,27 @@ class GlobalRV: OperandRV {
 }
 
 class Imm: OperandRV {
-    var value: Int
-    override var description: String {"\(value)"}
+    var value: Int = 0
+    var global: GlobalRV?
+    override var description: String {
+        if global != nil {
+            return global!.low
+        }
+        return "\(value)"
+    }
     init(_ v: Int) {
         value = v
+    }
+    init(_ v: GlobalRV) {
+        global = v
     }
 }
 
 class OffsetReg: OperandRV {
     var reg: Register
-    var offset: Int
-    override var description: String {"(\(offset)\(reg)"}
-    init(_ reg: Register, offset: Int) {
+    var offset: Imm
+    override var description: String {"\(offset)(\(reg))"}
+    init(_ reg: Register, offset: Imm) {
         self.reg = reg
         self.offset = offset
     }

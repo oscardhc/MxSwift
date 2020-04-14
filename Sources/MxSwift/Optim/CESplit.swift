@@ -1,5 +1,5 @@
 //
-//  RegToMem.swift
+//  CESplit.swift
 //  MxSwift
 //
 //  Created by Haichen Dong on 2020/4/8.
@@ -7,7 +7,10 @@
 
 import Foundation
 
-class RegToMem: FunctionPass {
+class CESplit: FunctionPass {
+    
+    let removePhi: Bool
+    init(removePhi: Bool) {self.removePhi = removePhi}
     
     override func visit(v: FunctionIR) {
         
@@ -32,23 +35,23 @@ class RegToMem: FunctionPass {
             }
         }
         
-        v.calPreds()
-        for b in v.blocks where b.insts.first! is PhiInst {
-//            print(">>>", b.name)
-            let phis = b.insts.filter({$0 is PhiInst})
-            for p in phis {
-                let pos = AllocaInst(forType: p.type, in: v.blocks.first!, at: 0)
-                for i in 0..<p.operands.count/2 {
-                    StoreInst(alloc: pos, val: p[i*2], in: p[i*2+1] as! BlockIR)
+        if removePhi {
+            v.calPreds()
+            for b in v.blocks where b.insts.first! is PhiInst {
+                let phis = b.insts.filter({$0 is PhiInst})
+                for p in phis {
+                    let pos = AllocaInst(forType: p.type, in: v.blocks.first!, at: 0)
+                    for i in 0..<p.operands.count/2 {
+                        StoreInst(alloc: pos, val: p[i*2], in: p[i*2+1] as! BlockIR)
+                    }
+                    p.replaced(by: LoadInst(alloc: pos, in: b, at: 0))
                 }
-                p.replaced(by: LoadInst(alloc: pos, in: b, at: 0))
-            }
-            for pred in b.preds {
-//                print(pred.name, pred.insts.joined() {"\($0.operation)"})
-                pred.insts.filter({$0 is BrInst})[0].changeAppend(to: pred)
+                for pred in b.preds {
+                    pred.insts.filter({$0 is BrInst})[0].changeAppend(to: pred)
+                }
             }
         }
-    
+        
     }
     
 }

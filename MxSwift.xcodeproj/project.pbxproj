@@ -8,9 +8,9 @@
 
 /* Begin PBXBuildFile section */
 		551C3D19241A7A36009341BF /* PTAnalysis.swift in Sources */ = {isa = PBXBuildFile; fileRef = 551C3D18241A7A36009341BF /* PTAnalysis.swift */; };
-		5528373D2438DB72001D69C0 /* InstRV.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5528373C2438DB72001D69C0 /* InstRV.swift */; };
+		5528373D2438DB72001D69C0 /* OperandRV.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5528373C2438DB72001D69C0 /* OperandRV.swift */; };
 		5528373F2438DCC6001D69C0 /* Register.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5528373E2438DCC6001D69C0 /* Register.swift */; };
-		552B2B12243DC37200BF62E1 /* RegToMem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 552B2B11243DC37200BF62E1 /* RegToMem.swift */; };
+		552B2B12243DC37200BF62E1 /* CESplit.swift in Sources */ = {isa = PBXBuildFile; fileRef = 552B2B11243DC37200BF62E1 /* CESplit.swift */; };
 		552B2B14243E14DD00BF62E1 /* UseRebuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 552B2B13243E14DD00BF62E1 /* UseRebuilder.swift */; };
 		552B2B16243E2A0000BF62E1 /* InstSelect.swift in Sources */ = {isa = PBXBuildFile; fileRef = 552B2B15243E2A0000BF62E1 /* InstSelect.swift */; };
 		55449BCC242D05B4001D9332 /* Inliner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55449BCB242D05B4001D9332 /* Inliner.swift */; };
@@ -19,6 +19,7 @@
 		555C57EF23E7314900D9192A /* ErrorListener.swift in Sources */ = {isa = PBXBuildFile; fileRef = 555C57EE23E7314900D9192A /* ErrorListener.swift */; };
 		557E873B2404B51E007074A5 /* SCCPropagation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 557E873A2404B51E007074A5 /* SCCPropagation.swift */; };
 		557E873D24064C07007074A5 /* CSElimination.swift in Sources */ = {isa = PBXBuildFile; fileRef = 557E873C24064C07007074A5 /* CSElimination.swift */; };
+		558740B224458D6100654D1D /* RegAllocation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 558740B124458D6100654D1D /* RegAllocation.swift */; };
 		55ABA11423F90A740030D790 /* Pass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55ABA11323F90A730030D790 /* Pass.swift */; };
 		55ABA11623F90C3D0030D790 /* MemToReg.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55ABA11523F90C3C0030D790 /* MemToReg.swift */; };
 		55ABA11823FA624D0030D790 /* DomTree.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55ABA11723FA624C0030D790 /* DomTree.swift */; };
@@ -237,9 +238,9 @@
 
 /* Begin PBXFileReference section */
 		551C3D18241A7A36009341BF /* PTAnalysis.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PTAnalysis.swift; sourceTree = "<group>"; };
-		5528373C2438DB72001D69C0 /* InstRV.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InstRV.swift; sourceTree = "<group>"; };
+		5528373C2438DB72001D69C0 /* OperandRV.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OperandRV.swift; sourceTree = "<group>"; };
 		5528373E2438DCC6001D69C0 /* Register.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Register.swift; sourceTree = "<group>"; };
-		552B2B11243DC37200BF62E1 /* RegToMem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RegToMem.swift; sourceTree = "<group>"; };
+		552B2B11243DC37200BF62E1 /* CESplit.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CESplit.swift; sourceTree = "<group>"; };
 		552B2B13243E14DD00BF62E1 /* UseRebuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UseRebuilder.swift; sourceTree = "<group>"; };
 		552B2B15243E2A0000BF62E1 /* InstSelect.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InstSelect.swift; sourceTree = "<group>"; };
 		55449BCB242D05B4001D9332 /* Inliner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Inliner.swift; sourceTree = "<group>"; };
@@ -248,6 +249,7 @@
 		555C57EE23E7314900D9192A /* ErrorListener.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorListener.swift; sourceTree = "<group>"; };
 		557E873A2404B51E007074A5 /* SCCPropagation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SCCPropagation.swift; sourceTree = "<group>"; };
 		557E873C24064C07007074A5 /* CSElimination.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CSElimination.swift; sourceTree = "<group>"; };
+		558740B124458D6100654D1D /* RegAllocation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RegAllocation.swift; sourceTree = "<group>"; };
 		55ABA11323F90A730030D790 /* Pass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Pass.swift; sourceTree = "<group>"; };
 		55ABA11523F90C3C0030D790 /* MemToReg.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemToReg.swift; sourceTree = "<group>"; };
 		55ABA11723FA624C0030D790 /* DomTree.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DomTree.swift; sourceTree = "<group>"; };
@@ -478,11 +480,12 @@
 		5528373B2438DA90001D69C0 /* Backend */ = {
 			isa = PBXGroup;
 			children = (
-				5528373C2438DB72001D69C0 /* InstRV.swift */,
+				5528373C2438DB72001D69C0 /* OperandRV.swift */,
 				5528373E2438DCC6001D69C0 /* Register.swift */,
 				55D257912444862E00BD15B1 /* LAnalysis.swift */,
 				55D2578F244438CA00BD15B1 /* RVPrinter.swift */,
 				552B2B15243E2A0000BF62E1 /* InstSelect.swift */,
+				558740B124458D6100654D1D /* RegAllocation.swift */,
 			);
 			path = Backend;
 			sourceTree = "<group>";
@@ -493,7 +496,7 @@
 				55ABA11323F90A730030D790 /* Pass.swift */,
 				557E873A2404B51E007074A5 /* SCCPropagation.swift */,
 				55ABA11523F90C3C0030D790 /* MemToReg.swift */,
-				552B2B11243DC37200BF62E1 /* RegToMem.swift */,
+				552B2B11243DC37200BF62E1 /* CESplit.swift */,
 				55ABA11923FC1CBB0030D790 /* DeadCleaner.swift */,
 				552B2B13243E14DD00BF62E1 /* UseRebuilder.swift */,
 				55ABA11723FA624C0030D790 /* DomTree.swift */,
@@ -1127,9 +1130,9 @@
 				55ABA11423F90A740030D790 /* Pass.swift in Sources */,
 				55D257922444862E00BD15B1 /* LAnalysis.swift in Sources */,
 				5528373F2438DCC6001D69C0 /* Register.swift in Sources */,
-				552B2B12243DC37200BF62E1 /* RegToMem.swift in Sources */,
+				552B2B12243DC37200BF62E1 /* CESplit.swift in Sources */,
 				OBJ_363 /* Symbol.swift in Sources */,
-				5528373D2438DB72001D69C0 /* InstRV.swift in Sources */,
+				5528373D2438DB72001D69C0 /* OperandRV.swift in Sources */,
 				55D1C0DC23EBDF070057E80A /* Module.swift in Sources */,
 				55D1C0D823EB2F1C0057E80A /* IRVisitor.swift in Sources */,
 				55ABA11A23FC1CBB0030D790 /* DeadCleaner.swift in Sources */,
@@ -1139,6 +1142,7 @@
 				55EEB69C23E4919D00E9FE2C /* ASTBuilder.swift in Sources */,
 				552B2B14243E14DD00BF62E1 /* UseRebuilder.swift in Sources */,
 				OBJ_365 /* main.swift in Sources */,
+				558740B224458D6100654D1D /* RegAllocation.swift in Sources */,
 				557E873D24064C07007074A5 /* CSElimination.swift in Sources */,
 				55449BCC242D05B4001D9332 /* Inliner.swift in Sources */,
 				55F78B22240B6FF000CE3771 /* Counter.swift in Sources */,

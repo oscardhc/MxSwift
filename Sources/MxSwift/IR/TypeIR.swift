@@ -88,7 +88,7 @@ class PointerT: TypeIR {
         self.baseType = base
         super.init()
     }
-    override var bit: Int {64}
+    override var bit: Int {32}
     override var description: String {"\(baseType)*"}
     
 }
