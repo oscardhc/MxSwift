@@ -7,15 +7,10 @@
 
 import Foundation
 
+
 class LAnalysis {
     
-    func work(on v: Assmebly) {
-        for f in v.functions {
-            visit(v: f)
-        }
-    }
-    
-    func visit(v: FunctionRV) {
+    static func analysis(v: FunctionRV) {
         for b in v.blocks {
             for i in b.insts {
                 i.ii.removeAll()
@@ -31,7 +26,7 @@ class LAnalysis {
         }
         while changed {
             changed = false
-//            print("LA iteration")
+            print("LA iteration", v.name)
             for i in instList {
                 for s in i.succs {
                     for tmp in s.ii where !i.oo.contains(tmp) {
@@ -45,14 +40,9 @@ class LAnalysis {
                 }
             }
         }
-        for b in v.blocks {
-            for i in b.insts {
-                print(i, ":")
-                print("   in", i.ii)
-                print("  out", i.oo)
-            }
-        }
+        
     }
+    
 //    func visit(v: FunctionRV) {
 //        for b in v.blocks {
 //            b.gen.removeAll()

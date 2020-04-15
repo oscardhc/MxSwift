@@ -19,10 +19,12 @@ class Register: OperandRV, Hashable, Equatable {
     }
     
     let name: String
-    override var description: String {name}
+    override var description: String {"<\(color ?? "\\")>" + name}
     
-    init(name: String) {
-        self.name = name
+    static let counter = Counter()
+    init(name: String? = nil, color: String? = nil) {
+        self.name = name ?? ("tmp_" + Self.counter.tik())
+        self.color = color
         super.init()
         allRegs.append(self)
     }
@@ -30,26 +32,36 @@ class Register: OperandRV, Hashable, Equatable {
     var defs = [InstRV]()
     var uses = [InstRV]()
     
-}
-
-class VReg: Register {
+    var itr = Set<Register>()
+    var mov = Set<InstRV>()
     
-    static let counter = Counter()
+    var deg: Int = -1
+    var alias: Register?
+    var color: String?
     
-    override init(name: String? = nil) {
-        super.init(name: name ?? ("tmp_" + Self.counter.tik()))
+    func clear() {
+        itr.removeAll()
+        mov.removeAll()
+        deg = 0
+    }
+    
+    var cost: Double {
+        uses.reduce(0.0, {$0 + pow(10.0, Double($1.inBlock.loopDepth))})
+        + defs.reduce(0.0, {$0 + pow(10.0, Double($1.inBlock.loopDepth))})
     }
     
 }
 
 class RV32 {
     
-    static let callerSave = ["ra"] + (0...6).map{"t\($0)"} + (0...7).map{"a\($0)"}
+    static let callerSave = (0...6).map{"t\($0)"} + (0...7).map{"a\($0)"} + ["ra"]
     static let calleeSave = (0...11).map{"s\($0)"}
+    static let normal = RV32.callerSave + RV32.calleeSave
+//    static let normal = RV32.calleeSave + ["t0", "t1"]
     static let special = ["zero", "sp", "gp", "tp"]
     static let regs = Dictionary(uniqueKeysWithValues:
-        (RV32.calleeSave + RV32.callerSave + RV32.special).map {($0, VReg(name: $0))}
+        (RV32.calleeSave + RV32.callerSave + RV32.special).map {($0, Register(name: $0, color: $0))}
     )
-    static subscript(s: String) -> VReg {regs[s]!}
+    static subscript(s: String) -> Register {regs[s]!}
     
 }

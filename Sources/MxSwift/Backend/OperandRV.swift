@@ -25,7 +25,7 @@ class OperandRV: CustomStringConvertible, OperandConvertable {
     var getOP: OperandRV {self}
 }
 
-class InstRV: CustomStringConvertible, OperandConvertable {
+class InstRV: CustomStringConvertible, OperandConvertable, Hashable {
     
     enum OP {
         case lui, auipc, jal, jalr, beq, bne, blt, bge, bltu, bgeu
@@ -37,6 +37,13 @@ class InstRV: CustomStringConvertible, OperandConvertable {
         case bgt, ble, j, ret, sgt, mv, call, bnez
         // not even pseudo MUST BE ADJUSTED WHEN OUTPUT!
         case subi
+    }
+    
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(ObjectIdentifier(self))
+    }
+    static func == (lhs: InstRV, rhs: InstRV) -> Bool {
+        lhs === rhs
     }
     
     var description: String {
@@ -61,6 +68,7 @@ class InstRV: CustomStringConvertible, OperandConvertable {
     
     var ii = Set<Register>()
     var oo = Set<Register>()
+    
     var succs: [InstRV] {
         self === inBlock.insts.last! ? inBlock.succs.map{$0.insts.first!} : [nodeInBlock.next!.value]
     }
@@ -90,6 +98,33 @@ class InstRV: CustomStringConvertible, OperandConvertable {
         }
     }
     
+    func replaced(by i: InstRV) {
+        if dst != nil {
+            dst.defs.removeAll {$0 === self}
+        }
+        for s in src {
+            if let r = s as? Register {
+                r.uses.removeAll {$0 === self}
+            }
+        }
+        nodeInBlock.value = i
+    }
+    
+    func newDst(_ d: Register) {
+        dst.defs.removeAll {$0 === self}
+        dst = d
+        dst.defs.append(self)
+    }
+    func newSrc(_ s: OperandRV, at i: Int) {
+        if let r = src[i] as? Register {
+            r.uses.removeAll {$0 == self}
+        }
+        src[i] = s
+        if let r = s as? Register {
+            r.uses.append(self)
+        }
+    }
+    
 //    @discardableResult func d(_ d: Register) -> Self {dst = d; return self;}
 //    @discardableResult func s(_ s: OperandConvertable) -> Self {src.append(s.getOP); return self;}
 //
@@ -111,13 +146,16 @@ class BlockRV: OperandRV {
     var ii = Set<Register>()
     var oo = Set<Register>()
     
-    override var description: String {"." + name}
+    let loopDepth: Int
+    
+    override var description: String {".[\(loopDepth)]" + name}
     var succs: [BlockRV] {
-        insts.last!.src.filter{$0 is BlockRV}.map{$0 as! BlockRV}
+        insts.last!.src.compactMap{$0 as? BlockRV}
     }
     
-    init(name: String, in f: FunctionRV) {
+    init(name: String, in f: FunctionRV, depth: Int) {
         self.name = name
+        self.loopDepth = depth
         inFunction = f
         super.init()
         nodeInFunction = inFunction.blocks.append(self)
@@ -132,7 +170,7 @@ class FunctionRV: OperandRV {
     var inProgram: Assmebly
     var nodeInProgram: List<FunctionRV>.Node!
     
-    override var description: String {name}
+    override var description: String {name + "-\(stackSize)"}
     
     var stackSize: Int = 0
     

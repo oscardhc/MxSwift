@@ -7,6 +7,49 @@
 
 import Foundation
 
+class Loop {
+    var header: BlockIR
+    var blocks = Set<BlockIR>()
+    
+    init (h: BlockIR) {
+        self.header = h
+    }
+}
+
+class LoopInfo {
+    
+    var tree: DomTree!
+    var loops = [Loop]()
+    
+    init(v: FunctionIR) {
+        tree = DomTree(function: v)
+        v.calPreds()
+        for b in v.blocks {
+            for pred in b.preds {
+                if tree.checkBF(b, dominates: pred) {
+                    let loop = Loop(h: b)
+                    loop.blocks.insert(pred)
+                    var queue = [pred]
+                    while let cur = queue.popLast() {
+                        if cur !== b {
+                            for pr in cur.preds where !loop.blocks.contains(pr) {
+                                loop.blocks.insert(pr)
+                                queue.append(pr)
+                            }
+                        }
+                    }
+                    loops.append(loop)
+                }
+            }
+        }
+    }
+    
+    func getDepth(for b: BlockIR) -> Int {
+        loops.filter({$0.blocks.contains(b)}).count
+    }
+    
+}
+
 class LICHoister: FunctionPass {
     
     let aa: PTAnalysis
@@ -16,15 +59,6 @@ class LICHoister: FunctionPass {
     
     init(_ aa: PTAnalysis) {
         self.aa = aa
-    }
-    
-    class Loop {
-        var header: BlockIR
-        var blocks = Set<BlockIR>()
-        
-        init (h: BlockIR) {
-            self.header = h
-        }
     }
     
     func hoist(ins: [BlockIR: [InstIR]], in loop: Loop) {
@@ -53,32 +87,9 @@ class LICHoister: FunctionPass {
     }
     
     override func visit(v: FunctionIR) {
-//        print("=", v.name)
         
-        tree = DomTree(function: v)
-        v.calPreds()
-        
-        var loops = [Loop]()
-        for b in v.blocks {
-            for pred in b.preds {
-                if tree.checkBF(b, dominates: pred) {
-                    let loop = Loop(h: b)
-                    loop.blocks.insert(pred)
-                    var queue = [pred]
-                    while let cur = queue.popLast() {
-                        if cur !== b {
-                            for pr in cur.preds where !loop.blocks.contains(pr) {
-                                loop.blocks.insert(pr)
-                                queue.append(pr)
-                            }
-                        }
-                    }
-                    
-                    loops.append(loop)
-                }
-            }
-        }
-        
+        var loops = LoopInfo(v: v).loops
+            
         loops.sort(by: {$0.blocks.count > $1.blocks.count})
         
         for loop in loops {

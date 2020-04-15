@@ -166,7 +166,7 @@ class User: Value {
     
 }
 
-class BlockIR: Value {
+final class BlockIR: Value {
     
     public private(set) var insts = List<InstIR>()
     

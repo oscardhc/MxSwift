@@ -34,6 +34,9 @@ class RVPrinter {
             for b in f.blocks {
                 pr(b, ":")
                 for i in b.insts {
+                    if i.op == .mv && i.dst!.color == (i[0] as! Register).color {
+                        continue
+                    }
                     pr(" ", i)
                 }
             }

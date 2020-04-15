@@ -35,7 +35,7 @@ class InstSelect: IRVisitor {
     var iMap = [InstIR: OperandRV]()
     var aMap = [Value: OperandRV]()
     var fMap = [FunctionIR: FunctionRV]()
-    var saves = [String: VReg]()
+    var saves = [String: Register]()
     var bMap = [BlockIR: BlockRV]()
     var cMap = [String: Class]()
     var gMap = [Global: GlobalRV]()
@@ -43,7 +43,7 @@ class InstSelect: IRVisitor {
     private func loadImmediate(_ val: Int, to reg: Register, in blk: BlockRV) -> Register {
         if val >= immUpperSize {
             return InstRV(.addi, in: blk, to: reg,
-                          InstRV(.lui, in: blk, to: VReg(), val / immUpperSize),
+                          InstRV(.lui, in: blk, to: Register(), val / immUpperSize),
                           val % immUpperSize).dst
         } else {
             return InstRV(.addi, in: blk, to: reg, RV32["zero"], val).dst
@@ -56,21 +56,19 @@ class InstSelect: IRVisitor {
             return gMap[g]!
         case let c as ConstIR:
             if let i = c as? IntC {
-                return loadImmediate(i.value, to: VReg(), in: blk)
+                return loadImmediate(i.value, to: Register(), in: blk)
             } else {
                 assert(c is NullC)
-                return loadImmediate(0, to: VReg(), in: blk)
+                return loadImmediate(0, to: Register(), in: blk)
             }
         case let i as InstIR:
-            iMap[i] = iMap[i] ?? VReg()
+            iMap[i] = iMap[i] ?? Register()
             return iMap[i]!
         case let b as BlockIR:
             return bMap[b]!
         default:
             return aMap[val]!
         }
-        assert(false)
-        return -1
     }
     
     func work(on v: Module) {
@@ -90,31 +88,33 @@ class InstSelect: IRVisitor {
         bMap.removeAll()
         curFunctionIR = v
         curFunction = fMap[v]!
+        let loopinfo = LoopInfo(v: v)
         
         for b in v.blocks {
-            bMap[b] = BlockRV(name: b.name, in: curFunction)
+            bMap[b] = BlockRV(name: b.name, in: curFunction, depth: loopinfo.getDepth(for: b))
         }
         curBlock = bMap[v.blocks.first!]!
         
         for reg in RV32.calleeSave + ["ra"] {
-            saves[reg] = VReg()
+            saves[reg] = Register()
             InstRV(.mv, in: curBlock, to: saves[reg]!, RV32[reg])
         }
         for (idx, op) in v.operands.enumerated() {
-            let reg = VReg(name: op.name)
+            let reg = Register(name: op.name)
             aMap[op] = reg
             if idx < 8 {
                 InstRV(.mv, in: curBlock, to: reg, RV32["a\(idx)"])
             } else {
-                InstRV(loadMap[op.type.space]!, in: curBlock, to: reg, OffsetReg(RV32["sp"], offset: Imm(idx-8)))
+                InstRV(loadMap[op.type.space]!, in: curBlock, to: reg, OffsetReg(RV32["sp"], offset: Imm(8-idx)))
             }
         }
         
         for b in v.blocks {
             for p in b.insts where p is PhiInst {
-                iMap[p] = VReg(name: "phi_\(p.name)")
+                iMap[p] = Register(name: "phi_\(p.name)")
             }
         }
+        
         for b in v.blocks {
             for p in b.insts where p is PhiInst {
                 for i in 0..<p.operands.count/2 {
@@ -137,14 +137,14 @@ class InstSelect: IRVisitor {
                     if b.pcopy.isEmpty {
                         break
                     }
-                    if let copy = b.pcopy.filter({ c in
-                        b.pcopy.filter({$0.1 === c.0}).isEmpty
-                    }).last {
+                    if let copy = b.pcopy.first(where: { c in
+                        b.pcopy.first(where: {$0.1 === c.0}) == nil
+                    }) {
                         InstRV(.mv, in: b, to: copy.0, copy.1)
                         b.pcopy.removeAll(where: {$0.0 === copy.0 && $0.1 === copy.1})
                     } else {
                         let copy = b.pcopy.removeLast()
-                        b.pcopy.append((copy.0, InstRV(.mv, in: b, to: VReg(name: "copy_tmp"), copy.1).dst))
+                        b.pcopy.append((copy.0, InstRV(.mv, in: b, to: Register(name: "copy_tmp"), copy.1).dst))
                     }
                 }
                 last?.moveAppendTo(newlist: b.insts)
@@ -184,10 +184,10 @@ class InstSelect: IRVisitor {
     func visit(v: GEPInst) {
         let offset: OperandConvertable = {
             if v[0].type is PointerT {
-                return InstRV(.mul, in: curBlock, to: VReg(), *v[1], loadImmediate(v[0].type.space, to: VReg(), in: curBlock))
+                return InstRV(.mul, in: curBlock, to: Register(), *v[1], loadImmediate(v[0].type.space, to: Register(), in: curBlock))
             } else {
                 return loadImmediate(cMap[v[0].type.description]!.offset(at: (v[1] as! IntC).value),
-                                     to: VReg(), in: curBlock)
+                                     to: Register(), in: curBlock)
             }
         }()
         InstRV(.add, in: curBlock, to: (*v as! Register), *v[0], offset)
@@ -197,7 +197,7 @@ class InstSelect: IRVisitor {
     func visit(v: LoadInst) {
         if v[0] is GlobalVariable {
             InstRV(loadMap[v[0].type.getBase.space]!, in: curBlock, to: (*v as! Register),
-                   OffsetReg(InstRV(.lui, in: curBlock, to: VReg(), *v[0]).dst, offset: Imm(*v[0] as! GlobalRV)))
+                   OffsetReg(InstRV(.lui, in: curBlock, to: Register(), *v[0]).dst, offset: Imm(*v[0] as! GlobalRV)))
         } else {
             InstRV(loadMap[v[0].type.getBase.space]!, in: curBlock, to: (*v as! Register), OffsetReg(*v[0] as! Register, offset: Imm(0)))
         }
@@ -255,7 +255,7 @@ class InstSelect: IRVisitor {
                 op = Self.cop[c.cmp]!.0
             } else {
                 InstRV(.xori, in: curBlock,
-                       InstRV(Self.rop[c.cmp]!, in: curBlock, to: VReg(), *v[0], *v[1]),
+                       InstRV(Self.rop[c.cmp]!, in: curBlock, to: Register(), *v[0], *v[1]),
                        1)
                 return
             }

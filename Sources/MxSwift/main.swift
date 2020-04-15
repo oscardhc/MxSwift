@@ -38,14 +38,12 @@ func compile(useFileStream: Bool) throws {
     
     print("Compilation exited normally.")
     
-    print("RV32", RV32.regs.count, RV32.regs)
-    print(RV32["s0"])
-    
     let asm = InstSelect()
     asm.work(on: ir.module)
-    RVPrinter(filename: "/Users/oscar/Documents/Classes/1920_Spring/Compiler/tmp/out.s").print(on: asm.program)
 
-    LAnalysis().work(on: asm.program)
+    RAllocator().work(on: asm.program)
+    
+    RVPrinter(filename: "/Users/oscar/Documents/Classes/1920_Spring/Compiler/tmp/out.s").print(on: asm.program)
     
 }
 
@@ -76,7 +74,7 @@ func optimize(v: Module, timeLimit: Int, iterationLimit: Int, noPhi: Bool = fals
         CFGSimplifier(noPhi).work(on: v)
         
         if !noPhi && !noCopy {
-            Inliner().work(on: v)
+//            Inliner().work(on: v)
         }
         
         let curString = IRPrinter().print(on: v)

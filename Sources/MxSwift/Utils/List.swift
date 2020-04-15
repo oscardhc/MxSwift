@@ -88,6 +88,9 @@ class List<T: CustomStringConvertible>: CustomStringConvertible, Sequence {
             list = newlist
             newlist.append(self)
         }
+        var indexBF: Int {
+            list.getNodeIndexBF(from: self)
+        }
         
     }
     
