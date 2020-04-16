@@ -30,13 +30,14 @@ class RAllocator {
         }
     }
     func add(_ u: Register, _ v: Register) {
-        if u.color == nil {
+        if !RV32.regs.values.contains(u) {
             u.itr.insert(v)
             u.deg += 1
         }
     }
     func addEdge(_ u: Register, _ v: Register) {
         if u !== v && !adj[u]!.contains(v) {
+            print("addEdge", u, v)
             adj[u]!.insert(v)
             adj[v]!.insert(u)
             add(u, v)
@@ -49,14 +50,15 @@ class RAllocator {
 
         let instList = v.blocks.reduce([InstRV](), {$0 + [InstRV]($1.insts)})
         for i in instList {
-            if i.dst != nil {
-                n.initial.insert(i.dst)
+            for d in i.def {
+                n.initial.insert(d)
             }
-            for s in i.src where s is Register {
-                n.initial.insert(s as! Register)
+            for s in i.use {
+                n.initial.insert(s)
             }
         }
-        for r in n.initial where r.color != nil {
+        for r in n.initial where RV32.regs.values.contains(r) {
+            print("precolored", r, r.color)
             n.initial.remove(r)
             n.precolored.insert(r)
         }
@@ -65,33 +67,61 @@ class RAllocator {
     }
     
     func allocate(v: FunctionRV) {
+        print("")
+        print("")
+        print("")
+        
         LAnalysis.analysis(v: v)
         
         let instList = v.blocks.reduce([InstRV](), {$0 + [InstRV]($1.insts)})
         for i in instList {
-            if i.dst != nil {
-                i.dst.clear()
-                adj[i.dst] = []
+            for d in i.def {
+                d.clear()
+                adj[d] = []
             }
-            for s in i.src where s is Register {
-                (s as! Register).clear()
-                adj[s as! Register] = []
-            }
-        }
-        for i in instList where i.dst != nil {
-            if i.op == .mv {
-                for o in i.oo where o !== i[0] {
-                    addEdge(o, i.dst)
-                }
-                i.dst.mov.insert(i)
-                (i[0] as! Register).mov.insert(i)
-                m.worklist.insert(i)
-            } else {
-                for o in i.oo {
-                    addEdge(o, i.dst)
-                }
+            for s in i.use {
+                s.clear()
+                adj[s] = []
             }
         }
+        for b in v.blocks {
+            var live = b.oo
+            for i in b.insts.reversed() {
+                if i.op == .mv {
+                    live.subtract(i.use)
+                    for o in i.def.union(i.use) {
+                        o.mov.insert(i)
+                    }
+                    m.worklist.insert(i)
+                }
+                live.formUnion(i.def)
+                print("build", i, i.def)
+                for d in i.def {
+                    for o in live {
+                        addEdge(d, o)
+                    }
+                }
+                live = i.use.union(live.subtracting(i.def))
+            }
+        }
+//        for i in instList where !i.def.isEmpty {
+//            if i.op == .mv {
+//                for o in i.oo where o !== i[0] {
+//                    for d in i.def {
+//                        addEdge(o, d)
+//                    }
+//                }
+//                i.dst.mov.insert(i)
+//                (i[0] as! Register).mov.insert(i)
+//                m.worklist.insert(i)
+//            } else {
+//                for o in i.oo {
+//                    for d in i.def {
+//                        addEdge(o, d)
+//                    }
+//                }
+//            }
+//        }
         for r in n.precolored where adj[r] == nil {adj[r] = []}
         for r in n.initial where adj[r] == nil {adj[r] = []}
         print(n.precolored)
@@ -184,6 +214,8 @@ class RAllocator {
         v.alias = u
         u.mov.formUnion(v.mov)
         enableMoves(v)
+        print("     ", adj[v]!, adjacent(v))
+        print("     ", n.coalesced, n.stack)
         for t in adjacent(v) {
             addEdge(t, u)
             decreseDeg(t)
@@ -264,6 +296,7 @@ class RAllocator {
             } else {
                 n.colored.insert(r)
                 r.color = colors.first!
+                print("COLOR", r, adj[r]!)
             }
         }
         for r in n.coalesced {

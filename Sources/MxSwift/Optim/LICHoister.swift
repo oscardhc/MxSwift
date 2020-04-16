@@ -54,6 +54,7 @@ class LICHoister: FunctionPass {
     
     let aa: PTAnalysis
     var tree: DomTree!
+    var loops: [Loop]!
     private var instRemoved = 0
     override var resultString: String {super.resultString + "\(instRemoved) inst(s) removed."}
     
@@ -88,7 +89,8 @@ class LICHoister: FunctionPass {
     
     override func visit(v: FunctionIR) {
         
-        var loops = LoopInfo(v: v).loops
+        let info = LoopInfo(v: v)
+        (tree, loops) = (info.tree, info.loops)
             
         loops.sort(by: {$0.blocks.count > $1.blocks.count})
         

@@ -77,7 +77,7 @@ class InstSelect: IRVisitor {
     func visit(v: Module) {
         v.globalVar.forEach {$0.accept(visitor: self)}
         for f in v.functions {
-            fMap[f] = FunctionRV(name: f.name, in: program)
+            fMap[f] = FunctionRV(name: f.basename, in: program, argNum: f.operands.count)
         }
         for f in v.functions where !f.blocks.isEmpty {
             f.accept(visitor: self)
@@ -91,10 +91,11 @@ class InstSelect: IRVisitor {
         let loopinfo = LoopInfo(v: v)
         
         for b in v.blocks {
-            bMap[b] = BlockRV(name: b.name, in: curFunction, depth: loopinfo.getDepth(for: b))
+            bMap[b] = BlockRV(name: v.basename + "_" + b.basename, in: curFunction, depth: loopinfo.getDepth(for: b))
         }
         curBlock = bMap[v.blocks.first!]!
         
+        InstRV(.subi, in: curBlock, to: RV32["sp"], RV32["sp"], curFunction.stackSize)
         for reg in RV32.calleeSave + ["ra"] {
             saves[reg] = Register()
             InstRV(.mv, in: curBlock, to: saves[reg]!, RV32[reg])
@@ -114,7 +115,6 @@ class InstSelect: IRVisitor {
                 iMap[p] = Register(name: "phi_\(p.name)")
             }
         }
-        
         for b in v.blocks {
             for p in b.insts where p is PhiInst {
                 for i in 0..<p.operands.count/2 {
@@ -124,7 +124,6 @@ class InstSelect: IRVisitor {
             }
         }
 
-        
         v.blocks.forEach {
             $0.accept(visitor: self)
         }
@@ -160,7 +159,11 @@ class InstSelect: IRVisitor {
         }
     }
     func visit(v: GlobalVariable) {
-        gMap[v] = GlobalRV(name: v.name, space: v.type.space, in: program)
+        if v.value is StringC {
+            gMap[v] = GlobalStr(name: v.basename, str: v.value as! StringC, in: program)
+        } else {
+            gMap[v] = GlobalRV(name: v.basename, space: v.type.space, in: program)
+        }
     }
     func visit(v: PhiInst) {}
     func visit(v: SExtInst) {}
@@ -182,6 +185,10 @@ class InstSelect: IRVisitor {
         }
     }
     func visit(v: GEPInst) {
+        if v[0] is GlobalVariable {
+            InstRV(.addi, in: curBlock, to: **v, InstRV(.lui, in: curBlock, to: Register(), *v[0]), Imm(*v[0] as! GlobalRV))
+            return
+        }
         let offset: OperandConvertable = {
             if v[0].type is PointerT {
                 return InstRV(.mul, in: curBlock, to: Register(), *v[1], loadImmediate(v[0].type.space, to: Register(), in: curBlock))
@@ -190,7 +197,7 @@ class InstSelect: IRVisitor {
                                      to: Register(), in: curBlock)
             }
         }()
-        InstRV(.add, in: curBlock, to: (*v as! Register), *v[0], offset)
+        InstRV(.add, in: curBlock, to: **v, *v[0], offset)
     }
     private let loadMap : [Int: InstRV.OP] = [1: .lb, 4: .lw]
     private let storeMap: [Int: InstRV.OP] = [1: .sb, 4: .sw]
@@ -203,7 +210,12 @@ class InstSelect: IRVisitor {
         }
     }
     func visit(v: StoreInst) {
-        InstRV(storeMap[v[1].type.getBase.space]!, in: curBlock, *v[0], *v[1])
+        if v[1] is GlobalVariable {
+            InstRV(storeMap[v[1].type.getBase.space]!, in: curBlock, *v[0],
+                   OffsetReg(InstRV(.lui, in: curBlock, to: Register(), *v[1]).dst, offset: Imm(*v[1] as! GlobalRV)))
+        } else {
+            InstRV(storeMap[v[1].type.getBase.space]!, in: curBlock, *v[0], OffsetReg(*v[1] as! Register, offset: Imm(0)))
+        }
     }
     func visit(v: CallInst) {
         for (i, op) in v.operands.enumerated() {
@@ -228,6 +240,7 @@ class InstSelect: IRVisitor {
         if !(curFunctionIR.type is VoidT) {
             InstRV(.mv, in: curBlock, to: RV32["a0"], *v[0])
         }
+        InstRV(.addi, in: curBlock, to: RV32["sp"], RV32["sp"], curFunction.stackSize)
         InstRV(.ret, in: curBlock)
     }
     
@@ -254,7 +267,7 @@ class InstSelect: IRVisitor {
             if Self.cop[c.cmp] != nil {
                 op = Self.cop[c.cmp]!.0
             } else {
-                InstRV(.xori, in: curBlock,
+                InstRV(.xori, in: curBlock, to: **v,
                        InstRV(Self.rop[c.cmp]!, in: curBlock, to: Register(), *v[0], *v[1]),
                        1)
                 return

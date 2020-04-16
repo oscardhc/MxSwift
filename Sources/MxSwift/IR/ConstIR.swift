@@ -55,9 +55,11 @@ class NullC: ConstIR {
 //    override var description: String {"\(type) null"}
 }
 class StringC: ConstIR {
+    var rowValue: String
     var value: String
     var length = 0
     init(value: String) {
+        self.rowValue = ""
         self.value = ""
         var flag = false
         for char in value {
@@ -70,13 +72,16 @@ class StringC: ConstIR {
                 default:
                     self.value += "5C"
                 }
+                self.rowValue += String(char)
                 flag = false
             } else if char == "\\" {
                 flag = true
                 self.value += String(char)
+                self.rowValue += String(char)
                 length += 1
             } else if char != "\"" {
                 self.value += String(char)
+                self.rowValue += String(char)
                 length += 1
             }
         }

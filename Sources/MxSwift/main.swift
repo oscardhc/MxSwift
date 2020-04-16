@@ -43,7 +43,7 @@ func compile(useFileStream: Bool) throws {
 
     RAllocator().work(on: asm.program)
     
-    RVPrinter(filename: "/Users/oscar/Documents/Classes/1920_Spring/Compiler/tmp/out.s").print(on: asm.program)
+    RVPrinter(filename: "/Users/oscar/Documents/Classes/1920_Spring/Compiler/tmp/test.s").work(on: asm.program)
     
 }
 

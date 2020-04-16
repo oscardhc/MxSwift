@@ -34,10 +34,20 @@ class InstRV: CustomStringConvertible, OperandConvertable, Hashable {
         case add, sub, sll, slt, sltu, xor, srl, sra, or, and
         case mul, mulh, mulhsu, mulhu, div, divu, rem, remu
         // pseudo
-        case bgt, ble, j, ret, sgt, mv, call, bnez
+        case bgt, ble, j, ret, sgt, mv, call, bnez, beqz
         // not even pseudo MUST BE ADJUSTED WHEN OUTPUT!
         case subi
     }
+    var isBranch: Bool {
+        "\(op)".hasPrefix("b")
+    }
+    
+    static let OppBranch: [OP: OP] = [
+        .beq: .bne, .bne: .beq,
+        .blt: .bge, .bge: .blt,
+        .bgt: .ble, .ble: .bgt,
+        .bnez: .beqz, .beqz: .bnez
+    ]
     
     func hash(into hasher: inout Hasher) {
         hasher.combine(ObjectIdentifier(self))
@@ -47,10 +57,23 @@ class InstRV: CustomStringConvertible, OperandConvertable, Hashable {
     }
     
     var description: String {
-        if dst == nil {
+        if op == .subi {
+            return "\(OP.addi) \(dst!), \(src[0]), \((src[1] as! Imm).reversed)"
+        } else if dst == nil {
             return "\(op) \(src.joined())"
         } else {
             return "\(op) \(dst!), \(src.joined())"
+        }
+    }
+    func printAsLast(nextBlock: BlockRV? = nil) -> String {
+        if inBlock.succs.count < 2 {
+            return description
+        } else if nextBlock == inBlock.succs[0] {
+            return "\(Self.OppBranch[op]!) \(src.filter{!($0 is BlockRV)}.joined()), \(inBlock.succs[1])"
+        } else if nextBlock == inBlock.succs[1] {
+            return "\(op) \(src.filter{!($0 is BlockRV)}.joined()), \(inBlock.succs[0])"
+        } else {
+            return "\(op) \(src.filter{!($0 is BlockRV)}.joined()), \(inBlock.succs[0])" + "\n" + "j \(inBlock.succs[1])"
         }
     }
     
@@ -63,8 +86,8 @@ class InstRV: CustomStringConvertible, OperandConvertable, Hashable {
     var inBlock: BlockRV
     var nodeInBlock: List<InstRV>.Node!
     
-    var use = [Register]()
-    var def = [Register]()
+    var use = Set<Register>()
+    var def = Set<Register>()
     
     var ii = Set<Register>()
     var oo = Set<Register>()
@@ -79,16 +102,29 @@ class InstRV: CustomStringConvertible, OperandConvertable, Hashable {
         
         self.dst = dst
         if dst != nil {
-            def.append(dst!)
+            def.insert(dst!)
             dst!.defs.append(self)
         }
-        
         for s in src {
             self.src.append(s.getOP)
             if let r = s.getOP as? Register {
-                use.append(r)
+                use.insert(r)
                 r.uses.append(self)
             }
+        }
+        
+        switch op {
+        case .call:
+            use.formUnion(
+                (0..<min(8, (src[0] as! FunctionRV).argNum)).map{RV32["a\($0)"]}
+            )
+            def.formUnion(
+                RV32.callerSave.map{RV32[$0]}
+            )
+        case .ret:
+            use.insert(RV32["ra"])
+        default:
+            break
         }
         
         if index == -1 {
@@ -133,7 +169,7 @@ class InstRV: CustomStringConvertible, OperandConvertable, Hashable {
     
 }
 
-class BlockRV: OperandRV {
+class BlockRV: OperandRV, Equatable {
     
     let name: String
     var insts = List<InstRV>()
@@ -148,10 +184,11 @@ class BlockRV: OperandRV {
     
     let loopDepth: Int
     
-    override var description: String {".[\(loopDepth)]" + name}
+    override var description: String {"." + name}
     var succs: [BlockRV] {
         insts.last!.src.compactMap{$0 as? BlockRV}
     }
+    var preds = [BlockRV]()
     
     init(name: String, in f: FunctionRV, depth: Int) {
         self.name = name
@@ -160,6 +197,10 @@ class BlockRV: OperandRV {
         super.init()
         nodeInFunction = inFunction.blocks.append(self)
     }
+    
+    static func == (lhs: BlockRV, rhs: BlockRV) -> Bool {
+        lhs === rhs
+    }
 
 }
 
@@ -167,23 +208,34 @@ class FunctionRV: OperandRV {
     
     let name: String
     var blocks = List<BlockRV>()
-    var inProgram: Assmebly
+    let inProgram: Assmebly
     var nodeInProgram: List<FunctionRV>.Node!
     
-    override var description: String {name + "-\(stackSize)"}
+    override var description: String {name}
     
-    var stackSize: Int = 0
+    let stackSize = Imm(0)
+    let argNum: Int
     
-    init(name: String, in prog: Assmebly) {
+    init(name: String, in prog: Assmebly, argNum: Int) {
         self.name = name
         self.inProgram = prog
+        self.argNum = argNum
         super.init()
         nodeInProgram = self.inProgram.functions.append(self)
     }
     
     func newVar() -> OffsetReg {
-        stackSize += 4
-        return OffsetReg(RV32["sp"], offset: Imm(stackSize-4))
+        stackSize.value += 4
+        return OffsetReg(RV32["sp"], offset: Imm(stackSize.value - 4))
+    }
+    
+    func initPred() {
+        for b in blocks {
+            b.preds.removeAll()
+        }
+        for b in blocks {
+            b.succs.forEach {$0.preds.append(b)}
+        }
     }
     
 }
@@ -205,6 +257,22 @@ class GlobalRV: OperandRV {
         _ = prog.globals.append(self)
     }
 }
+class GlobalStr: GlobalRV {
+    
+    let str: StringC
+    override var toPrint: String {"""
+
+  .globl \(name)
+\(name):
+  .asciz "\(str.rowValue)"
+"""}
+    
+    init(name: String, str: StringC, in prog: Assmebly) {
+        self.str = str
+        super.init(name: name, space: 4, in: prog)
+    }
+    
+}
 
 class Imm: OperandRV {
     var value: Int = 0
@@ -221,6 +289,9 @@ class Imm: OperandRV {
     init(_ v: GlobalRV) {
         global = v
     }
+    var reversed: Imm {
+        Imm(-value)
+    }
 }
 
 class OffsetReg: OperandRV {
@@ -231,4 +302,14 @@ class OffsetReg: OperandRV {
         self.reg = reg
         self.offset = offset
     }
+}
+
+class StackPointer: OffsetReg {
+    
+    var function: FunctionRV
+    init(in f: FunctionRV,offset: Imm) {
+        function = f
+        super.init(RV32["sp"], offset: offset)
+    }
+    
 }

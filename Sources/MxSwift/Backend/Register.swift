@@ -19,7 +19,10 @@ class Register: OperandRV, Hashable, Equatable {
     }
     
     let name: String
-    override var description: String {"<\(color ?? "\\")>" + name}
+    override var description: String {
+//        RV32.regs.values.contains(self) ? color! : ("<\(name)>\(color ?? "~")")
+        color ?? "<\(name)>"
+    }
     
     static let counter = Counter()
     init(name: String? = nil, color: String? = nil) {
@@ -57,7 +60,6 @@ class RV32 {
     static let callerSave = (0...6).map{"t\($0)"} + (0...7).map{"a\($0)"} + ["ra"]
     static let calleeSave = (0...11).map{"s\($0)"}
     static let normal = RV32.callerSave + RV32.calleeSave
-//    static let normal = RV32.calleeSave + ["t0", "t1"]
     static let special = ["zero", "sp", "gp", "tp"]
     static let regs = Dictionary(uniqueKeysWithValues:
         (RV32.calleeSave + RV32.callerSave + RV32.special).map {($0, Register(name: $0, color: $0))}
