@@ -1,1 +1,1 @@
-./.build/release/MxSwift codegen
+swift run -c release MxSwift codegen
