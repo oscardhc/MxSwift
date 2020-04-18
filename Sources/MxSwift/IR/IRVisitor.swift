@@ -31,8 +31,6 @@ protocol IRVisitor {
     
 }
 
-let stdPrint = print
-
 class IRNumberer: IRVisitor {
     
     var resultString: String {"\(self) finished. "}

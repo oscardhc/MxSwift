@@ -3,16 +3,22 @@ import Foundation
 import Antlr4
 import Parser
 
+let testing = CommandLine.arguments.count > 1
+
+public func print(_ items: Any..., separator: String = " ", terminator: String = "\n") {
+    if !testing {
+        Swift.print(items.map{"\($0)"}.joined(separator: separator), terminator: terminator)
+    }
+}
+
 func compile(useFileStream: Bool) throws {
     
-    print(welcomeText)
-    
+//    print(welcomeText)
     let prog = try semantic(useFileStream: useFileStream)
     
-    if CommandLine.arguments.count > 1 && CommandLine.arguments[1] == "semantic" {
+    if testing && CommandLine.arguments[1] == "semantic" {
         return
     }
-    let testing = CommandLine.arguments.count > 1
     
     let ir = IRBuilder()
     ir.visit(node: prog)
@@ -49,7 +55,7 @@ func compile(useFileStream: Bool) throws {
     if !testing {
         RVPrinter(filename: "/Users/oscar/Documents/Classes/1920_Spring/Compiler/tmp/test.s").work(on: asm.program)
     } else {
-        RVPrinter(filename: "test.s").work(on: asm.program)
+        Swift.print(RVPrinter().work(on: asm.program))
     }
     
 }
