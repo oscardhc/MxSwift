@@ -1,1 +1,1 @@
-swift run -c release MxSwift semantic
+.build/release/MxSwift semantic

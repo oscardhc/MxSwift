@@ -11,10 +11,10 @@ public func print(_ items: Any..., separator: String = " ", terminator: String =
     }
 }
 
-func compile(useFileStream: Bool) throws {
+func compile() throws {
     
 //    print(welcomeText)
-    let prog = try semantic(useFileStream: useFileStream)
+    let prog = try semantic(useFileStream: !testing)
     
     if testing && CommandLine.arguments[1] == "semantic" {
         return
@@ -171,11 +171,7 @@ func semantic(useFileStream: Bool) throws -> Program {
 }
 
 do {
-    if CommandLine.arguments.count > 1 {
-        try compile(useFileStream: false)
-    } else {
-        try compile(useFileStream: true)
-    }
+    try compile()
 } catch let e as CompilationError {
     e.show()
     exit(-1)
