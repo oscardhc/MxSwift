@@ -23,6 +23,7 @@ extension Int: OperandConvertable {
 class OperandRV: CustomStringConvertible, OperandConvertable {
     var description: String {"?"}
     var getOP: OperandRV {self}
+    var getReg: Register? {self as? Register}
 }
 
 class InstRV: CustomStringConvertible, OperandConvertable, Hashable {
@@ -34,7 +35,7 @@ class InstRV: CustomStringConvertible, OperandConvertable, Hashable {
         case add, sub, sll, slt, sltu, xor, srl, sra, or, and
         case mul, mulh, mulhsu, mulhu, div, divu, rem, remu
         // pseudo
-        case bgt, ble, j, ret, sgt, mv, call, bnez, beqz
+        case bgt, ble, j, ret, sgt, mv, call, bnez, beqz, snez, seqz
         // not even pseudo MUST BE ADJUSTED WHEN OUTPUT!
         case subi
     }
@@ -107,7 +108,7 @@ class InstRV: CustomStringConvertible, OperandConvertable, Hashable {
         }
         for s in src {
             self.src.append(s.getOP)
-            if let r = s.getOP as? Register {
+            if let r = s.getOP.getReg {
                 use.insert(r)
                 r.uses.append(self)
             }
@@ -139,7 +140,7 @@ class InstRV: CustomStringConvertible, OperandConvertable, Hashable {
             dst.defs.removeAll {$0 === self}
         }
         for s in src {
-            if let r = s as? Register {
+            if let r = s.getReg {
                 r.uses.removeAll {$0 === self}
             }
         }
@@ -149,23 +150,26 @@ class InstRV: CustomStringConvertible, OperandConvertable, Hashable {
     func newDst(_ d: Register) {
         dst.defs.removeAll {$0 === self}
         dst = d
+        def = [d]
         dst.defs.append(self)
     }
     func newSrc(_ s: OperandRV, at i: Int) {
-        if let r = src[i] as? Register {
+        var offset: OffsetReg? = nil
+        if let r = src[i].getReg {
+            offset = src[i] as? OffsetReg
             r.uses.removeAll {$0 == self}
+            use.remove(r)
         }
-        src[i] = s
-        if let r = s as? Register {
+        if offset != nil {
+            offset!.reg = s as! Register
+        } else {
+            src[i] = s
+        }
+        if let r = s.getReg {
             r.uses.append(self)
+            use.insert(r)
         }
     }
-    
-//    @discardableResult func d(_ d: Register) -> Self {dst = d; return self;}
-//    @discardableResult func s(_ s: OperandConvertable) -> Self {src.append(s.getOP); return self;}
-//
-//    @discardableResult static func >> (i: InstRV, d: Register) -> InstRV {return i.d(d);}
-//    @discardableResult static func << (i: InstRV, s: OperandConvertable) -> InstRV {return i.s(s);}
     
 }
 
@@ -244,14 +248,21 @@ class GlobalRV: OperandRV {
     
     let name: String
     let space: Int
+    let value: Int
     var high: String {"%hi(\(name))"}
     var low: String {"%lo(\(name))"}
     
     override var description: String {high}
-    var toPrint: String {".comm \(name), \(space), \(space)"}
+    var toPrint: String {"""
+
+  .globl \(name)
+\(name):
+  .word \(value)
+"""}
     
-    init(name: String, space: Int, in prog: Assmebly) {
+    init(name: String, value: Int, space: Int, in prog: Assmebly) {
         self.name = name
+        self.value = value
         self.space = space
         super.init()
         _ = prog.globals.append(self)
@@ -269,7 +280,7 @@ class GlobalStr: GlobalRV {
     
     init(name: String, str: StringC, in prog: Assmebly) {
         self.str = str
-        super.init(name: name, space: 4, in: prog)
+        super.init(name: name, value: 0, space: 4, in: prog)
     }
     
 }
@@ -298,6 +309,7 @@ class OffsetReg: OperandRV {
     var reg: Register
     var offset: Imm
     override var description: String {"\(offset)(\(reg))"}
+    override var getReg: Register? {reg}
     init(_ reg: Register, offset: Imm) {
         self.reg = reg
         self.offset = offset

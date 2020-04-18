@@ -404,10 +404,19 @@ class IRBuilder: ASTBaseVisitor {
         node.ret = IntC(type: .int, value: node.value)
     }
     
+    var globalStrMap = [String: GlobalVariable]()
     override func visit(node: StringLiteralE) {
         super.visit(node: node)
-        let cons = StringC(value: node.value)
-        let globS = GlobalVariable(name: "s.", value: cons, module: module)
+        let globS: GlobalVariable = {
+            if let g = globalStrMap[node.value] {
+                return g
+            } else {
+                let cons = StringC(value: node.value)
+                let globS = GlobalVariable(name: "s.", value: cons, module: module)
+                globalStrMap[node.value] = globS
+                return globS
+            }
+        }()
 //        let globP = GlobalVariable(name: "p.", value: NullC(type: .string), module: module, isConst: false)
 //        let pos = GEPInst(type: .string, base: globS, needZero: true, val: IntC.zero(), in: globalFunc.blocks[0], at: 0)
 //        StoreInst(alloc: globP, val: pos, in: globalFunc.blocks[0], at: 1)
@@ -530,8 +539,11 @@ class IRBuilder: ASTBaseVisitor {
             assign(lhs: node.expression.ret!, rhs: node.ret!, in: curBlock)
         case .sub:
             node.ret = BinaryInst(type: exp.type, operation: uopMap[node.op]!, lhs: IntC.zero(), rhs: exp, in: curBlock)
-        case .bitwise, .negation:
+        case .bitwise:
             let inst = IntC(type: exp.type, value: -1)
+            node.ret = BinaryInst(type: exp.type, operation: uopMap[node.op]!, lhs: exp, rhs: inst, in: curBlock)
+        case .negation:
+            let inst = IntC(type: exp.type, value: 1)
             node.ret = BinaryInst(type: exp.type, operation: uopMap[node.op]!, lhs: exp, rhs: inst, in: curBlock)
         default:
             node.ret = exp

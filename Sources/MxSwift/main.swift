@@ -3,7 +3,6 @@ import Foundation
 import Antlr4
 import Parser
 
-
 func compile(useFileStream: Bool) throws {
     
     print(welcomeText)
@@ -13,6 +12,7 @@ func compile(useFileStream: Bool) throws {
     if CommandLine.arguments.count > 1 && CommandLine.arguments[1] == "semantic" {
         return
     }
+    let testing = CommandLine.arguments.count > 1
     
     let ir = IRBuilder()
     ir.visit(node: prog)
@@ -22,7 +22,9 @@ func compile(useFileStream: Bool) throws {
         throw error
     }
     
-    IRPrinter(filename: "/Users/oscar/Documents/Classes/1920_Spring/Compiler/tmp/out0.ll").print(on: ir.module)
+    if !testing {
+        IRPrinter(filename: "/Users/oscar/Documents/Classes/1920_Spring/Compiler/tmp/out0.ll").print(on: ir.module)
+    }
     MemToReg().work(on: ir.module)
         
     optimize(v: ir.module, timeLimit: Int(5e9), iterationLimit: 15)
@@ -34,16 +36,21 @@ func compile(useFileStream: Bool) throws {
 //
 //    MemToReg().work(on: ir.module)
 //    optimize(v: ir.module, timeLimit: Int(3e9), iterationLimit: 4, noCopy: true)
-    IRPrinter(filename: "/Users/oscar/Documents/Classes/1920_Spring/Compiler/tmp/out2.ll").print(on: ir.module)
-    
-    print("Compilation exited normally.")
+    if !testing {
+        IRPrinter(filename: "/Users/oscar/Documents/Classes/1920_Spring/Compiler/tmp/out2.ll").print(on: ir.module)
+    }
     
     let asm = InstSelect()
     asm.work(on: ir.module)
 
+    UseImmediate().work(on: asm.program)
     RAllocator().work(on: asm.program)
     
-    RVPrinter(filename: "/Users/oscar/Documents/Classes/1920_Spring/Compiler/tmp/test.s").work(on: asm.program)
+    if !testing {
+        RVPrinter(filename: "/Users/oscar/Documents/Classes/1920_Spring/Compiler/tmp/test.s").work(on: asm.program)
+    } else {
+        RVPrinter(filename: "test.s").work(on: asm.program)
+    }
     
 }
 

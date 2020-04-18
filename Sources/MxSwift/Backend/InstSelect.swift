@@ -75,6 +75,7 @@ class InstSelect: IRVisitor {
         visit(v: v)
     }
     func visit(v: Module) {
+        v.classes.forEach {$0.accept(visitor: self)}
         v.globalVar.forEach {$0.accept(visitor: self)}
         for f in v.functions {
             fMap[f] = FunctionRV(name: f.basename, in: program, argNum: f.operands.count)
@@ -151,7 +152,9 @@ class InstSelect: IRVisitor {
         }
         
     }
-    func visit(v: Class) {}
+    func visit(v: Class) {
+        cMap[v.type.description] = v
+    }
     func visit(v: BlockIR) {
         curBlock = bMap[v]!
         v.insts.forEach {
@@ -162,12 +165,13 @@ class InstSelect: IRVisitor {
         if v.value is StringC {
             gMap[v] = GlobalStr(name: v.basename, str: v.value as! StringC, in: program)
         } else {
-            gMap[v] = GlobalRV(name: v.basename, space: v.type.space, in: program)
+            let value = v.value is IntC ? (v.value as! IntC).value : 0
+            gMap[v] = GlobalRV(name: v.basename, value: value, space: v.type.space, in: program)
         }
     }
     func visit(v: PhiInst) {}
-    func visit(v: SExtInst) {}
-    func visit(v: CastInst) {}
+    func visit(v: SExtInst) {InstRV(.mv, in: curBlock, to: **v, *v[0])}
+    func visit(v: CastInst) {InstRV(.mv, in: curBlock, to: **v, *v[0])}
     static let jop: [CompareInst.CMP: InstRV.OP] = [
         .eq: .beq, .ne: .bne, .sge: .bge, .sgt: .bgt, .sle: .ble, .slt: .blt
     ]
@@ -190,11 +194,12 @@ class InstSelect: IRVisitor {
             return
         }
         let offset: OperandConvertable = {
-            if v[0].type is PointerT {
-                return InstRV(.mul, in: curBlock, to: Register(), *v[1], loadImmediate(v[0].type.space, to: Register(), in: curBlock))
-            } else {
-                return loadImmediate(cMap[v[0].type.description]!.offset(at: (v[1] as! IntC).value),
+            assert(v[0].type is PointerT)
+            if v[0].type.getBase is ClassT {
+                return loadImmediate(cMap[v[0].type.getBase.description]!.offset(at: (v[1] as! IntC).value),
                                      to: Register(), in: curBlock)
+            } else {
+                return InstRV(.mul, in: curBlock, to: Register(), *v[1], loadImmediate(v[0].type.getBase.space, to: Register(), in: curBlock))
             }
         }()
         InstRV(.add, in: curBlock, to: **v, *v[0], offset)
@@ -214,7 +219,8 @@ class InstSelect: IRVisitor {
             InstRV(storeMap[v[1].type.getBase.space]!, in: curBlock, *v[0],
                    OffsetReg(InstRV(.lui, in: curBlock, to: Register(), *v[1]).dst, offset: Imm(*v[1] as! GlobalRV)))
         } else {
-            InstRV(storeMap[v[1].type.getBase.space]!, in: curBlock, *v[0], OffsetReg(*v[1] as! Register, offset: Imm(0)))
+            InstRV(storeMap[v[1].type.getBase.space]!, in: curBlock, *v[0], OffsetReg(**v[1], offset: Imm(0)))
+            print("storeinst", *v[0], "->", **v[1], v[0], "->", v[1])
         }
     }
     func visit(v: CallInst) {
@@ -231,7 +237,7 @@ class InstSelect: IRVisitor {
         }
     }
     func visit(v: AllocaInst) {
-        assert(false)
+//        assert(false)
     }
     func visit(v: ReturnInst) {
         for reg in RV32.calleeSave + ["ra"] {
@@ -251,12 +257,19 @@ class InstSelect: IRVisitor {
         .and: (.and, .andi), .or: (.or, .ori), .xor: (.xor, .xori)
     ]
     static let cop: [CompareInst.CMP: (InstRV.OP, InstRV.OP?)] = [
-        .eq: (.sub, .subi), .ne: (.xor, .xori),
-        .slt:(.slt, .slti), .sgt: (.sgt, nil)
+        .ne: (.xor, .xori), .slt:(.slt, .slti), .sgt: (.sgt, nil)
     ]
     static let rop: [CompareInst.CMP: InstRV.OP] = [
-        .sge: .slt, .sle: .sgt
+        .eq: .xor, .sge: .slt, .sle: .sgt
     ]
+    
+    private func compare(cmp: CompareInst.CMP, lhs: Value, rhs: Value, to: Register) {
+        if let c = Self.cop[cmp] {
+            InstRV(.snez, in: curBlock, to: to, InstRV(c.0, in: curBlock, to: Register(), *lhs, *rhs))
+        } else {
+            InstRV(.seqz, in: curBlock, to: to, InstRV(Self.rop[cmp]!, in: curBlock, to: Register(), *lhs, *rhs))
+        }
+    }
     
     func visit(v: BinaryInst) {
         var op: InstRV.OP!
@@ -264,18 +277,12 @@ class InstSelect: IRVisitor {
             if c.users.count == 1, c.users[0].user is BrInst {
                 return
             }
-            if Self.cop[c.cmp] != nil {
-                op = Self.cop[c.cmp]!.0
-            } else {
-                InstRV(.xori, in: curBlock, to: **v,
-                       InstRV(Self.rop[c.cmp]!, in: curBlock, to: Register(), *v[0], *v[1]),
-                       1)
-                return
-            }
+            compare(cmp: c.cmp, lhs: c[0], rhs: c[1], to: **v)
+            return
         } else {
             op = Self.aop[v.operation]!.0
         }
-        InstRV(op , in: curBlock, to: (*v as! Register), *v[0], *v[1])
+        InstRV(op , in: curBlock, to: **v, *v[0], *v[1])
     }
 
     

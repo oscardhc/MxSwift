@@ -20,12 +20,12 @@ class Register: OperandRV, Hashable, Equatable {
     
     let name: String
     override var description: String {
-//        RV32.regs.values.contains(self) ? color! : ("<\(name)>\(color ?? "~")")
-        color ?? "<\(name)>"
+        color
+//        color + "<\(name)>"
     }
     
     static let counter = Counter()
-    init(name: String? = nil, color: String? = nil) {
+    init(name: String? = nil, color: String = "?") {
         self.name = name ?? ("tmp_" + Self.counter.tik())
         self.color = color
         super.init()
@@ -40,7 +40,7 @@ class Register: OperandRV, Hashable, Equatable {
     
     var deg: Int = -1
     var alias: Register?
-    var color: String?
+    var color: String
     
     func clear() {
         itr.removeAll()

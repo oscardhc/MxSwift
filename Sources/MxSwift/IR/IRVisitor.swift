@@ -99,9 +99,7 @@ class IRPrinter: IRVisitor {
         }
     }
     func flushToFile(name: String) {
-        let handle = FileHandle(forWritingAtPath: name)!
-        handle.truncateFile(atOffset: 0)
-        handle.write(str.data(using: .utf8)!)
+        try! str.write(toFile: name, atomically: true, encoding: .utf8)
     }
     func print(_ items: Any..., end: String = "\n") {
         for _ in 0..<indent {

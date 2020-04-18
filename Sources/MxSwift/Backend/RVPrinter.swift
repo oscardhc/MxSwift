@@ -23,9 +23,7 @@ class RVPrinter {
         str += "\n"
     }
     func flushToFile(name: String) {
-        let handle = FileHandle(forWritingAtPath: name)!
-        handle.truncateFile(atOffset: 0)
-        handle.write(str.data(using: .utf8)!)
+        try! str.write(toFile: name, atomically: true, encoding: .utf8)
     }
     
     
@@ -39,7 +37,7 @@ class RVPrinter {
             f.initPred()
             var arrangement = [f.blocks.first!]
             for _ in 1..<f.blocks.count {
-                print(arrangement)
+//                print(arrangement)
                 arrangement.append(
                     arrangement.last!.succs.filter{!arrangement.contains($0)}.first ?? f.blocks.filter{!arrangement.contains($0)}.first!
                 )
@@ -56,13 +54,15 @@ class RVPrinter {
                     idx == arrangement.count - 1 ? nil: arrangement[idx + 1]
                 ))
             }
-//            print()
             
             pr("")
         }
+        pr("")
+        pr("  .bss")
         for g in v.globals where !(g is GlobalStr) {
             pr(g.toPrint)
         }
+        pr("")
         pr("  .rodata")
         for g in v.globals where g is GlobalStr {
             pr(g.toPrint)
