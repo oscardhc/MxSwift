@@ -44,6 +44,8 @@ func compile() throws {
 //    optimize(v: ir.module, timeLimit: Int(3e9), iterationLimit: 4, noCopy: true)
     if !testing {
         IRPrinter(filename: "/Users/oscar/Documents/Classes/1920_Spring/Compiler/tmp/out2.ll").print(on: ir.module)
+    } else {
+        _ = IRPrinter().print(on: ir.module)
     }
     
     let asm = InstSelect()
@@ -53,7 +55,7 @@ func compile() throws {
     RAllocator().work(on: asm.program)
     
     if !testing {
-        RVPrinter(filename: "/Users/oscar/Documents/Classes/1920_Spring/Compiler/tmp/test.s").work(on: asm.program)
+        _ = RVPrinter(filename: "/Users/oscar/Documents/Classes/1920_Spring/Compiler/tmp/test.s").work(on: asm.program)
     } else {
         Swift.print(RVPrinter().work(on: asm.program))
     }

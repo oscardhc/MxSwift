@@ -37,7 +37,6 @@ class RVPrinter {
             f.initPred()
             var arrangement = [f.blocks.first!]
             for _ in 1..<f.blocks.count {
-//                print(arrangement)
                 arrangement.append(
                     arrangement.last!.succs.filter{!arrangement.contains($0)}.first ?? f.blocks.filter{!arrangement.contains($0)}.first!
                 )
