@@ -19,7 +19,7 @@ prefix func ** (val: Value) -> Register {
 class InstSelect: IRVisitor {
     
     var resultString: String {"\(self) finished. "}
-    let immUpperSize = 1 << 12
+    let immRange = (-(1<<11), (1<<11)-1)
     
     static var instance: InstSelect!
     init() {
@@ -41,10 +41,8 @@ class InstSelect: IRVisitor {
     var gMap = [Global: GlobalRV]()
     
     private func loadImmediate(_ val: Int, to reg: Register, in blk: BlockRV) -> Register {
-        if val >= immUpperSize {
-            return InstRV(.addi, in: blk, to: reg,
-                          InstRV(.lui, in: blk, to: Register(), val / immUpperSize),
-                          val % immUpperSize).dst
+        if val < immRange.0 || val > immRange.1 {
+            return InstRV(.li, in: blk, to: reg, val).dst
         } else {
             return InstRV(.addi, in: blk, to: reg, RV32["zero"], val).dst
         }
@@ -92,7 +90,7 @@ class InstSelect: IRVisitor {
         let loopinfo = LoopInfo(v: v)
         
         for b in v.blocks {
-            bMap[b] = BlockRV(name: v.basename + "_" + b.basename, in: curFunction, depth: loopinfo.getDepth(for: b))
+            bMap[b] = BlockRV(name: v.basename + "_" + b.basename.replacingOccurrences(of: ".", with: "_"), in: curFunction, depth: loopinfo.getDepth(for: b))
         }
         curBlock = bMap[v.blocks.first!]!
         

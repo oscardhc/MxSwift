@@ -27,7 +27,6 @@ class SCCPropagation: FunctionPass {
         
         func tryExecute(t: BlockIR) {
             if !t.reachable {
-//                print("EXE", t.name)
                 t.reachable = true
                 blockList.append(t)
                 for u in t.users where u.user is PhiInst {
@@ -38,6 +37,7 @@ class SCCPropagation: FunctionPass {
         
         v.operands.forEach {$0.ccpInfo = Value.CCPInfo(type: .variable)}
         for blk in v.blocks {
+            blk.reachable = false
             blk.insts.forEach {$0.ccpInfo = Value.CCPInfo()}
         }
         

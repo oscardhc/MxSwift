@@ -58,7 +58,7 @@ class RVPrinter {
             pr("")
         }
         pr("")
-        pr("  .bss")
+        pr("  .data")
         for g in v.globals where !(g is GlobalStr) {
             pr(g.toPrint)
         }

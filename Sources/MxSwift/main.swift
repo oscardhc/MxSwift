@@ -33,7 +33,7 @@ func compile() throws {
     }
     MemToReg().work(on: ir.module)
         
-    optimize(v: ir.module, timeLimit: Int(5e9), iterationLimit: 15)
+    optimize(v: ir.module, timeLimit: Int(5e9), iterationLimit: 20)
     
     CESplit(removePhi: false).work(on: ir.module)
 //    IRPrinter(filename: "/Users/oscar/Documents/Classes/1920_Spring/Compiler/tmp/out1.ll").print(on: ir.module)
@@ -87,7 +87,7 @@ func optimize(v: Module, timeLimit: Int, iterationLimit: Int, noPhi: Bool = fals
         CFGSimplifier(noPhi).work(on: v)
         
         if !noPhi && !noCopy {
-//            Inliner().work(on: v)
+            Inliner().work(on: v)
         }
         
         let curString = IRPrinter().print(on: v)

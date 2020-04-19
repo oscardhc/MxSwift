@@ -35,7 +35,7 @@ class InstRV: CustomStringConvertible, OperandConvertable, Hashable {
         case add, sub, sll, slt, sltu, xor, srl, sra, or, and
         case mul, mulh, mulhsu, mulhu, div, divu, rem, remu
         // pseudo
-        case bgt, ble, j, ret, sgt, mv, call, bnez, beqz, snez, seqz
+        case bgt, ble, j, ret, sgt, mv, call, bnez, beqz, snez, seqz, li
         // not even pseudo MUST BE ADJUSTED WHEN OUTPUT!
         case subi
     }
