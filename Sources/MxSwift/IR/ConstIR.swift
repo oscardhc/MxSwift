@@ -129,11 +129,11 @@ class FunctionIR: Global {
     }
     
     var size: (Int, Int) {
-        var instCount = 0, blockCount = 0
+        var instCount = 0
         for b in blocks {
             instCount += b.insts.count
         }
-        return (instCount, blockCount)
+        return (instCount, blocks.count)
     }
     
     func calPreds() {

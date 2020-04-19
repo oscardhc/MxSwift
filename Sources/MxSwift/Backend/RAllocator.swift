@@ -12,15 +12,8 @@ class RAllocator {
     class N {
         var (precolored, initial, simplifyList, freezeList, spillList, spilled, coalesced, colored)
             = (Set<Register>(), Set<Register>(), Set<Register>(), Set<Register>(), Set<Register>(), Set<Register>(), Set<Register>(), Set<Register>())
-        var stack: [Register] {
-            didSet {
-                stackSet = Set<Register>(stack)
-            }
-        }
+        var stack = [Register]()
         var stackSet = Set<Register>()
-        init() {
-            stack = []
-        }
     }
     
     class M {
@@ -202,7 +195,7 @@ class RAllocator {
         return s.reduce(0, {$0 + ($1.deg >= K ? 1 : 0)}) < K
     }
     func checkOK(_ u: Register, _ v: Register) -> Bool {
-        return !adjacent(v).contains{!ok($0, u)}
+//        return !adjacent(v).contains{!ok($0, u)}
 //        for r in v.itr where !n.coalesced.contains(r) && !n.stackSet.contains(r) && !ok(r, u) {
 //            return false
 //        }
@@ -215,6 +208,7 @@ class RAllocator {
         return true
     }
     func conservative(_ u: Register, _ v: Register) -> Bool {
+//        conservative(adjacent(u).union(adjacent(v)))
         var res = 0
         for r in u.itr where !n.coalesced.contains(r) && !n.stackSet.contains(r) && r.deg >= K {
             res += 1
@@ -268,6 +262,7 @@ class RAllocator {
     func simplify() {
         let r = n.simplifyList.popFirst()!
         n.stack.append(r)
+        n.stackSet.insert(r)
         for a in adjacent(r) {
             decreseDeg(a)
         }
@@ -283,8 +278,8 @@ class RAllocator {
             m.constrained.insert(mv)
             addWorkList(u)
             addWorkList(v)
-        } else if (n.precolored.contains(u) && !adjacent(v).contains{!ok($0, u)})
-            || (!n.precolored.contains(u) && conservative(adjacent(u).union(adjacent(v)))) {
+        } else if (n.precolored.contains(u) && checkOK(u, v))
+            || (!n.precolored.contains(u) && conservative(u, v)) {
             m.coalesced.insert(mv)
             combine(u, v)
             addWorkList(u)
@@ -306,6 +301,7 @@ class RAllocator {
     }
     func assignColors() {
         while let r = n.stack.popLast() {
+            n.stackSet.remove(r)
             var colors = RV32.normal
             for w in adj[r]! {
                 let h = alias(w)

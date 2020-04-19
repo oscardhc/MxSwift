@@ -87,6 +87,11 @@ class GVNumberer: FunctionPass {
     
     override func visit(v: FunctionIR) {
         
+//        print("GVN", v, v.size)
+//        if v.size.0 > 300 {
+//            return
+//        }
+        
         func getPredicate(at cur: BlockIR) -> VNExpression? {
             let only = cur.preds.generated {
                 $0.reachable ? BlockIR.Edge(from: $0, to: cur) : nil

@@ -21,7 +21,7 @@ class FunctionPass: IRVisitor {
     
     func work(on v: Module) {
         visit(v: v)
-        UseRebuilder().work(on: v)
+//        UseRebuilder().work(on: v)
         DeadCleaner().work(on: v)
         print(resultString)
     }
