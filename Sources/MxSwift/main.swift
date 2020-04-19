@@ -33,7 +33,7 @@ func compile() throws {
     }
     MemToReg().work(on: ir.module)
         
-    optimize(v: ir.module, timeLimit: Int(5e9), iterationLimit: 20)
+    optimize(v: ir.module, timeLimit: Int(4e9), iterationLimit: 20)
     
     CESplit(removePhi: false).work(on: ir.module)
 //    IRPrinter(filename: "/Users/oscar/Documents/Classes/1920_Spring/Compiler/tmp/out1.ll").print(on: ir.module)
