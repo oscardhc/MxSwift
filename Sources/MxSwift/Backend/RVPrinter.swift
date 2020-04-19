@@ -47,6 +47,9 @@ class RVPrinter {
                     if i.op == .mv && i.dst!.color == (i[0] as! Register).color {
                         continue
                     }
+                    if (i.op == .addi || i.op == .subi) && i.dst!.color == (i[0] as! Register).color && (i[1] as! Imm).value == 0 {
+                        continue
+                    }
                     pr(" ", i)
                 }
                 pr(" ", b.insts.last!.printAsLast(nextBlock:
