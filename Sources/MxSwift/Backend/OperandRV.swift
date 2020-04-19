@@ -286,7 +286,7 @@ class GlobalStr: GlobalRV {
 }
 
 class Imm: OperandRV {
-    var value: Int = 0
+    var value: Int = -1
     var global: GlobalRV?
     override var description: String {
         if global != nil {
