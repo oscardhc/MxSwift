@@ -13,31 +13,18 @@ class PTAnalysis: ModulePass {
         IRNumberer().work(on: v)
         super.work(on: v)
     }
-    
-    var graph   = [Value: Set<Value>]()
-    var pts     = [Value: Set<Value>]()
-    var loads   = [Value: Set<Value>]()
-    var stores  = [Value: Set<Value>]()
     var workList = Set<Value>()
     var callers = [FunctionIR: Set<Value>]()
+    var allVar = [Value]()
     
     func mayAlias(p: Value, q: Value) -> Bool {
-        let pp = pts[p]!
-        let qq = pts[q]!
-        let uu = pp.intersection(qq)
+        let uu = p.pts.intersection(q.pts)
         return !uu.isEmpty
     }
     
-    func makeEmpty(v: Value) {
-        graph[v]    = Set<Value>()
-        pts[v]      = Set<Value>()
-        loads[v]    = Set<Value>()
-        stores[v]   = Set<Value>()
-    }
-    
     func addEdge(from: Value, to: Value) {
-        if !graph[from]!.contains(to) {
-            graph[from]!.insert(to)
+        if !from.graph.contains(to) {
+            from.graph.insert(to)
             workList.insert(from)
         }
     }
@@ -48,20 +35,24 @@ class PTAnalysis: ModulePass {
         _ = counter.tik()
         func getNewAddr() -> IntC {
             let c = IntC(type: .int, value: -counter.tikInt())
-            makeEmpty(v: c)
+            c.makeEmpty()
+            allVar.append(c)
             return c
         }
         
         for g in v.globalVar {
-            makeEmpty(v: g)
+            g.makeEmpty()
+            allVar.append(g)
         }
         for f in v.functions {
             for o in f.operands {
-                makeEmpty(v: o)
+                o.makeEmpty()
+                allVar.append(o)
             }
             for b in f.blocks {
                 for i in b.insts {
-                    makeEmpty(v: i)
+                    i.makeEmpty()
+                    allVar.append(i)
                 }
             }
         }
@@ -84,36 +75,36 @@ class PTAnalysis: ModulePass {
                 for i in b.insts {
                     switch i {
                     case is LoadInst:
-                        loads[i[0]]!.insert(i)
+                        i[0].loads.insert(i)
                     case is StoreInst:
                         if !(i[0] is ConstIR) {
-                            stores[i[1]]!.insert(i[0])
+                            i[1].stores.insert(i[0])
                         }
                     case is GEPInst, is CastInst:
 //                        print("GEP/Cast", i[0], "->", i)
-                        graph[i[0]]!.insert(i)
+                        i[0].graph.insert(i)
                     case is PhiInst:
 //                        print("PHI", i.operands.joined())
                         for j in 0..<i.operands.count/2 where !(i[j*2] is ConstIR) {
-                            graph[i[j*2]]!.insert(i)
+                            i[j*2].graph.insert(i)
                         }
                     case is AllocaInst:
-                        pts[i]!.insert(getNewAddr())
+                        i.pts.insert(getNewAddr())
                     case let c as CallInst:
                         if IRBuilder.Builtin.functions.values.contains(c.function) {
                             if c.function.basename == "malloc" {
-                                pts[i]!.insert(getNewAddr())
+                                i.pts.insert(getNewAddr())
                             }
                         } else {
                             for (formal, actual) in zip(c.function.operands, c.operands) where !(actual is ConstIR) {
                                 print("CALL  ", actual, formal)
-                                graph[actual]!.insert(formal)
+                                actual.graph.insert(formal)
                             }
                         }
                     case is ReturnInst:
                         if !(i[0] is ConstIR) {
                             for call in callers[i.inBlock.inFunction]! {
-                                graph[i[0]]!.insert(call)
+                                i[0].graph.insert(call)
                                 print("RETURN", i.inBlock.inFunction, i[0], call)
                             }
                         }
@@ -124,24 +115,23 @@ class PTAnalysis: ModulePass {
             }
         }
         for g in v.globalVar {
-            pts[g]!.insert(getNewAddr())
+            g.pts.insert(getNewAddr())
         }
         
-        for (key, val) in pts where !val.isEmpty {
-//            print("worklist", key, val)
-            workList.insert(key)
+        for v in allVar where !v.pts.isEmpty {
+            workList.insert(v)
         }
         
         while let cur = workList.popFirst() {
 //            print(workList.count, ">", cur, pts[cur]!, loads[cur]!, stores[cur]!)
-            for a in pts[cur]! {
-                loads[cur]! .forEach {addEdge(from: a, to: $0)}
-                stores[cur]!.forEach {addEdge(from: $0, to: a)}
+            for a in cur.pts {
+                cur.loads .forEach {addEdge(from: a, to: $0)}
+                cur.stores.forEach {addEdge(from: $0, to: a)}
             }
-            for q in graph[cur]! {
+            for q in cur.graph {
                 var flag = false
-                for nv in pts[cur]! where !pts[q]!.contains(nv) {
-                    pts[q]!.insert(nv)
+                for nv in cur.pts where !q.pts.contains(nv) {
+                    q.pts.insert(nv)
                     flag = true
                 }
                 if flag {

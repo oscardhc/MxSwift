@@ -56,6 +56,19 @@ class Value: HashableObject, CustomStringConvertible, Hashable {
         self.isAddress ? LoadInst(name: "", alloc: self, in: block) : self
     }
     
+    //    *************** for PTA ****************
+    
+    var graph   = Set<Value>()
+    var pts     = Set<Value>()
+    var loads   = Set<Value>()
+    var stores  = Set<Value>()
+    func makeEmpty() {
+        graph.removeAll()
+        pts.removeAll()
+        loads.removeAll()
+        stores.removeAll()
+    }
+    
     //    *************** for SCCP ****************
     struct CCPInfo {
         enum T {

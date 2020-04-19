@@ -36,10 +36,10 @@ class DCElimination: FunctionPass {
         
         if aa != nil {
             for para in v.operands {
-                livePos.formUnion(aa!.pts[para]!)
+                livePos.formUnion(para.pts)
             }
             for glob in v.currentModule.globalVar {
-                livePos.formUnion(aa!.pts[glob]!)
+                livePos.formUnion(glob.pts)
             }
         }
         
@@ -62,7 +62,7 @@ class DCElimination: FunctionPass {
                     insertIntoList(i: oo)
                 }
                 if aa != nil {
-                    livePos.formUnion(aa!.pts[o] ?? [])
+                    livePos.formUnion(o.pts)
                 }
             }
             if !liveBlocks.contains(i.inBlock) {
@@ -92,9 +92,9 @@ class DCElimination: FunctionPass {
         
         if aa != nil {
             for b in v.blocks {
-                for i in b.insts where i is StoreInst && aa!.pts[i[1]]!.intersection(livePos).isEmpty {
+                for i in b.insts where i is StoreInst && i[1].pts.intersection(livePos).isEmpty {
                     instRemoved += 1
-                    print("DCE", i.toPrint, i[1], aa!.pts[i[1]]!)
+//                    print("DCE", i.toPrint, i[1], aa!.pts[i[1]]!)
                     i.disconnect(delUsee: true, delUser: true)
                 }
             }
