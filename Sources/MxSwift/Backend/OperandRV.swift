@@ -24,20 +24,41 @@ class OperandRV: CustomStringConvertible, OperandConvertable {
     var description: String {"?"}
     var getOP: OperandRV {self}
     var getReg: Register? {self as? Register}
+    var con: Int?
+    func resetConst() {
+        con = nil
+    }
 }
 
 class InstRV: CustomStringConvertible, OperandConvertable, Hashable {
     
     enum OP {
-        case lui, auipc, jal, jalr, beq, bne, blt, bge, bltu, bgeu
-        case lb, lh, lw, lbu, lhu, sb, sh, sw
-        case addi, slti, sltiu, xori, ori, andi, slli, srli, srai
-        case add, sub, sll, slt, sltu, xor, srl, sra, or, and
-        case mul, mulh, mulhsu, mulhu, div, divu, rem, remu
+        case lui, jal, jalr, beq, bne, blt, bge, bltu, bgeu
+        case lb, lh, lw, sb, sh, sw
+        case addi, slti, xori, ori, andi, slli, srai
+        case add, sub, sll, slt, xor, sra, or, and
+        case mul, mulh, div, rem
         // pseudo
         case bgt, ble, j, ret, sgt, mv, call, bnez, beqz, snez, seqz, li
         // not even pseudo MUST BE ADJUSTED WHEN OUTPUT!
         case subi
+        static let uop: [OP: (Int) -> Int] = [
+            .seqz: {$0 == 0 ? 1 : 0}, .snez: {$0 != 0 ? 1 : 0},
+            .li: {$0}
+        ]
+        static let bop: [OP: (Int, Int) -> Int] = [
+            .addi: (+), .subi: (-), .slti: {$0<$1 ? 1 : 0},
+            .xori: (^), .ori: (|), .andi: (&),
+            .slli: (<<), .srai: (>>),
+            
+            .add: (+), .sub: (-), .slt: {$0<$1 ? 1 : 0},
+            .xor: (^), .or: (|), .and: (&),
+            .sll: (<<), .sra: (>>),
+            
+            .mul: {$0 * $1 % (1<<32)}, .mulh: {($0 * $1) >> 32},
+            .div: (/), .rem: (%),
+            .sgt: {$0>$1 ? 1 : 0}
+        ]
     }
     var isBranch: Bool {
         "\(op)".hasPrefix("b")
@@ -75,6 +96,24 @@ class InstRV: CustomStringConvertible, OperandConvertable, Hashable {
             return "\(op) \(src.filter{!($0 is BlockRV)}.joined()), \(inBlock.succs[0])"
         } else {
             return "\(op) \(src.filter{!($0 is BlockRV)}.joined()), \(inBlock.succs[0])" + "\n" + "j \(inBlock.succs[1])"
+        }
+    }
+    
+    func propogate() {
+        if dst == nil || dst.defs.count > 1 {
+            return
+        }
+        assert(dst.defs[0] === self)
+        if let f = OP.uop[op] {
+            assert(src.count == 1)
+            if let v = src[0].con {
+                dst.con = f(v)
+            }
+        } else if let f = OP.bop[op] {
+            assert(src.count == 2)
+            if let u = src[0].con, let v = src[1].con {
+                dst.con = f(u, v)
+            }
         }
     }
     
@@ -116,14 +155,17 @@ class InstRV: CustomStringConvertible, OperandConvertable, Hashable {
         
         switch op {
         case .call:
-            use.formUnion(
-                (0..<min(8, (src[0] as! FunctionRV).argNum)).map{RV32["a\($0)"]}
-            )
-            def.formUnion(
-                RV32.callerSave.map{RV32[$0]}
-            )
+            for u in (0..<min(8, (src[0] as! FunctionRV).argNum)).map({RV32["a\($0)"]}) {
+                use.insert(u)
+                u.uses.append(self)
+            }
+            for u in RV32.callerSave.map({RV32[$0]}) {
+                def.insert(u)
+                u.defs.append(self)
+            }
         case .ret:
             use.insert(RV32["ra"])
+            RV32["ra"].uses.append(self)
         default:
             break
         }
@@ -135,7 +177,7 @@ class InstRV: CustomStringConvertible, OperandConvertable, Hashable {
         }
     }
     
-    func replaced(by i: InstRV) {
+    func disconnectUseDef() {
         if dst != nil {
             dst.defs.removeAll {$0 === self}
         }
@@ -144,6 +186,10 @@ class InstRV: CustomStringConvertible, OperandConvertable, Hashable {
                 r.uses.removeAll {$0 === self}
             }
         }
+    }
+    
+    func replaced(by i: InstRV) {
+        disconnectUseDef()
         nodeInBlock.value = i
     }
     
@@ -169,6 +215,12 @@ class InstRV: CustomStringConvertible, OperandConvertable, Hashable {
             r.uses.append(self)
             use.insert(r)
         }
+    }
+    func swapSrc() {
+        assert(src.count == 2)
+        let t = src[0]
+        src[0] = src[1]
+        src[1] = t
     }
     
 }
@@ -294,8 +346,13 @@ class Imm: OperandRV {
         }
         return "\(value)"
     }
+    override func resetConst() {
+        con = value
+    }
     init(_ v: Int) {
         value = v
+        super.init()
+        resetConst()
     }
     init(_ v: GlobalRV) {
         global = v

@@ -24,12 +24,21 @@ class Register: OperandRV, Hashable, Equatable {
 //        color + "<\(name)>"
     }
     
+    override func resetConst() {
+        if name == "zero" {
+            con = 0
+        } else {
+            con = nil
+        }
+    }
+    
     static let counter = Counter()
     init(name: String? = nil, color: String = "?") {
         self.name = name ?? ("tmp_" + Self.counter.tik())
         self.color = color
         super.init()
         allRegs.append(self)
+        resetConst()
     }
     
     var defs = [InstRV]()

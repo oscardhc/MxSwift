@@ -62,7 +62,7 @@ class LAnalysis {
         var changed = true
         while changed {
             changed = false
-            print("LA iteration", v)
+//            print("LA iteration", v)
             for b in v.blocks {
                 for s in b.succs {
                     for tmp in s.ii where !b.oo.contains(tmp) {

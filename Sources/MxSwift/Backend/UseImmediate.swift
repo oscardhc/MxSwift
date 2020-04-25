@@ -7,6 +7,20 @@
 
 import Foundation
 
+extension Int {
+    func getPower(of v: Int) -> Int? {
+        var x = 1, p = 0
+        while self >= x {
+            if self == x {
+                return p
+            }
+            x = x * v
+            p = p + 1
+        }
+        return nil
+    }
+}
+
 class UseImmediate {
     
     func work(on v: Assmebly) {
@@ -26,21 +40,89 @@ class UseImmediate {
         return ret
     }()
     
-    func visit(v: FunctionRV) {
-        for b in v.blocks {
-            for i in b.insts where i.op == .addi && i[0] === RV32["zero"] {
-                let val = (i[1] as! Imm).value
-                for u in i.dst!.uses {
-                    if let iver = op[u.op] {
-                        if u[1] === i.dst {
-//                            print(i, u, iver)
-                            u.op = iver
-                            u.newSrc(Imm(val), at: 1)
-                        }
-                    }
+    private func pro(_ i: InstRV) {
+        if i.dst != nil && i.dst.con == nil {
+            i.propogate()
+            if i.dst.con != nil {
+                print("propogate", i, i.dst.con!)
+                for n in i.dst.uses {
+                    pro(n)
                 }
             }
         }
+    }
+    
+    func visit(v: FunctionRV) {
+        
+        for reg in allRegs {
+            reg.resetConst()
+        }
+        for b in v.blocks {
+            for i in b.insts {
+                pro(i)
+            }
+        }
+        for reg in allRegs where reg.con != nil {
+            print("CONST REG", reg, reg.con!, reg.con!.getPower(of: 2))
+            assert(reg.defs.count <= 1)
+            for u in reg.uses {
+                if let iver = op[u.op], u[1] === reg {
+                    u.op = iver
+                    u.newSrc(Imm(reg.con!), at: 1)
+                } else if u.op == .mul, let p = reg.con!.getPower(of: 2) {
+                    print(u, "=> ", terminator: "")
+                    if u[0] === reg {
+                        u.swapSrc()
+                    }
+                    assert(u[1] === reg)
+                    u.op = .slli
+                    u.newSrc(Imm(p), at: 1)
+                    print(u)
+                }
+            }
+        }
+        var workList = [InstRV]()
+        for b in v.blocks {
+            for i in b.insts where i.dst != nil && i.dst.uses.isEmpty {
+                workList.append(i)
+            }
+        }
+        while let i = workList.popLast() {
+//            print("DEAD", v.name, i.inBlock.name, i)
+//            print("            before", i.inBlock.insts.joined() {"\($0.op)"})
+            i.disconnectUseDef()
+            i.nodeInBlock.remove()
+//            print("            after ", i.inBlock.insts.joined() {"\($0.op)"})
+            for s in i.use where s.uses.isEmpty {
+                for d in s.defs where d.inBlock.inFunction === v {
+//                    print("NEW DEAD", d)
+                    workList.append(d)
+                }
+            }
+        }
+        
+//        for b in v.blocks {
+//            for i in b.insts where i.op == .addi && i[0] === RV32["zero"] {
+//                let val = (i[1] as! Imm).value
+//                print("UseImm", val, i.dst, i.dst.uses)
+//                for u in i.dst!.uses {
+//                    if let iver = op[u.op] {
+//                        if u[1] === i.dst {
+//                            u.op = iver
+//                            u.newSrc(Imm(val), at: 1)
+//                        }
+//                    } else if u.op == .mul, let p = val.getPower(of: 2) {
+//                        if u[0] === i.dst {
+//                            u.swapSrc()
+//                        }
+//                        assert(u[1] === i.dst)
+//                        u.op = .slli
+//                        u.newSrc(Imm(p), at: 1)
+//                    }
+//                }
+//                print("   after", i.dst.uses)
+//            }
+//        }
     }
     
 }

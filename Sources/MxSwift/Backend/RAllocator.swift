@@ -70,9 +70,6 @@ class RAllocator {
     }
     
     func allocate(v: FunctionRV) {
-        print("")
-        print("")
-        print("")
         
         LAnalysis.analysis(v: v)
         adj.removeAll()
@@ -111,8 +108,8 @@ class RAllocator {
         for r in n.precolored where adj[r] == nil {adj[r] = []}
         for r in n.initial where adj[r] == nil {adj[r] = []}
         for r in n.precolored {r.deg = 100000}
-        print(n.precolored)
-        print(n.initial)
+//        print(n.precolored)
+//        print(n.initial)
         while let r = n.initial.popFirst() {
             if r.deg >= K {
                 n.spillList.insert(r)
@@ -122,10 +119,10 @@ class RAllocator {
                 n.simplifyList.insert(r)
             }
         }
-        print("")
-        print(n.spillList)
-        print(n.freezeList)
-        print(n.simplifyList)
+//        print("")
+//        print(n.spillList)
+//        print(n.freezeList)
+//        print(n.simplifyList)
         
         while true {
             if !n.simplifyList.isEmpty {
@@ -141,9 +138,9 @@ class RAllocator {
             }
         }
         assert(n.simplifyList.isEmpty && m.worklist.isEmpty && n.freezeList.isEmpty && n.spillList.isEmpty)
-        print("stack", n.stack)
+//        print("stack", n.stack)
         assignColors()
-        print("after assign", n.spilled)
+//        print("after assign", n.spilled)
         
 //        RVPrinter(filename: "/Users/oscar/Documents/Classes/1920_Spring/Compiler/tmp/test.s").work(on: prog)
         if !n.spilled.isEmpty {
@@ -191,7 +188,7 @@ class RAllocator {
         t.deg < K || n.precolored.contains(t) || adj[t]!.contains(r)
     }
     func conservative(_ s: Set<Register>) -> Bool {
-        print("conservative", s.map({"\($0): \($0.deg)"}))
+//        print("conservative", s.map({"\($0): \($0.deg)"}))
         return s.reduce(0, {$0 + ($1.deg >= K ? 1 : 0)}) < K
     }
     func checkOK(_ u: Register, _ v: Register) -> Bool {
@@ -219,7 +216,7 @@ class RAllocator {
         return res < K
     }
     func combine(_ u: Register, _ v: Register) {
-        print("-", u, v)
+//        print("-", u, v)
         if n.freezeList.contains(v) {
             n.freezeList.remove(v)
         } else {
@@ -238,7 +235,7 @@ class RAllocator {
         if u.deg >= K && n.freezeList.contains(u) {
             n.freezeList.remove(u)
             n.spillList.insert(u)
-            print("into spill list", u)
+//            print("into spill list", u)
         }
     }
     func freezeMoves(_ u: Register) {
@@ -294,7 +291,7 @@ class RAllocator {
     }
     func selectSpill() {
         let u = n.spillList.min{$0.cost/Double($0.deg) < $1.cost/Double($1.deg)}!
-        print("select spill", u, u.cost, u.deg)
+//        print("select spill", u, u.cost, u.deg)
         n.spillList.remove(u)
         n.simplifyList.insert(u)
         freezeMoves(u)
@@ -314,7 +311,7 @@ class RAllocator {
             } else {
                 n.colored.insert(r)
                 r.color = colors.first!
-                print("COLOR", r)
+//                print("COLOR", r)
             }
         }
         for r in n.coalesced {
@@ -325,27 +322,27 @@ class RAllocator {
         var tmp = [Register]()
         for s in n.spilled {
 //            let reg = Register()
-            print("rewrite", s, adj[s]!)
+//            print("rewrite", s, adj[s]!)
             let pos = f.newVar()
             for d in s.defs {
                 let reg = Register()
-                print("     ", d, reg)
+//                print("     ", d, reg)
                 d.newDst(reg)
                 InstRV(.sw, in: d.inBlock, at: d.nodeInBlock.indexBF, reg, pos)
                 tmp.append(reg)
             }
             for u in s.uses {
                 let reg = Register()
-                print("     ", u, reg)
+//                print("     ", u, reg)
                 u.newSrc(reg, at: u.src.firstIndex(where: {$0.getReg === s})!)
                 InstRV(.lw, in: u.inBlock, at: u.nodeInBlock.indexBF - 1, to: reg, pos)
                 tmp.append(reg)
             }
         }
-        print("after rewrite", tmp)
+//        print("after rewrite", tmp)
         n.spilled.removeAll()
         n.initial = n.colored.union(n.coalesced.union(tmp))
-        print(n.initial)
+//        print(n.initial)
         n.colored.removeAll()
         n.coalesced.removeAll()
     }

@@ -51,6 +51,8 @@ func compile() throws {
     let asm = InstSelect()
     asm.work(on: ir.module)
 
+    _ = RVPrinter(filename: "/Users/oscar/Documents/Classes/1920_Spring/Compiler/tmp/out.s").work(on: asm.program)
+    
     UseImmediate().work(on: asm.program)
     RAllocator().work(on: asm.program)
     
