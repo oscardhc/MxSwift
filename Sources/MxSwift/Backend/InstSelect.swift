@@ -273,6 +273,7 @@ class InstSelect: IRVisitor {
         var op: InstRV.OP!
         if let c = v as? CompareInst {
             if c.users.count == 1, c.users[0].user is BrInst {
+                print("compare inst", c)
                 return
             }
             compare(cmp: c.cmp, lhs: c[0], rhs: c[1], to: **v)

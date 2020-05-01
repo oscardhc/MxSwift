@@ -194,9 +194,9 @@ class StoreInst: InstIR {
 
 class CallInst: InstIR {
     var function: FunctionIR
-    init(name: String = "", function: FunctionIR, arguments: [Value] = [], in block: BlockIR) {
+    init(name: String = "", function: FunctionIR, arguments: [Value] = [], in block: BlockIR, at idx: Int = -1) {
         self.function = function
-        super.init(name: name, type: function.type, operation: .call, in: block)
+        super.init(name: name, type: function.type, operation: .call, in: block, at: idx)
         arguments.forEach {self.added(operand: $0)}
     }
     override func initName() {

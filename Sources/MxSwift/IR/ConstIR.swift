@@ -110,6 +110,7 @@ class FunctionIR: Global {
     
     var blocks = List<BlockIR>()
     var attribute: String
+    let noSideEffect: Bool
     
     override func accept(visitor: IRVisitor) {visitor.visit(v: self)}
     
@@ -118,8 +119,9 @@ class FunctionIR: Global {
     }
     override var description: String {return "\(type) \(name)"}
     
-    init(name: String, type: TypeIR, module: Module, attr: String = "") {
+    init(name: String, type: TypeIR, module: Module, attr: String = "", noSideEffect: Bool = false) {
         self.attribute = attr
+        self.noSideEffect = noSideEffect
         super.init(name: name, type: type, module: module)
         module.add(self)
     }

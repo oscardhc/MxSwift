@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		5535FAD42449A99100AF588F /* UseImmediate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5535FAD32449A99100AF588F /* UseImmediate.swift */; };
+		557F9273245BC80000A11880 /* GLocalizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 557F9272245BC80000A11880 /* GLocalizer.swift */; };
 		OBJ_242 /* ANTLRErrorListener.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_9 /* ANTLRErrorListener.swift */; };
 		OBJ_243 /* ANTLRErrorStrategy.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_10 /* ANTLRErrorStrategy.swift */; };
 		OBJ_244 /* ANTLRFileStream.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_11 /* ANTLRFileStream.swift */; };
@@ -239,6 +240,7 @@
 
 /* Begin PBXFileReference section */
 		5535FAD32449A99100AF588F /* UseImmediate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UseImmediate.swift; sourceTree = "<group>"; };
+		557F9272245BC80000A11880 /* GLocalizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GLocalizer.swift; sourceTree = "<group>"; };
 		"MxSwift::Antlr4::Product" /* Antlr4.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Antlr4.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		"MxSwift::MxSwift::Product" /* MxSwift */ = {isa = PBXFileReference; lastKnownFileType = text; path = MxSwift; sourceTree = BUILT_PRODUCTS_DIR; };
 		"MxSwift::Parser::Product" /* Parser.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Parser.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -641,6 +643,7 @@
 				OBJ_196 /* CFGSimplifier.swift */,
 				OBJ_197 /* CSElimination.swift */,
 				OBJ_198 /* DCElimination.swift */,
+				557F9272245BC80000A11880 /* GLocalizer.swift */,
 				OBJ_199 /* DeadCleaner.swift */,
 				OBJ_200 /* DomTree.swift */,
 				OBJ_201 /* Inliner.swift */,
@@ -779,7 +782,7 @@
 			path = atn;
 			sourceTree = "<group>";
 		};
-		OBJ_5 /*  */ = {
+		OBJ_5 = {
 			isa = PBXGroup;
 			children = (
 				OBJ_6 /* Package.swift */,
@@ -791,7 +794,6 @@
 				OBJ_235 /* semantic.bash */,
 				OBJ_236 /* README.md */,
 			);
-			name = "";
 			sourceTree = "<group>";
 		};
 		OBJ_7 /* Sources */ = {
@@ -940,7 +942,7 @@
 			knownRegions = (
 				en,
 			);
-			mainGroup = OBJ_5 /*  */;
+			mainGroup = OBJ_5;
 			productRefGroup = OBJ_229 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -1137,6 +1139,7 @@
 				OBJ_417 /* InstIR.swift in Sources */,
 				OBJ_418 /* Module.swift in Sources */,
 				OBJ_419 /* TypeIR.swift in Sources */,
+				557F9273245BC80000A11880 /* GLocalizer.swift in Sources */,
 				OBJ_420 /* Value.swift in Sources */,
 				OBJ_421 /* CESplit.swift in Sources */,
 				OBJ_422 /* CFGSimplifier.swift in Sources */,

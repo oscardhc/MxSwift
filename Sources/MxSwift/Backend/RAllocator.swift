@@ -140,7 +140,7 @@ class RAllocator {
         assert(n.simplifyList.isEmpty && m.worklist.isEmpty && n.freezeList.isEmpty && n.spillList.isEmpty)
 //        print("stack", n.stack)
         assignColors()
-//        print("after assign", n.spilled)
+        print("after assign", n.spilled)
         
 //        RVPrinter(filename: "/Users/oscar/Documents/Classes/1920_Spring/Compiler/tmp/test.s").work(on: prog)
         if !n.spilled.isEmpty {

@@ -67,7 +67,7 @@ class IRBuilder: ASTBaseVisitor {
                 .added(operand: Value(type: .int))
         }
         Builtin.addFunc(name: "toString") {
-            FunctionIR(name: "toString", type: .string, module: module)
+            FunctionIR(name: "toString", type: .string, module: module, noSideEffect: true)
                 .added(operand: Value(type: .int))
         }
         Builtin.addFunc(name: "getInt") {
@@ -77,20 +77,20 @@ class IRBuilder: ASTBaseVisitor {
             FunctionIR(name: "getString", type: .string, module: module)
         }
         Builtin.addFunc(name: "length") {
-            FunctionIR(name: "_str_length", type: .int, module: module)
+            FunctionIR(name: "_str_length", type: .int, module: module, noSideEffect: true)
                 .added(operand: Value(type: .string))
         }
         Builtin.addFunc(name: "parseInt") {
-            FunctionIR(name: "_str_parseInt", type: .int, module: module)
+            FunctionIR(name: "_str_parseInt", type: .int, module: module, noSideEffect: true)
                 .added(operand: Value(type: .string))
         }
         Builtin.addFunc(name: "ord") {
-            FunctionIR(name: "_str_ord", type: .int, module: module)
+            FunctionIR(name: "_str_ord", type: .int, module: module, noSideEffect: true)
                 .added(operand: Value(type: .string))
                 .added(operand: Value(type: .int))
         }
         Builtin.addFunc(name: "substring") {
-            FunctionIR(name: "_str_substring", type: .string, module: module)
+            FunctionIR(name: "_str_substring", type: .string, module: module, noSideEffect: true)
                 .added(operand: Value(type: .string))
                 .added(operand: Value(type: .int))
                 .added(operand: Value(type: .int))
@@ -193,9 +193,9 @@ class IRBuilder: ASTBaseVisitor {
                             }
                         }
                         sym.value = GlobalVariable(name: $0.0, value: const, module: module, isConst: false)
-                        if e != nil {
-                            assign(lhs: sym.value!, rhs: e!, in: curBlock)
-                        }
+                    }
+                    if e != nil {
+                        assign(lhs: sym.value!, rhs: e!, in: curBlock)
                     }
                 } else {
                     let ret = AllocaInst(forType: type, in: curBlock.inFunction.blocks[0], at: 0)

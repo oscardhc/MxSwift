@@ -50,8 +50,6 @@ func compile() throws {
     
     let asm = InstSelect()
     asm.work(on: ir.module)
-
-    _ = RVPrinter(filename: "/Users/oscar/Documents/Classes/1920_Spring/Compiler/tmp/out.s").work(on: asm.program)
     
     UseImmediate().work(on: asm.program)
     RAllocator().work(on: asm.program)
@@ -70,6 +68,9 @@ func optimize(v: Module, timeLimit: Int, iterationLimit: Int, noPhi: Bool = fals
     
     for iteration in 1...iterationLimit {
         print("iteration \(iteration):")
+        
+        GLocalizer()        .work(on: v)
+        MemToReg()          .work(on: v)
         
         SCCPropagation()    .work(on: v)
         if !noCopy {

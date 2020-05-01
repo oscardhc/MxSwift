@@ -26,8 +26,14 @@ class DCElimination: FunctionPass {
         for b in v.blocks {
             for i in b.insts {
                 switch i {
-                case is StoreInst, is ReturnInst, is CallInst:
+                case is StoreInst, is ReturnInst:
                     workList.insert(i)
+                case let c as CallInst :
+                    if !c.function.noSideEffect {
+                        workList.insert(c)
+                    } else {
+                        fallthrough
+                    }
                 default:
                     deadInsts.insert(i)
                 }

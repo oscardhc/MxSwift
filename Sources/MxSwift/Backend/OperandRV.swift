@@ -89,7 +89,11 @@ class InstRV: CustomStringConvertible, OperandConvertable, Hashable {
     }
     func printAsLast(nextBlock: BlockRV? = nil) -> String {
         if inBlock.succs.count < 2 {
-            return description
+            if inBlock.succs.count == 1 && nextBlock === inBlock.succs[0] {
+                return ""
+            } else {
+                return description
+            }
         } else if nextBlock == inBlock.succs[0] {
             return "\(Self.OppBranch[op]!) \(src.filter{!($0 is BlockRV)}.joined()), \(inBlock.succs[1])"
         } else if nextBlock == inBlock.succs[1] {

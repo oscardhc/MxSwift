@@ -62,11 +62,20 @@ class UseImmediate {
                 pro(i)
             }
         }
+        
         for reg in allRegs where reg.con != nil {
             print("CONST REG", reg, reg.con!, reg.con!.getPower(of: 2))
             assert(reg.defs.count <= 1)
             for u in reg.uses {
-                if let iver = op[u.op], u[1] === reg {
+                print("   ", u, op[u.op], u.src)
+                if reg.con! == 0 {
+                    if u[0] === reg {
+                        u.newSrc(RV32["zero"], at: 0)
+                    } else {
+                        u.newSrc(RV32["zero"], at: 1)
+                    }
+                    
+                } else if let iver = op[u.op], u[1] === reg {
                     u.op = iver
                     u.newSrc(Imm(reg.con!), at: 1)
                 } else if u.op == .mul, let p = reg.con!.getPower(of: 2) {

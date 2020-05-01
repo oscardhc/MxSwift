@@ -1,1 +1,1 @@
-.build/release/MxSwift codegen > output.s
+.build/release/MxSwift codegen

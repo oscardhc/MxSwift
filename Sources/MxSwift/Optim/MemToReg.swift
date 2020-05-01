@@ -195,9 +195,10 @@ class MemToReg: FunctionPass {
                         s.disconnect(delUsee: true, delUser: true)
                     }
                 case let p as PhiInst:
-                    let ai = phiToAlloc[p]!
-                    changed.append(ai)
-                    stack[ai]!.append(p)
+                    if let ai = phiToAlloc[p] {
+                        changed.append(ai)
+                        stack[ai]!.append(p)
+                    }
                 default:
                     break
                 }
@@ -205,7 +206,7 @@ class MemToReg: FunctionPass {
             for suc in cur.edge {
                 let idx = suc.antiEdge.findNodeBF(where: {$0 === cur})!.1
                 for i in suc.block!.insts {
-                    if let p = i as? PhiInst {
+                    if let p = i as? PhiInst, phiToAlloc[p] != nil {
                         p.usees[idx * 2].reconnect(fromValue: stack[phiToAlloc[p]!]!.last!)
                     }
                 }
