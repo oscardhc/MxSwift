@@ -46,7 +46,6 @@ class InstSelect: IRVisitor {
     }
     
     private func loadImmediate(_ val: Int, to reg: Register, in blk: BlockRV) -> Register {
-        print("load imm", val)
         if Self.immInBound(val) {
             return InstRV(.addi, in: blk, to: reg, RV32["zero"], val).dst
         } else {
@@ -293,7 +292,6 @@ class InstSelect: IRVisitor {
     
     private func compare(cmp: CompareInst.CMP, lhs: Value, rhs: Value, to: Register) {
         if let c = Self.cop[cmp] {
-            print("compare", "snez", lhs, rhs, c.0)
             InstRV(.snez, in: curBlock, to: to, InstRV(c.0, in: curBlock, to: Register(), *lhs, *rhs))
         } else {
             InstRV(.seqz, in: curBlock, to: to, InstRV(Self.rop[cmp]!, in: curBlock, to: Register(), *lhs, *rhs))

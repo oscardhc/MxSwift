@@ -66,14 +66,29 @@ class UseImmediate {
         for reg in allRegs where reg.con != nil && !RV32.regs.values.contains(reg) && InstSelect.immInBound(reg.con!) {
             assert(reg.defs.count <= 1)
             for u in reg.uses {
-                print("   ", u, op[u.op], u.src)
                 if (reg.con!) == 0 {
-                    if u[0] === reg {
-                        assert(u[0] === reg)
-                        u.newSrc(RV32["zero"], at: 0)
-                    } else {
-                        assert(u[1] === reg)
-                        u.newSrc(RV32["zero"], at: 1)
+                    if u.op == .add {
+                        if u[0] === reg {
+                            assert(u[0] === reg)
+                            u.delSrc(at: 0)
+                        }
+                        else {
+                            assert(u[1] === reg)
+                            u.delSrc(at: 1)
+                        }
+                        u.op = .mv
+                    }
+                    else if u.op != .mv {
+                        print("const zero", reg, u)
+                        if u[0] === reg {
+                            assert(u[0] === reg)
+                            u.newSrc(RV32["zero"], at: 0)
+                        }
+                        else {
+                            assert(u[1] === reg)
+                            u.newSrc(RV32["zero"], at: 1)
+                        }
+                        print("          ", u)
                     }
                 }
                 else
@@ -95,7 +110,6 @@ class UseImmediate {
         var workList = [InstRV]()
         for b in v.blocks {
             for i in b.insts where i.dst != nil && i.dst.uses.isEmpty {
-                print("dead", i, i.dst, i.dst.uses)
                 workList.append(i)
             }
         }

@@ -135,6 +135,8 @@ class Inliner: ModulePass {
                 continue
             }
             let size = toInline.size
+            
+            print("**INLINE", toInline.name, size.0, called[toInline]!)
             if (size.0 * called[toInline]! > 1000 && called[toInline]! > 1) || called[toInline]! == 0 {
                 continue
             }
@@ -151,7 +153,7 @@ class Inliner: ModulePass {
             }
             for c in calls {
                 inline(f: c.function, in: c.inBlock.inFunction, for: c)
-                print("AFTER", c.inBlock.inFunction, c.inBlock.inFunction.size)
+//                print("AFTER", c.inBlock.inFunction, c.inBlock.inFunction.size)
             }
 
             if calling[toInline]! == 0 {

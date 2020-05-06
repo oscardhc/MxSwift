@@ -44,7 +44,7 @@ class InstRV: CustomStringConvertible, OperandConvertable, Hashable {
         case subi
         static let uop: [OP: (Int) -> Int] = [
             .seqz: {$0 == 0 ? 1 : 0}, .snez: {$0 != 0 ? 1 : 0},
-            .li: {$0}
+            .li: {$0}, .mv: {$0}
         ]
         static let bop: [OP: (Int, Int) -> Int] = [
             .addi: (+), .subi: (-), .slti: {$0<$1 ? 1 : 0},
@@ -161,7 +161,7 @@ class InstRV: CustomStringConvertible, OperandConvertable, Hashable {
         
         switch op {
         case .call:
-            for u in (0...min(7, (src[0] as! FunctionRV).argNum)).map({RV32["a\($0)"]}) {
+            for u in (0..<min(8, (src[0] as! FunctionRV).argNum)).map({RV32["a\($0)"]}) {
                 use.insert(u)
                 u.uses.append(self)
             }
@@ -204,6 +204,13 @@ class InstRV: CustomStringConvertible, OperandConvertable, Hashable {
         dst = d
         def = [d]
         dst.defs.append(self)
+    }
+    func delSrc(at i: Int) {
+        if let r = src[i].getReg {
+            r.uses.removeAll {$0 == self}
+            use.remove(r)
+        }
+        src.remove(at: i)
     }
     func newSrc(_ s: OperandRV, at i: Int) {
 //        print("new src", use, self)
