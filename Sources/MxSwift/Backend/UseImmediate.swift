@@ -44,7 +44,6 @@ class UseImmediate {
         if i.dst != nil && i.dst.con == nil {
             i.propogate()
             if i.dst.con != nil {
-                print("propogate", i, i.dst.con!)
                 for n in i.dst.uses {
                     pro(n)
                 }
@@ -63,33 +62,36 @@ class UseImmediate {
             }
         }
         
-        for reg in allRegs where reg.con != nil {
-            print("CONST REG", reg, reg.con!, reg.con!.getPower(of: 2))
+//        let myzero = InstRV(.addi, in: v.blocks.first!, at: 1, to: Register(), RV32["zero"] ,Imm(0)).dst!
+        for reg in allRegs where reg.con != nil && !RV32.regs.values.contains(reg) {
             assert(reg.defs.count <= 1)
             for u in reg.uses {
                 print("   ", u, op[u.op], u.src)
-                if reg.con! == 0 {
+                if (reg.con!) == 0 {
                     if u[0] === reg {
+                        assert(u[0] === reg)
                         u.newSrc(RV32["zero"], at: 0)
                     } else {
+                        assert(u[1] === reg)
                         u.newSrc(RV32["zero"], at: 1)
                     }
-                    
-                } else if let iver = op[u.op], u[1] === reg {
+                }
+                else
+                    if let iver = op[u.op], u[1] === reg {
                     u.op = iver
                     u.newSrc(Imm(reg.con!), at: 1)
-                } else if u.op == .mul, let p = reg.con!.getPower(of: 2) {
-                    print(u, "=> ", terminator: "")
+                }
+                else if u.op == .mul, let p = reg.con!.getPower(of: 2) {
                     if u[0] === reg {
                         u.swapSrc()
                     }
                     assert(u[1] === reg)
                     u.op = .slli
                     u.newSrc(Imm(p), at: 1)
-                    print(u)
                 }
             }
         }
+        
         var workList = [InstRV]()
         for b in v.blocks {
             for i in b.insts where i.dst != nil && i.dst.uses.isEmpty {
@@ -98,10 +100,10 @@ class UseImmediate {
         }
         while let i = workList.popLast() {
 //            print("DEAD", v.name, i.inBlock.name, i)
-//            print("            before", i.inBlock.insts.joined() {"\($0.op)"})
+//            print("            before", i.inBlock.insts.count, i.inBlock.insts.joined() {"\($0.op)"})
             i.disconnectUseDef()
             i.nodeInBlock.remove()
-//            print("            after ", i.inBlock.insts.joined() {"\($0.op)"})
+//            print("            after ", i.inBlock.insts.count, i.inBlock.insts.joined() {"\($0.op)"})
             for s in i.use where s.uses.isEmpty {
                 for d in s.defs where d.inBlock.inFunction === v {
 //                    print("NEW DEAD", d)

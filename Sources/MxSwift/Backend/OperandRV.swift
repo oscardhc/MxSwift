@@ -105,6 +105,7 @@ class InstRV: CustomStringConvertible, OperandConvertable, Hashable {
     
     func propogate() {
         if dst == nil || dst.defs.count > 1 {
+            dst?.con = nil
             return
         }
         assert(dst.defs[0] === self)
@@ -117,6 +118,7 @@ class InstRV: CustomStringConvertible, OperandConvertable, Hashable {
             assert(src.count == 2)
             if let u = src[0].con, let v = src[1].con {
                 dst.con = f(u, v)
+//                print("propogate", dst!, u, v, dst.con!, self)
             }
         }
     }
@@ -182,13 +184,11 @@ class InstRV: CustomStringConvertible, OperandConvertable, Hashable {
     }
     
     func disconnectUseDef() {
-        if dst != nil {
-            dst.defs.removeAll {$0 === self}
+        for d in def {
+            d.defs.removeAll {$0 === self}
         }
-        for s in src {
-            if let r = s.getReg {
-                r.uses.removeAll {$0 === self}
-            }
+        for s in use {
+            s.uses.removeAll {$0 === self}
         }
     }
     
@@ -204,6 +204,7 @@ class InstRV: CustomStringConvertible, OperandConvertable, Hashable {
         dst.defs.append(self)
     }
     func newSrc(_ s: OperandRV, at i: Int) {
+//        print("new src", use, self)
         var offset: OffsetReg? = nil
         if let r = src[i].getReg {
             offset = src[i] as? OffsetReg
@@ -218,7 +219,9 @@ class InstRV: CustomStringConvertible, OperandConvertable, Hashable {
         if let r = s.getReg {
             r.uses.append(self)
             use.insert(r)
+//            print("...... new src", r, r.uses)
         }
+//        print("       after new src", use, self)
     }
     func swapSrc() {
         assert(src.count == 2)
@@ -243,6 +246,11 @@ class BlockRV: OperandRV, Equatable {
     var oo = Set<Register>()
     
     let loopDepth: Int
+    private var _loopPartition = 0.0
+    var loopPartition: Double {
+        get {_loopPartition}
+        set(n) {_loopPartition = max(_loopPartition, min(0.9, n))}
+    }
     
     override var description: String {"." + name}
     var succs: [BlockRV] {
@@ -350,16 +358,15 @@ class Imm: OperandRV {
         }
         return "\(value)"
     }
-    override func resetConst() {
-        con = value
-    }
     init(_ v: Int) {
         value = v
         super.init()
-        resetConst()
+        con = value
     }
     init(_ v: GlobalRV) {
         global = v
+        super.init()
+        con = nil
     }
     var reversed: Imm {
         Imm(-value)

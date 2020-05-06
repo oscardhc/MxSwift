@@ -138,6 +138,7 @@ class List<T: CustomStringConvertible>: CustomStringConvertible, Sequence {
         let ret = a.setPrev(prev: tail.prev).setNext(next: tail)
         tail.prev!.setNext(next: ret)
         tail.setPrev(prev: ret)
+        count += 1
     }
     func append(_ a: T) -> Node {
         let ret = Node(value: a, in: self)

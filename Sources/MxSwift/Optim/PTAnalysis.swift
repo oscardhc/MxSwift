@@ -148,7 +148,6 @@ class LSElimination: FunctionPass {
     
     let aa: PTAnalysis
     var domTree: DomTree!
-    var reachable = [InstIR: Set<InstIR>]()
     
     private var instRemoved = 0
     override var resultString: String {super.resultString + "\(instRemoved) inst(s) removed."}
@@ -176,18 +175,26 @@ class LSElimination: FunctionPass {
         
         domTree = DomTree(function: v)
         
+        var judgeType: ((InstIR) -> Bool)!
+        var getAddr, getVal: ((InstIR) -> Value)!
+        
         func lse(n: BaseDomTree.Node) {
-            for i in n.block!.insts where i is LoadInst && i.operands.count > 0 {
+            for i in n.block!.insts where judgeType(i) && i.operands.count > 0 {
+                
                 let stores = getAllDominated(from: i) {$0 is StoreInst}
-                let loads = getAllDominated(from: i) {$0 is LoadInst && $0[0] == i[0]}
+                let loads = getAllDominated(from: i) {$0 is LoadInst && $0[0] == getAddr(i)}
+                
+//                print(i.toPrint, loads)
+//                print("  ", stores.joined() {$0.toPrint})
+                
                 var unavai = Set<InstIR>(), workList = [InstIR]()
-                for s in stores where aa.mayAlias(p: s[1], q: i[0]) {
+                for s in stores where aa.mayAlias(p: s[1], q: getAddr(i)) {
                     unavai.insert(s.nextInst!)
                     workList.append(s.nextInst!)
                 }
                 let dangerous = v.currentModule.functions.filter {
                     for blk in $0.blocks { for ins in blk.insts where ins is StoreInst {
-                        if aa.mayAlias(p: ins[1], q: i[0]) {
+                        if aa.mayAlias(p: ins[1], q: getAddr(i)) {
                             return true
                         }
                     }}
@@ -199,13 +206,16 @@ class LSElimination: FunctionPass {
                     unavai.insert(c.nextInst!)
                     workList.append(c.nextInst!)
                 }
+                
+                
                 while let v = workList.popLast() {
+//                    print("   -", v.toPrint)
                     switch v {
                     case is ReturnInst:
                         break
                     case is BrInst:
                         for o in v.operands {
-                            if let b = o as? BlockIR, domTree.checkBF(i.inBlock, dominates: b), !unavai.contains(b.insts.first!) {
+                            if let b = o as? BlockIR, domTree.checkBF(i.inBlock, dominates: b), i.inBlock !== b, !unavai.contains(b.insts.first!) {
                                 unavai.insert(b.insts.first!)
                                 workList.append(b.insts.first!)
                             }
@@ -217,15 +227,20 @@ class LSElimination: FunctionPass {
                         }
                     }
                 }
+                
                 for l in loads where !unavai.contains(l) {
-                    print(">", v.name, l.toPrint)
-                    l.replaced(by: i)
+//                    print(">", v.name, l.toPrint)
+                    l.replaced(by: getVal(i))
                     instRemoved += 1
                 }
             }
             for p in n.domSons {lse(n: p)}
         }
         
+        (judgeType, getAddr, getVal) = ({$0 is StoreInst}, {$0[1]}, {$0[0]})
+        lse(n: domTree.root)
+        
+        (judgeType, getAddr, getVal) = ({$0 is LoadInst}, {$0[0]}, {$0})
         lse(n: domTree.root)
         
     }

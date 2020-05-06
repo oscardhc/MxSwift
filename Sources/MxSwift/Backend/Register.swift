@@ -8,6 +8,7 @@
 import Foundation
 
 var allRegs = [Register]()
+var debug = false
 
 class Register: OperandRV, Hashable, Equatable {
     
@@ -20,8 +21,10 @@ class Register: OperandRV, Hashable, Equatable {
     
     let name: String
     override var description: String {
-        color
-//        color + "<\(name)>"
+        if !debug {
+            return color
+        }
+        return color + "<\(name)>"
     }
     
     override func resetConst() {

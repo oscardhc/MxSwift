@@ -34,7 +34,6 @@ class GLocalizer: ModulePass {
                 v.globalVar.removeAll(where: {$0 === val})
                 assert(val.users.isEmpty)
             }
-            
         }
         
         for f in v.functions {

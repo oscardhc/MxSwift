@@ -51,9 +51,12 @@ func compile() throws {
     let asm = InstSelect()
     asm.work(on: ir.module)
     
+    debug = true
     UseImmediate().work(on: asm.program)
     RAllocator().work(on: asm.program)
+    _ = RVPrinter(filename: "/Users/oscar/Documents/Classes/1920_Spring/Compiler/tmp/after.s").work(on: asm.program)
     
+    debug = false
     if !testing {
         _ = RVPrinter(filename: "/Users/oscar/Documents/Classes/1920_Spring/Compiler/tmp/test.s").work(on: asm.program)
     } else {

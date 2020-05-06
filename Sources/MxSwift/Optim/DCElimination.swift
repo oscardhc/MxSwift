@@ -19,7 +19,7 @@ class DCElimination: FunctionPass {
     
     override func visit(v: FunctionIR) {
         
-        let tree = PostDomTree(function: v)
+        let tree = PostDomTree(function: v, needFrontier: true)
         
         var deadInsts = Set<InstIR>(), workList = Set<InstIR>(), liveBlocks = Set<BlockIR>(), livePos = Set<Value>()
         

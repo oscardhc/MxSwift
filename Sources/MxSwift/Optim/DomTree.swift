@@ -10,7 +10,7 @@ import Foundation
 class BaseDomTree {
     
     var root: Node!
-    private let f: FunctionIR, dfnCounter = Counter()
+    private let f: FunctionIR, dfnCounter = Counter(), needFrontier: Bool
     private var dfnList = [Node](), map = [BlockIR: Node]()
     
     class Node: CustomStringConvertible {
@@ -66,8 +66,9 @@ class BaseDomTree {
         
     }
     
-    init(function: FunctionIR) {
+    init(function: FunctionIR, needFrontier: Bool) {
         self.f = function
+        self.needFrontier = needFrontier
     }
     
     private func eval(_ u: Node) -> Node {
@@ -105,6 +106,10 @@ class BaseDomTree {
             u.idom!.domSons.append(u)
         }
         buildDepth(cur: root)
+        if !needFrontier {
+            return
+        }
+        
         for u in dfnList {
             for v in u.antiEdge {
                 var runner: Node? = v
@@ -156,9 +161,9 @@ class BaseDomTree {
 
 class DomTree: BaseDomTree {
     
-    init(function: FunctionIR, check: (BlockIR) -> Bool = {_ in true}) {
+    init(function: FunctionIR, needFrontier: Bool = false, check: (BlockIR) -> Bool = {_ in true}) {
         
-        super.init(function: function)
+        super.init(function: function, needFrontier: needFrontier)
         
         for blk in function.blocks.filter(check) {
             self[blk] = Node(block: blk)
@@ -177,9 +182,9 @@ class DomTree: BaseDomTree {
 
 class PostDomTree: BaseDomTree {
     
-    init(function: FunctionIR, check: (BlockIR) -> Bool = {_ in true}) {
+    init(function: FunctionIR, needFrontier: Bool = false, check: (BlockIR) -> Bool = {_ in true}) {
         
-        super.init(function: function)
+        super.init(function: function, needFrontier: needFrontier)
         
         for blk in function.blocks.filter(check) {
             self[blk] = Node(block: blk)

@@ -55,6 +55,9 @@ class LICHoister: FunctionPass {
     let aa: PTAnalysis
     var tree: DomTree!
     var loops: [Loop]!
+    var toSplit = [(BlockIR, BlockIR)]()
+    var toCreateHeader = [(BlockIR, [BlockIR])]()
+    
     private var instRemoved = 0
     override var resultString: String {super.resultString + "\(instRemoved) inst(s) removed."}
     
@@ -65,25 +68,33 @@ class LICHoister: FunctionPass {
     func hoist(ins: [BlockIR: [InstIR]], in loop: Loop) {
         let preds = loop.header.preds.filter({!loop.blocks.contains($0)})
         if preds.count == 1 {
-            print("hoist", ins, loop.header, preds)
             let p = preds[0]
-            func hoist(cur: DomTree.Node) {
-                if var ii = ins[cur.block!] {
-                    ii.sort(by: {$0.blockIndexBF < $1.blockIndexBF})
-                    instRemoved += ii.count
-                    print("|||", ii.joined() {$0.toPrint})
-                    for i in ii {
-                        i.changeAppend(to: p)
-                        i.prevInst?.changeAppend(to: p)
+            if p.succs.count > 1 {
+                toSplit.append((loop.header, p))
+            } else {
+                print("hoist", ins, loop.header, preds)
+                print("     ", p, "~~~", loop.blocks)
+                func hoist(cur: DomTree.Node) {
+                    if var ii = ins[cur.block!] {
+                        ii.sort(by: {$0.blockIndexBF < $1.blockIndexBF})
+                        instRemoved += ii.count
+                        for i in ii {
+                            print(">>>", i.toPrint, p, p.insts.joined() {"\($0.operation)"})
+                            i.changeAppend(to: p)
+                            i.prevInst?.changeAppend(to: p)
+                            print("<<<", p, p.insts.joined() {"\($0.operation)"})
+                        }
+                    }
+                    for son in cur.domSons where loop.blocks.contains(son.block!) {
+                        hoist(cur: son)
                     }
                 }
-                for son in cur.domSons where loop.blocks.contains(son.block!) {
-                    hoist(cur: son)
-                }
+                hoist(cur: tree[loop.header])
             }
-            hoist(cur: tree[loop.header])
         } else {
-            print("FAILED!!!!")
+            print("FAILED!!!!", loop.header, preds)
+            print("          ", loop.blocks)
+            toCreateHeader.append((loop.header, preds))
         }
     }
     
@@ -172,10 +183,38 @@ class LICHoister: FunctionPass {
             }
             
             if !toHoist.isEmpty {
-//                print("LOOP", loop.header, loop.blocks)
                 hoist(ins: toHoist, in: loop)
             }
             
+        }
+        
+        if !toSplit.isEmpty || !toCreateHeader.isEmpty {
+            for (b, p) in toSplit {
+                CESplit.createSingleFather(block: b, father: p)
+            }
+            var done = Set<BlockIR>()
+            for (b, outp) in toCreateHeader {
+                if done.contains(b) {
+                    continue
+                } else {
+                    done.insert(b)
+                }
+                v.calPreds()
+                let header = BlockIR(curfunc: v)
+                for p in outp {
+                    print(p, p.succs, b)
+                    b.users.filter({
+                        if let br = $0.user as? BrInst {
+                            return br.inBlock === p
+                        }
+                        return false
+                    })[0].reconnect(fromValue: header)
+                }
+                BrInst(des: b, in: header)
+            }
+            toCreateHeader.removeAll()
+            toSplit.removeAll()
+            visit(v: v)
         }
         
     }

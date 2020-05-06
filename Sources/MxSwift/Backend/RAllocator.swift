@@ -65,6 +65,7 @@ class RAllocator {
             n.initial.remove(r)
             n.precolored.insert(r)
         }
+        
         allocate(v: v)
         
     }
@@ -107,7 +108,8 @@ class RAllocator {
         }
         for r in n.precolored where adj[r] == nil {adj[r] = []}
         for r in n.initial where adj[r] == nil {adj[r] = []}
-        for r in n.precolored {r.deg = 100000}
+        for r in n.precolored {r.deg = 1000000}
+        
 //        print(n.precolored)
 //        print(n.initial)
         while let r = n.initial.popFirst() {
@@ -216,7 +218,7 @@ class RAllocator {
         return res < K
     }
     func combine(_ u: Register, _ v: Register) {
-//        print("-", u, v)
+//        print("    -", u, u.cost, v, v.cost)
         if n.freezeList.contains(v) {
             n.freezeList.remove(v)
         } else {
@@ -265,9 +267,15 @@ class RAllocator {
         }
     }
     func coalesce() {
-        let mv = m.worklist.popFirst()!
+//        let mv = m.worklist.popFirst()!
+        let mv = m.worklist.max { (l, r) -> Bool in
+            Double(l.inBlock.loopDepth) + l.inBlock.loopPartition < Double(r.inBlock.loopDepth) + r.inBlock.loopPartition
+        }!
+        m.worklist.remove(mv)
         let (x, y) = (alias(mv.dst), alias(mv[0] as! Register))
         let (u, v) = n.precolored.contains(y) ? (y, x) : (x, y)
+        
+//        print(">", mv.inBlock.loopDepth, mv.inBlock.loopPartition, mv, "|", u, v)
         if u === v {
             m.coalesced.insert(mv)
             addWorkList(u)

@@ -45,7 +45,9 @@ class RVPrinter {
                 pr("\(b):")
                 for i in b.insts.dropLast() {
                     if i.op == .mv && i.dst!.color == (i[0] as! Register).color {
-                        continue
+                        if !debug {
+                            continue
+                        }
                     }
                     if (i.op == .addi || i.op == .subi) && i.dst!.color == (i[0] as! Register).color && (i[1] as! Imm).value == 0 {
                         continue

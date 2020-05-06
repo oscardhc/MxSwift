@@ -47,7 +47,7 @@ class MemToReg: FunctionPass {
         }
         instRemoved += toPromote.count
         
-        let tree = DomTree(function: v)
+        let tree = DomTree(function: v, needFrontier: true)
         var phiToAlloc = [PhiInst: AllocaInst]()
         
         for ai in toPromote {

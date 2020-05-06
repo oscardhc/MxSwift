@@ -12,26 +12,32 @@ class CESplit: FunctionPass {
     let removePhi: Bool
     init(removePhi: Bool) {self.removePhi = removePhi}
     
+    static func createSingleFather(block b: BlockIR, father p: BlockIR) {
+        let split = BlockIR(curfunc: b.inFunction)
+        
+        b.users.filter({
+            if let br = $0.user as? BrInst {
+                return br.inBlock === p
+            }
+            return false
+        })[0].reconnect(fromValue: split)
+        
+        BrInst(des: b, in: split)
+        
+        for i in b.insts where i is PhiInst {
+            i.usees.filter({
+                $0.value === p
+            })[0].reconnect(fromValue: split)
+        }
+    }
+    
     override func visit(v: FunctionIR) {
         
         v.calPreds()
         for b in v.blocks where b.insts.first! is PhiInst {
             for p in b.preds where p.succs.count > 1 {
 //                print("!!!", b.name, p.name)
-                let split = BlockIR(curfunc: v)
-                
-                b.users.filter({
-                    if let br = $0.user as? BrInst {
-                        return br.inBlock === p
-                    }
-                    return false
-                })[0].reconnect(fromValue: split)
-                
-                BrInst(des: b, in: split)
-                
-                b.insts.first!.usees.filter({
-                    $0.value === p
-                })[0].reconnect(fromValue: split)
+                Self.createSingleFather(block: b, father: p)
             }
         }
         

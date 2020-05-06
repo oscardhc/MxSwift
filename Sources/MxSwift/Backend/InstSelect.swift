@@ -92,6 +92,30 @@ class InstSelect: IRVisitor {
         for b in v.blocks {
             bMap[b] = BlockRV(name: v.basename + "_" + b.basename.replacingOccurrences(of: ".", with: "_"), in: curFunction, depth: loopinfo.getDepth(for: b))
         }
+        
+
+        for loop in loopinfo.loops {
+            var queue = [loop.header], visited = Set<BlockIR>(queue)
+            var part = Dictionary<BlockIR, Double>(uniqueKeysWithValues: loop.blocks.map{($0, 0.0)})
+            part[loop.header] = 1.0
+            while let b = queue.popLast() {
+                let succs = b.succs.filter{loop.blocks.contains($0)}, pt = part[b]!
+                for s in succs {
+                    if !visited.contains(s) {
+                        queue.insert(s, at: 0)
+                        visited.insert(s)
+                    }
+                    if queue.contains(s) {
+                        part[s]! += pt / Double(succs.count)
+                    }
+                }
+            }
+            print("loop", loop.header, part)
+            for b in loop.blocks {
+                bMap[b]!.loopPartition = part[b]!
+            }
+        }
+        
         curBlock = bMap[v.blocks.first!]!
         
         InstRV(.subi, in: curBlock, to: RV32["sp"], RV32["sp"], curFunction.stackSize)
@@ -145,7 +169,7 @@ class InstSelect: IRVisitor {
                         b.pcopy.append((copy.0, InstRV(.mv, in: b, to: Register(name: "copy_tmp"), copy.1).dst))
                     }
                 }
-                last?.moveAppendTo(newlist: b.insts)
+                last!.moveAppendTo(newlist: b.insts)
             }
         }
         
@@ -218,7 +242,7 @@ class InstSelect: IRVisitor {
                    OffsetReg(InstRV(.lui, in: curBlock, to: Register(), *v[1]).dst, offset: Imm(*v[1] as! GlobalRV)))
         } else {
             InstRV(storeMap[v[1].type.getBase.space]!, in: curBlock, *v[0], OffsetReg(**v[1], offset: Imm(0)))
-            print("storeinst", *v[0], "->", **v[1], v[0], "->", v[1])
+//            print("storeinst", *v[0], "->", **v[1], v[0], "->", v[1])
         }
     }
     func visit(v: CallInst) {
@@ -273,7 +297,7 @@ class InstSelect: IRVisitor {
         var op: InstRV.OP!
         if let c = v as? CompareInst {
             if c.users.count == 1, c.users[0].user is BrInst {
-                print("compare inst", c)
+//                print("compare inst", c)
                 return
             }
             compare(cmp: c.cmp, lhs: c[0], rhs: c[1], to: **v)

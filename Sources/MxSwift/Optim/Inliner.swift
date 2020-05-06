@@ -112,7 +112,7 @@ class Inliner: ModulePass {
     override func visit(v: Module) {
         
         var calling = [FunctionIR: Int](), called = [FunctionIR: Int]()
-        for f in v.functions {
+        for f in v.functions where !IRBuilder.Builtin.functions.values.contains(f) {
             called[f] = 0
             calling[f] = 0
         }
@@ -122,17 +122,20 @@ class Inliner: ModulePass {
                     if let c = i as? CallInst, !IRBuilder.Builtin.functions.values.contains(c.function) {
                         calling[f]! += 1
                         called[c.function]! += 1
+                        print("calling", f, c.function)
                     }
                 }
             }
         }
-//        print("calling", calling)
-        for toInline in v.functions where calling[toInline]! <= 1 {
+        print("calling", calling)
+        for toInline in v.functions.filter({!IRBuilder.Builtin.functions.values.contains($0)}).sorted(by: { (x, y) -> Bool in
+            calling[x]! < calling[y]!
+        }) {
             if toInline.blocks.isEmpty || toInline.name == "@main" {
                 continue
             }
             let size = toInline.size
-            if size.0 * called[toInline]! > 1000 || called[toInline]! == 0 {
+            if (size.0 * called[toInline]! > 1000 && called[toInline]! > 1) || called[toInline]! == 0 {
                 continue
             }
             print("TOINLINE", toInline.name, size.0, called[toInline]!)
@@ -148,6 +151,7 @@ class Inliner: ModulePass {
             }
             for c in calls {
                 inline(f: c.function, in: c.inBlock.inFunction, for: c)
+                print("AFTER", c.inBlock.inFunction, c.inBlock.inFunction.size)
             }
 
             if calling[toInline]! == 0 {
