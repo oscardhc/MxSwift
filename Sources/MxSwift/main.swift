@@ -54,7 +54,6 @@ func compile() throws {
     debug = true
     UseImmediate().work(on: asm.program)
     RAllocator().work(on: asm.program)
-    _ = RVPrinter(filename: "/Users/oscar/Documents/Classes/1920_Spring/Compiler/tmp/after.s").work(on: asm.program)
     
     debug = false
     if !testing {
