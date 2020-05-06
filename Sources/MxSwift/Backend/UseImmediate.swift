@@ -63,7 +63,7 @@ class UseImmediate {
         }
         
 //        let myzero = InstRV(.addi, in: v.blocks.first!, at: 1, to: Register(), RV32["zero"] ,Imm(0)).dst!
-        for reg in allRegs where reg.con != nil && !RV32.regs.values.contains(reg) {
+        for reg in allRegs where reg.con != nil && !RV32.regs.values.contains(reg) && InstSelect.immInBound(reg.con!) {
             assert(reg.defs.count <= 1)
             for u in reg.uses {
                 print("   ", u, op[u.op], u.src)
@@ -95,6 +95,7 @@ class UseImmediate {
         var workList = [InstRV]()
         for b in v.blocks {
             for i in b.insts where i.dst != nil && i.dst.uses.isEmpty {
+                print("dead", i, i.dst, i.dst.uses)
                 workList.append(i)
             }
         }

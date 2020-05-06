@@ -19,7 +19,6 @@ prefix func ** (val: Value) -> Register {
 class InstSelect: IRVisitor {
     
     var resultString: String {"\(self) finished. "}
-    let immRange = (-(1<<11), (1<<11)-1)
     
     static var instance: InstSelect!
     init() {
@@ -40,11 +39,18 @@ class InstSelect: IRVisitor {
     var cMap = [String: Class]()
     var gMap = [Global: GlobalRV]()
     
+    
+    static let immRange = (-(1<<11), (1<<11)-1)
+    static func immInBound(_ val: Int) -> Bool {
+        val >= immRange.0 && val <= immRange.1
+    }
+    
     private func loadImmediate(_ val: Int, to reg: Register, in blk: BlockRV) -> Register {
-        if val < immRange.0 || val > immRange.1 {
-            return InstRV(.li, in: blk, to: reg, val).dst
-        } else {
+        print("load imm", val)
+        if Self.immInBound(val) {
             return InstRV(.addi, in: blk, to: reg, RV32["zero"], val).dst
+        } else {
+            return InstRV(.li, in: blk, to: reg, val).dst
         }
     }
     func operand(_ val: Value, in _blk: BlockRV? = nil) -> OperandConvertable {
@@ -287,6 +293,7 @@ class InstSelect: IRVisitor {
     
     private func compare(cmp: CompareInst.CMP, lhs: Value, rhs: Value, to: Register) {
         if let c = Self.cop[cmp] {
+            print("compare", "snez", lhs, rhs, c.0)
             InstRV(.snez, in: curBlock, to: to, InstRV(c.0, in: curBlock, to: Register(), *lhs, *rhs))
         } else {
             InstRV(.seqz, in: curBlock, to: to, InstRV(Self.rop[cmp]!, in: curBlock, to: Register(), *lhs, *rhs))

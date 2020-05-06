@@ -161,7 +161,7 @@ class InstRV: CustomStringConvertible, OperandConvertable, Hashable {
         
         switch op {
         case .call:
-            for u in (0..<min(8, (src[0] as! FunctionRV).argNum)).map({RV32["a\($0)"]}) {
+            for u in (0...min(7, (src[0] as! FunctionRV).argNum)).map({RV32["a\($0)"]}) {
                 use.insert(u)
                 u.uses.append(self)
             }
@@ -170,6 +170,8 @@ class InstRV: CustomStringConvertible, OperandConvertable, Hashable {
                 u.defs.append(self)
             }
         case .ret:
+            use.insert(RV32["a0"])
+            RV32["a0"].uses.append(self)
             use.insert(RV32["ra"])
             RV32["ra"].uses.append(self)
         default:
