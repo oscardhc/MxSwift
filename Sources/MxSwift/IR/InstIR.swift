@@ -12,7 +12,7 @@ class InstIR: User {
     enum OP {
         case add, sub, mul, sdiv, srem, shl, ashr, and, or, xor, icmp, ret, alloca, call, load, store, getelementptr, br, bitcast, sext, phi
         static let map: [OP: ((Int, Int) -> Int)] = [
-            .add: (+), .sub: (-), .mul: (*), .sdiv: (/), .srem: (%), .shl: (<<), .ashr: (>>), .and: (&), .or: (|), .xor: (^)
+            .add: (+), .sub: (-), .mul: (*), .sdiv: (/), .srem: (%), .shl: (<<), .ashr: (>>), .and: (&), .or: {($0|$1) & 4294967295}, .xor: (^)
         ]
     }
     let operation: OP

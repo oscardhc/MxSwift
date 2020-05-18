@@ -540,7 +540,7 @@ class IRBuilder: ASTBaseVisitor {
         case .sub:
             node.ret = BinaryInst(type: exp.type, operation: uopMap[node.op]!, lhs: IntC.zero(), rhs: exp, in: curBlock)
         case .bitwise:
-            let inst = IntC(type: exp.type, value: -1)
+            let inst = IntC(type: exp.type, value: 4294967295)
             node.ret = BinaryInst(type: exp.type, operation: uopMap[node.op]!, lhs: exp, rhs: inst, in: curBlock)
         case .negation:
             let inst = IntC(type: exp.type, value: 1)

@@ -59,6 +59,13 @@ class InstRV: CustomStringConvertible, OperandConvertable, Hashable {
             .div: (/), .rem: (%),
             .sgt: {$0>$1 ? 1 : 0}
         ]
+//        static let bop: [OP: ((Int, Int) -> Int)] = {
+//            var res = [OP: ((Int, Int) -> Int)]()
+//            for (op, f) in _bop {
+//                res[op] = {(a: Int, b: Int) -> Int in f(a, b) & 4294967295}
+//            }
+//            return res
+//        }()
     }
     var isBranch: Bool {
         "\(op)".hasPrefix("b")
@@ -365,7 +372,11 @@ class Imm: OperandRV {
         if global != nil {
             return global!.low
         }
-        return "\(value)"
+        if value >= (1<<31) {
+            return "-\((value - (1<<31)) ^ 2147483647 + 1)"
+        } else {
+            return "\(value)"
+        }
     }
     init(_ v: Int) {
         value = v
