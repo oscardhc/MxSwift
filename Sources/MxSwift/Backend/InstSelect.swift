@@ -223,6 +223,9 @@ class InstSelect: IRVisitor {
         let offset: OperandConvertable = {
             assert(v[0].type is PointerT)
             if v[0].type.getBase is ClassT {
+                print(cMap)
+                print(v.toPrint)
+                print(v[0].type.getBase.description)
                 return loadImmediate(cMap[v[0].type.getBase.description]!.offset(at: (v[1] as! IntC).value),
                                      to: Register(), in: curBlock)
             } else {

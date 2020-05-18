@@ -24,16 +24,13 @@ class GLocalizer: ModulePass {
                 }
             }
         }
-        for (val, fs) in usedFunc where fs.count == 1 {
-            if val.type.getBase is IntT {
-                let f = fs.first!
-                let a = AllocaInst(name: val.basename + "_promoted", forType: .int, in: f.blocks.first!, at: 0)
-                for u in val.users {
-                    u.reconnect(fromValue: a)
-                }
-                v.globalVar.removeAll(where: {$0 === val})
-                assert(val.users.isEmpty)
+        for (val, fs) in usedFunc where fs.count == 1 && !(val.type.getBase is ArrayT) {
+            let a = AllocaInst(name: val.basename + "_promoted", forType: val.type.getBase, in: fs.first!.blocks.first!, at: 0)
+            for u in val.users {
+                u.reconnect(fromValue: a)
             }
+            v.globalVar.removeAll(where: {$0 === val})
+            assert(val.users.isEmpty)
         }
         
         for f in v.functions {

@@ -105,7 +105,7 @@ class LICHoister: FunctionPass {
             
         loops.sort(by: {$0.blocks.count > $1.blocks.count})
         
-        for loop in loops {
+        for loop in loops where loop.blocks.count < 10 {
 //            print("--- loop", loop.blocks)
             var invariable = Set<InstIR>()
             
@@ -182,7 +182,7 @@ class LICHoister: FunctionPass {
                 }
             }
             
-            if !toHoist.isEmpty {
+            if !toHoist.isEmpty{
                 hoist(ins: toHoist, in: loop)
             }
             

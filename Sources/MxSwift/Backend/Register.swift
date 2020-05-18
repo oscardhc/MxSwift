@@ -61,8 +61,8 @@ class Register: OperandRV, Hashable, Equatable {
     }
     
     var cost: Double {
-        uses.reduce(0.0, {$0 + pow(10.0, Double($1.inBlock.loopDepth))})
-        + defs.reduce(0.0, {$0 + pow(10.0, Double($1.inBlock.loopDepth))})
+        uses.reduce(0.0, {$0 + pow(10.0, Double($1.inBlock.loopDepth) + $1.inBlock.loopPartition / 5.0)})
+        + defs.reduce(0.0, {$0 + pow(10.0, Double($1.inBlock.loopDepth) + $1.inBlock.loopPartition / 5.0)})
     }
     
 }

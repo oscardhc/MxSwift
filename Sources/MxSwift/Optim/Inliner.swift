@@ -138,6 +138,14 @@ class Inliner: ModulePass {
             
             print("**INLINE", toInline.name, size.0, called[toInline]!)
             if (size.0 * called[toInline]! > 1000 && called[toInline]! > 1) || called[toInline]! == 0 {
+                if called[toInline]! == 0 {
+                    for b in toInline.blocks {
+                        for i in b.insts {
+                            i.disconnect(delUsee: true, delUser: true)
+                        }
+                    }
+                    v.functions.removeAll {$0 === toInline}
+                }
                 continue
             }
             print("TOINLINE", toInline.name, size.0, called[toInline]!)
@@ -154,15 +162,6 @@ class Inliner: ModulePass {
             for c in calls {
                 inline(f: c.function, in: c.inBlock.inFunction, for: c)
 //                print("AFTER", c.inBlock.inFunction, c.inBlock.inFunction.size)
-            }
-
-            if calling[toInline]! == 0 {
-                for b in toInline.blocks {
-                    for i in b.insts {
-                        i.disconnect(delUsee: true, delUser: true)
-                    }
-                }
-                v.functions.removeAll {$0 === toInline}
             }
             
         }

@@ -181,7 +181,7 @@ class IRBuilder: ASTBaseVisitor {
                 let sym = node.scope.find(name: $0.0)!
                 if globalInit {
                     let e = $0.1?.ret?.loadIfAddress(block: curBlock)
-                    if e is ConstIR {
+                    if e is ConstIR && !(e is NullC) {
                         sym.value = GlobalVariable(name: $0.0, value: e as! ConstIR, module: module, isConst: false)
                     } else {
                         var const: ConstIR {
