@@ -26,6 +26,8 @@ class UseImmediate {
     func work(on v: Assmebly) {
         for f in v.functions where !f.blocks.isEmpty {
             visit(v: f)
+            immToReg(v: f)
+            visit(v: f)
         }
     }
     
@@ -127,28 +129,35 @@ class UseImmediate {
             }
         }
         
-//        for b in v.blocks {
-//            for i in b.insts where i.op == .addi && i[0] === RV32["zero"] {
-//                let val = (i[1] as! Imm).value
-//                print("UseImm", val, i.dst, i.dst.uses)
-//                for u in i.dst!.uses {
-//                    if let iver = op[u.op] {
-//                        if u[1] === i.dst {
-//                            u.op = iver
-//                            u.newSrc(Imm(val), at: 1)
-//                        }
-//                    } else if u.op == .mul, let p = val.getPower(of: 2) {
-//                        if u[0] === i.dst {
-//                            u.swapSrc()
-//                        }
-//                        assert(u[1] === i.dst)
-//                        u.op = .slli
-//                        u.newSrc(Imm(p), at: 1)
-//                    }
-//                }
-//                print("   after", i.dst.uses)
-//            }
-//        }
+    }
+    
+    func immToReg(v: FunctionRV) {
+        var immRegs = [Int: (Double, Set<Register>)]()
+        
+        for b in v.blocks {
+            for i in b.insts where i.op == .li && i.dst!.defs.count == 1 {
+                let val = (i[0] as! Imm).value
+                if immRegs[val] == nil {
+                    immRegs[val] = (0.0, [])
+                }
+                immRegs[val]!.0 += pow(10.0, Double(i.inBlock.loopDepth))
+                immRegs[val]!.1.insert(i.dst!)
+            }
+        }
+        
+        for (val, regs) in immRegs where regs.0 >= 100.0 {
+            print(val, regs.0, regs.1)
+            let r = InstRV(.li, in: v.blocks.first!, at: 14, to: Register(), Imm(val)).dst!
+            for old in regs.1 {
+                for u in old.uses {
+                    for idx in 0..<10 where u[idx] === old {
+                        u.newSrc(r, at: idx)
+                        break
+                    }
+                }
+            }
+        }
+        
     }
     
 }
