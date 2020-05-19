@@ -119,6 +119,24 @@ class SCCPropagation: FunctionPass {
             i.replaced(by: i[0])
         }}
         
+        if v === v.currentModule.globalInit {
+            for g in v.currentModule.globalVar where g.type.getBase is IntT {
+                let stores = g.users.filter {$0.user is StoreInst}
+                if stores.count == 1, let s = stores[0].user as? StoreInst, s.inBlock.inFunction === v, s[0].ccpInfo.type == .int {
+//                    g.value = IntC(type: .int, value: s[0].ccpInfo.int!)
+                    for u in g.users {
+                        if !(u.user is LoadInst) {
+                            assert(u.user === s)
+                        }
+                        for uu in u.user.users {
+                            uu.reconnect(fromValue: IntC(type: .int, value: s[0].ccpInfo.int!))
+                        }
+                    }
+                    s.disconnect(delUsee: true, delUser: true)
+                }
+            }
+        }
+        
     }
     
 }

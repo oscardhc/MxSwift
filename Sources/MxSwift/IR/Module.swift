@@ -14,6 +14,7 @@ class Module {
     var classes = [Class]()
     
     var builtinDeclarations = ""
+    var globalInit: FunctionIR!
     
     func accept(visitor: IRVisitor) {visitor.visit(v: self)}
     

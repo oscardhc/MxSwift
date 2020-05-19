@@ -132,6 +132,7 @@ class IRBuilder: ASTBaseVisitor {
         
         // step 2: global variable declarations
         globalFunc = FunctionIR(name: "global_init", type: getType(type: void), module: module)
+        module.globalInit = globalFunc
         curBlock = BlockIR(curfunc: globalFunc)
         for i in node.declarations where i is VariableD {
             i.accept(visitor: self)
