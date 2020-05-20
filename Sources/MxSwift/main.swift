@@ -96,6 +96,7 @@ func optimize(v: Module, timeLimit: Int, iterationLimit: Int, noPhi: Bool = fals
         
         if !noPhi && !noCopy {
             Inliner().work(on: v)
+            Inliner().work(on: v)
         }
         
         let curString = IRPrinter().print(on: v)
